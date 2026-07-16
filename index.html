@@ -1,0 +1,2945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradePro · 外贸业务工具系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ========== CSS Variables ========== */
+:root {
+  --sidebar-bg: #141821;
+  --sidebar-hover: #1e2433;
+  --sidebar-active: #2a3142;
+  --sidebar-text: #8892a6;
+  --sidebar-text-active: #ffffff;
+  --gold: #c9a227;
+  --gold-light: #e0c455;
+  --gold-dim: #8a7020;
+  --content-bg: #f5f6fa;
+  --card-bg: #ffffff;
+  --text-primary: #1a1f2e;
+  --text-secondary: #5a6378;
+  --text-muted: #9ca3b5;
+  --border: #e2e5ec;
+  --border-dark: #d1d5e0;
+  --accent-blue: #2d4a8a;
+  --accent-blue-light: #3b5da3;
+  --success: #2d8659;
+  --danger: #c0392b;
+  --warning: #d4843a;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 28px rgba(0,0,0,0.12);
+  --radius: 8px;
+  --radius-sm: 5px;
+  --radius-lg: 14px;
+  --sidebar-w: 248px;
+  --font-display: 'Playfair Display', 'Noto Serif SC', serif;
+  --font-body: 'Noto Sans SC', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+/* ========== Reset ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: var(--font-body);
+  background: var(--content-bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c5c9d4; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #a8adba; }
+
+/* ========== Sidebar ========== */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: transform 0.3s ease;
+}
+.sidebar-header {
+  padding: 28px 24px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: #141821;
+  flex-shrink: 0;
+}
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.logo-sub {
+  font-size: 10px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+.nav-section-label {
+  font-size: 10px;
+  color: #4a5268;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 12px 12px 6px;
+  font-weight: 500;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--sidebar-text);
+  font-size: 13.5px;
+  font-weight: 400;
+  transition: all 0.18s ease;
+  margin-bottom: 2px;
+  user-select: none;
+}
+.nav-item:hover {
+  background: var(--sidebar-hover);
+  color: #c0c8d8;
+}
+.nav-item.active {
+  background: var(--sidebar-active);
+  color: var(--sidebar-text-active);
+  font-weight: 500;
+}
+.nav-item.active .nav-icon { color: var(--gold); }
+.nav-icon {
+  width: 20px; height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  transition: color 0.18s;
+}
+.nav-badge {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 600;
+  background: var(--gold-dim);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.sidebar-footer {
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 11px;
+  color: #4a5268;
+}
+
+/* ========== Main Content ========== */
+.main {
+  margin-left: var(--sidebar-w);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.topbar {
+  height: 56px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  flex-shrink: 0;
+}
+.topbar-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.topbar-title .breadcrumb {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+}
+
+/* ========== Page ========== */
+.page { display: none; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* ========== Buttons ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+.btn-primary {
+  background: var(--accent-blue);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-blue-light); box-shadow: var(--shadow-sm); }
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  color: #fff;
+}
+.btn-gold:hover { box-shadow: 0 4px 12px rgba(201,162,39,0.35); }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-dark);
+  color: var(--text-secondary);
+}
+.btn-outline:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid #e8b8b3;
+}
+.btn-danger:hover { background: #fdf0ee; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-icon {
+  width: 32px; height: 32px;
+  padding: 0;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+/* ========== Cards ========== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .dot {
+  width: 6px; height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+}
+.card-body { padding: 20px; }
+
+/* ========== Forms ========== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px 18px;
+}
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.form-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.2px;
+}
+.form-label .req { color: var(--danger); }
+.form-input, .form-select, .form-textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(45,74,138,0.08);
+}
+.form-textarea { resize: vertical; min-height: 60px; }
+.form-input.mono, .form-textarea.mono { font-family: var(--font-mono); }
+
+/* ========== Table ========== */
+.data-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  background: #f0f2f7;
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eef0f5;
+  color: var(--text-primary);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #fafbfe; }
+.data-table .td-input {
+  padding: 2px;
+}
+.data-table .td-input input, .data-table .td-input select {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.15s;
+}
+.data-table .td-input input:focus, .data-table .td-input select:focus {
+  border-color: var(--accent-blue);
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(45,74,138,0.06);
+}
+.data-table .td-input input.mono { font-family: var(--font-mono); text-align: right; }
+.data-table .num-col { text-align: right; font-family: var(--font-mono); }
+.data-table .col-w-icon { width: 40px; text-align: center; }
+
+/* ========== Summary Box ========== */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+.summary-box {
+  background: #f8f9fd;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.summary-box.highlight {
+  background: linear-gradient(135deg, #f8f5ec, #fdf8e8);
+  border-color: var(--gold-light);
+}
+.summary-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.summary-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.summary-value.gold { color: var(--gold-dim); }
+.summary-value.blue { color: var(--accent-blue); }
+.summary-unit {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  margin-left: 3px;
+}
+
+/* ========== Preview / Print Document ========== */
+.preview-area {
+  background: #e8eaf0;
+  padding: 30px;
+  border-radius: var(--radius);
+  overflow: auto;
+  min-height: 400px;
+}
+.doc-paper {
+  background: #fff;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 18mm 16mm;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  font-family: var(--font-body);
+  color: #1a1f2e;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2.5px solid var(--accent-blue);
+}
+.doc-company {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  line-height: 1.3;
+}
+.doc-company-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+.doc-title-block {
+  text-align: right;
+}
+.doc-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.doc-meta {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  line-height: 1.8;
+}
+.doc-meta strong { color: var(--text-primary); }
+
+.doc-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.doc-party-block .label {
+  font-size: 9px;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.doc-party-block .content {
+  font-size: 11px;
+  color: var(--text-primary);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.doc-party-block .content strong { font-size: 12px; }
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+  font-size: 11px;
+}
+.doc-table th {
+  background: var(--accent-blue);
+  color: #fff;
+  padding: 7px 8px;
+  text-align: left;
+  font-weight: 500;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.doc-table th.num { text-align: right; }
+.doc-table th.center { text-align: center; }
+.doc-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #e8eaf0;
+  font-size: 11px;
+}
+.doc-table td.num { text-align: right; font-family: var(--font-mono); }
+.doc-table td.center { text-align: center; }
+.doc-table tfoot td {
+  border-top: 2px solid var(--accent-blue);
+  border-bottom: none;
+  font-weight: 600;
+  padding-top: 8px;
+}
+
+.doc-footer {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.doc-footer-block .label {
+  font-size: 9px;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.doc-footer-block .content {
+  font-size: 11px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.doc-signature {
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+}
+.doc-sig-block {
+  text-align: center;
+}
+.doc-sig-block .line {
+  border-top: 1px solid var(--text-primary);
+  width: 180px;
+  margin-bottom: 4px;
+}
+.doc-sig-block .label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+/* ========== Marks Preview ========== */
+.marks-preview {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.mark-box {
+  border: 3px solid var(--text-primary);
+  background: #fff;
+  padding: 20px 28px;
+  min-width: 220px;
+  text-align: center;
+  font-family: var(--font-mono);
+  position: relative;
+}
+.mark-box .mark-label {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: var(--card-bg);
+  padding: 0 6px;
+  font-size: 10px;
+  color: var(--gold-dim);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.mark-box .mark-content {
+  font-size: 13px;
+  line-height: 2;
+  white-space: pre-wrap;
+}
+.mark-box .mark-divider {
+  border-top: 1px solid var(--text-primary);
+  margin: 6px 0;
+}
+
+/* ========== Calculator Styles ========== */
+.calc-container {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 18px;
+  align-items: start;
+}
+.calc-results {
+  position: sticky;
+  top: 0;
+}
+
+.container-visual {
+  background: #f0f2f7;
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: 200px;
+}
+.container-3d {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(12deg) rotateY(-22deg);
+}
+.box-face {
+  position: absolute;
+  border: 1px solid var(--accent-blue);
+  background: rgba(45,74,138,0.08);
+}
+
+/* ========== Tabs ========== */
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 18px;
+}
+.tab {
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+  user-select: none;
+}
+.tab:hover { color: var(--text-secondary); }
+.tab.active {
+  color: var(--accent-blue);
+  border-bottom-color: var(--accent-blue);
+}
+
+/* ========== Toggle ========== */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.toggle {
+  position: relative;
+  width: 40px; height: 22px;
+  background: #d1d5e0;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle.on { background: var(--accent-blue); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle.on::after { transform: translateX(18px); }
+.toggle-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ========== Empty State ========== */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.empty-state .icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+  opacity: 0.4;
+}
+
+/* ========== Product Library ========== */
+.product-lib-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.product-lib-item:hover { background: #f0f2f7; }
+.product-lib-item .pl-name {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+.product-lib-item .pl-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 900px) {
+  .calc-container { grid-template-columns: 1fr; }
+  .doc-parties { grid-template-columns: 1fr; }
+  .doc-footer { grid-template-columns: 1fr; }
+}
+
+/* ========== Print ========== */
+@media print {
+  .sidebar, .topbar, .page-header, .no-print { display: none !important; }
+  .main { margin-left: 0; }
+  .content-area { padding: 0; overflow: visible; }
+  .preview-area { background: #fff; padding: 0; }
+  .doc-paper { box-shadow: none; width: 100%; min-height: auto; padding: 10mm; }
+  .page { display: none; }
+  .page.active { display: block; }
+  @page { margin: 10mm; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ SIDEBAR ============ -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="logo-icon">T</div>
+      <div>
+        <div class="logo-text">TradePro</div>
+        <div class="logo-sub">Export Tools</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">单据工具</div>
+    <div class="nav-item active" data-page="proforma">
+      <span class="nav-icon">📋</span>
+      <span>形式发票</span>
+    </div>
+    <div class="nav-item" data-page="commercial">
+      <span class="nav-icon">📄</span>
+      <span>商业发票</span>
+    </div>
+    <div class="nav-item" data-page="packing">
+      <span class="nav-icon">📦</span>
+      <span>装箱单</span>
+    </div>
+    <div class="nav-item" data-page="marks">
+      <span class="nav-icon">🏷️</span>
+      <span>唛头</span>
+    </div>
+    <div class="nav-item" data-page="spec">
+      <span class="nav-icon">📐</span>
+      <span>产品规格书</span>
+    </div>
+    <div class="nav-section-label">计算工具</div>
+    <div class="nav-item" data-page="weight">
+      <span class="nav-icon">⚖️</span>
+      <span>重量计算</span>
+    </div>
+    <div class="nav-item" data-page="container">
+      <span class="nav-icon">🚢</span>
+      <span>装箱计算</span>
+    </div>
+    <div class="nav-section-label">数据中心</div>
+    <div class="nav-item" data-page="library">
+      <span class="nav-icon">🗂️</span>
+      <span>产品库</span>
+    </div>
+    <div class="nav-item" data-page="settings">
+      <span class="nav-icon">⚙️</span>
+      <span>公司信息</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    TradePro v1.0 · 数据本地存储
+  </div>
+</aside>
+
+<!-- ============ MAIN ============ -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">形式发票 <span class="breadcrumb">/ Proforma Invoice</span></div>
+    <div class="topbar-actions no-print">
+      <button class="btn btn-outline btn-sm" onclick="saveCurrentPage()">💾 保存</button>
+      <button class="btn btn-gold btn-sm" onclick="window.print()" id="printBtn" style="display:none">🖨️ 打印 / PDF</button>
+    </div>
+  </div>
+  <div class="content-area" id="contentArea">
+
+<!-- ===================== PAGE: PROFORMA INVOICE ===================== -->
+<div class="page active" id="page-proforma">
+  <div class="page-header">
+    <div>
+      <div class="page-title">形式发票</div>
+      <div class="page-subtitle">Proforma Invoice · 供买方申请外汇、许可证及进口审批</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('proforma')">👁️ 预览</button>
+      <button class="btn btn-primary btn-sm" onclick="addRow('proforma')">+ 添加行</button>
+    </div>
+  </div>
+
+  <div id="proforma-edit">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>发票信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">发票号 <span class="req">*</span></label><input class="form-input mono" id="pi-no" placeholder="PI-2026-001"></div>
+          <div class="form-group"><label class="form-label">发票日期</label><input type="date" class="form-input" id="pi-date"></div>
+          <div class="form-group"><label class="form-label">有效期至</label><input type="date" class="form-input" id="pi-valid"></div>
+          <div class="form-group"><label class="form-label">贸易条款</label>
+            <select class="form-select" id="pi-terms">
+              <option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option><option>DAP</option><option>DDP</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="pi-from" placeholder="Shanghai"></div>
+          <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="pi-to" placeholder="Hamburg"></div>
+          <div class="form-group"><label class="form-label">付款方式</label>
+            <select class="form-select" id="pi-payment">
+              <option>T/T 30% deposit, 70% before shipment</option>
+              <option>T/T 100% in advance</option>
+              <option>L/C at sight</option>
+              <option>L/C 60 days</option>
+              <option>D/P at sight</option>
+              <option>D/A 60 days</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">交货期</label><input class="form-input" id="pi-delivery" placeholder="Within 30 days after deposit"></div>
+          <div class="form-group"><label class="form-label">货币</label>
+            <select class="form-select" id="pi-currency">
+              <option>USD</option><option>EUR</option><option>GBP</option><option>CNY</option><option>JPY</option><option>AUD</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>买方信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">买方名称</label><input class="form-input" id="pi-buyer-name" placeholder="ABC Trading Co., Ltd."></div>
+          <div class="form-group"><label class="form-label">联系人</label><input class="form-input" id="pi-buyer-contact" placeholder="John Smith"></div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">地址</label><textarea class="form-textarea" id="pi-buyer-addr" placeholder="No. 123 Main Street, Hamburg, Germany"></textarea></div>
+          <div class="form-group"><label class="form-label">电话</label><input class="form-input mono" id="pi-buyer-tel" placeholder="+49 40 1234567"></div>
+          <div class="form-group"><label class="form-label">邮箱</label><input class="form-input mono" id="pi-buyer-email" placeholder="john@abctrading.com"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot"></span>产品明细</div>
+        <button class="btn btn-outline btn-sm" onclick="importFromLibrary('proforma')">📁 从产品库导入</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="data-table-wrap" style="border:none">
+          <table class="data-table" id="pi-table">
+            <thead>
+              <tr>
+                <th style="width:30px">#</th>
+                <th>品名 / Description</th>
+                <th style="width:120px">规格 / Spec</th>
+                <th style="width:80px">数量</th>
+                <th style="width:80px">单位</th>
+                <th style="width:100px">单价</th>
+                <th style="width:120px">金额</th>
+                <th style="width:40px" class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="pi-tbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="6" style="text-align:right;font-weight:600">合计 Total:</td>
+                <td class="num" id="pi-total" style="font-weight:700;color:var(--accent-blue)">0.00</td>
+                <td class="no-print"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>补充条款</div></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">备注 / Remarks</label>
+          <textarea class="form-textarea" id="pi-remarks" rows="3" placeholder="1. Prices are valid for 30 days.&#10;2. Banking charges are for buyer's account."></textarea>
+        </div>
+        <div class="form-group" style="margin-top:12px">
+          <label class="form-label">银行信息 / Bank Details</label>
+          <textarea class="form-textarea" id="pi-bank" rows="3" placeholder="Bank Name:&#10;Account Name:&#10;Account No.:&#10;SWIFT Code:"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="proforma-preview" style="display:none">
+    <div class="preview-area" id="proforma-preview-area"></div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: COMMERCIAL INVOICE ===================== -->
+<div class="page" id="page-commercial">
+  <div class="page-header">
+    <div>
+      <div class="page-title">商业发票</div>
+      <div class="page-subtitle">Commercial Invoice · 报关及清关用的正式发票</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('commercial')">👁️ 预览</button>
+      <button class="btn btn-primary btn-sm" onclick="addRow('commercial')">+ 添加行</button>
+    </div>
+  </div>
+
+  <div id="commercial-edit">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>发票信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">发票号 <span class="req">*</span></label><input class="form-input mono" id="ci-no" placeholder="CI-2026-001"></div>
+          <div class="form-group"><label class="form-label">发票日期</label><input type="date" class="form-input" id="ci-date"></div>
+          <div class="form-group"><label class="form-label">合同号</label><input class="form-input mono" id="ci-contract" placeholder="SC-2026-001"></div>
+          <div class="form-group"><label class="form-label">信用证号</label><input class="form-input mono" id="ci-lc" placeholder="L/C No."></div>
+          <div class="form-group"><label class="form-label">贸易条款</label>
+            <select class="form-select" id="ci-terms">
+              <option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option><option>DAP</option><option>DDP</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="ci-from"></div>
+          <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="ci-to"></div>
+          <div class="form-group"><label class="form-label">货币</label>
+            <select class="form-select" id="ci-currency">
+              <option>USD</option><option>EUR</option><option>GBP</option><option>CNY</option><option>JPY</option><option>AUD</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">原产国</label><input class="form-input" id="ci-origin" placeholder="China"></div>
+          <div class="form-group"><label class="form-label">运输方式</label>
+            <select class="form-select" id="ci-transport">
+              <option>By Sea</option><option>By Air</option><option>By Land</option><option>By Rail</option><option>Multimodal</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>买方信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">买方名称</label><input class="form-input" id="ci-buyer-name"></div>
+          <div class="form-group"><label class="form-label">买方地址</label><textarea class="form-textarea" id="ci-buyer-addr"></textarea></div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">买方税号/VAT/EORI</label><input class="form-input mono" id="ci-buyer-vat" placeholder="VAT/EORI No."></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot"></span>产品明细</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="copyFromDoc('proforma','commercial')">📋 从形式发票复制</button>
+          <button class="btn btn-outline btn-sm" onclick="importFromLibrary('commercial')">📁 从产品库导入</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="data-table-wrap" style="border:none">
+          <table class="data-table" id="ci-table">
+            <thead>
+              <tr>
+                <th style="width:30px">#</th>
+                <th>品名 / Description</th>
+                <th style="width:100px">HS编码</th>
+                <th style="width:90px">数量</th>
+                <th style="width:70px">单位</th>
+                <th style="width:90px">单价</th>
+                <th style="width:110px">金额</th>
+                <th style="width:40px" class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="ci-tbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="6" style="text-align:right;font-weight:600">合计 Total:</td>
+                <td class="num" id="ci-total" style="font-weight:700;color:var(--accent-blue)">0.00</td>
+                <td class="no-print"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>补充信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">唛头</label><input class="form-input mono" id="ci-marks" placeholder="As per attached sheet"></div>
+          <div class="form-group"><label class="form-label">包装方式</label><input class="form-input" id="ci-packing" placeholder="Cartons / Pallets"></div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">声明 / Declaration</label>
+            <textarea class="form-textarea" id="ci-declaration" rows="2" placeholder="We hereby certify that the above mentioned goods are of Chinese origin."></textarea>
+          </div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">备注 / Remarks</label>
+            <textarea class="form-textarea" id="ci-remarks" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="commercial-preview" style="display:none">
+    <div class="preview-area" id="commercial-preview-area"></div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: PACKING LIST ===================== -->
+<div class="page" id="page-packing">
+  <div class="page-header">
+    <div>
+      <div class="page-title">装箱单</div>
+      <div class="page-subtitle">Packing List · 详细记录每箱货物的包装信息</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('packing')">👁️ 预览</button>
+      <button class="btn btn-primary btn-sm" onclick="addRow('packing')">+ 添加行</button>
+    </div>
+  </div>
+
+  <div id="packing-edit">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>基本信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">装箱单号 <span class="req">*</span></label><input class="form-input mono" id="pl-no" placeholder="PL-2026-001"></div>
+          <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="pl-date"></div>
+          <div class="form-group"><label class="form-label">发票号</label><input class="form-input mono" id="pl-inv-no" placeholder="Reference Invoice No."></div>
+          <div class="form-group"><label class="form-label">贸易条款</label>
+            <select class="form-select" id="pl-terms"><option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="pl-from"></div>
+          <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="pl-to"></div>
+          <div class="form-group"><label class="form-label">买方名称</label><input class="form-input" id="pl-buyer"></div>
+          <div class="form-group"><label class="form-label">唛头</label><input class="form-input mono" id="pl-marks" placeholder="N/M or as per sheet"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot"></span>装箱明细</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="copyFromDoc('proforma','packing')">📋 复制形式发票产品</button>
+          <button class="btn btn-outline btn-sm" onclick="importFromLibrary('packing')">📁 从产品库导入</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="data-table-wrap" style="border:none">
+          <table class="data-table" id="pl-table">
+            <thead>
+              <tr>
+                <th style="width:30px">#</th>
+                <th style="width:70px">箱号</th>
+                <th>品名 / Description</th>
+                <th style="width:70px">数量</th>
+                <th style="width:60px">单位</th>
+                <th style="width:80px">净重(kg)</th>
+                <th style="width:80px">毛重(kg)</th>
+                <th style="width:70px">长(cm)</th>
+                <th style="width:70px">宽(cm)</th>
+                <th style="width:70px">高(cm)</th>
+                <th style="width:90px">体积(CBM)</th>
+                <th style="width:40px" class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="pl-tbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="text-align:right;font-weight:600">合计:</td>
+                <td class="num" id="pl-total-qty" style="font-weight:600">0</td>
+                <td></td>
+                <td class="num" id="pl-total-nw" style="font-weight:600">0</td>
+                <td class="num" id="pl-total-gw" style="font-weight:600">0</td>
+                <td colspan="3"></td>
+                <td class="num" id="pl-total-cbm" style="font-weight:600;color:var(--accent-blue)">0.000</td>
+                <td class="no-print"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>汇总</div></div>
+      <div class="card-body">
+        <div class="summary-grid">
+          <div class="summary-box"><div class="summary-label">总箱数</div><div class="summary-value" id="pl-sum-cartons">0<span class="summary-unit">CTNS</span></div></div>
+          <div class="summary-box"><div class="summary-label">总数量</div><div class="summary-value" id="pl-sum-qty">0<span class="summary-unit">PCS</span></div></div>
+          <div class="summary-box"><div class="summary-label">总净重</div><div class="summary-value" id="pl-sum-nw">0<span class="summary-unit">KG</span></div></div>
+          <div class="summary-box"><div class="summary-label">总毛重</div><div class="summary-value" id="pl-sum-gw">0<span class="summary-unit">KG</span></div></div>
+          <div class="summary-box highlight"><div class="summary-label">总体积</div><div class="summary-value gold" id="pl-sum-cbm">0.000<span class="summary-unit">CBM</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="packing-preview" style="display:none">
+    <div class="preview-area" id="packing-preview-area"></div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: SHIPPING MARKS ===================== -->
+<div class="page" id="page-marks">
+  <div class="page-header">
+    <div>
+      <div class="page-title">唛头设计</div>
+      <div class="page-subtitle">Shipping Marks · 正唛与侧唛的可视化设计</div>
+    </div>
+    <div class="no-print">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('marks')">👁️ 预览</button>
+    </div>
+  </div>
+
+  <div id="marks-edit">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>正唛信息 (Main Mark)</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">收货人 / Consignee</label><input class="form-input mono" id="mk-consignee" placeholder="ABC"></div>
+          <div class="form-group"><label class="form-label">目的港 / Port</label><input class="form-input mono" id="mk-port" placeholder="HAMBURG"></div>
+          <div class="form-group"><label class="form-label">箱号 / Carton No.</label><input class="form-input mono" id="mk-carton-no" placeholder="1/100"></div>
+          <div class="form-group"><label class="form-label">订单号 / PO No.</label><input class="form-input mono" id="mk-po" placeholder="PO-2026-001"></div>
+          <div class="form-group"><label class="form-label">原产国 / Origin</label><input class="form-input mono" id="mk-origin" placeholder="MADE IN CHINA"></div>
+          <div class="form-group"><label class="form-label">件数 / Quantity</label><input class="form-input mono" id="mk-qty" placeholder="100 PCS"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>侧唛信息 (Side Mark)</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">品名 / Item</label><input class="form-input" id="mk-item" placeholder="Product Name"></div>
+          <div class="form-group"><label class="form-label">规格 / Spec</label><input class="form-input" id="mk-spec" placeholder="50x50cm"></div>
+          <div class="form-group"><label class="form-label">净重 / N.W.</label><input class="form-input mono" id="mk-nw" placeholder="15 KGS"></div>
+          <div class="form-group"><label class="form-label">毛重 / G.W.</label><input class="form-input mono" id="mk-gw" placeholder="18 KGS"></div>
+          <div class="form-group"><label class="form-label">尺寸 / Meas</label><input class="form-input mono" id="mk-meas" placeholder="50x40x30 CM"></div>
+          <div class="form-group"><label class="form-label">颜色 / Color</label><input class="form-input" id="mk-color" placeholder="Red"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>特殊标记</div></div>
+      <div class="card-body">
+        <div class="toggle-row">
+          <div class="toggle on" id="mk-fragile-toggle" onclick="this.classList.toggle('on');renderMarksPreview()"></div>
+          <span class="toggle-label">易碎 Fragile</span>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle on" id="mk-up-toggle" onclick="this.classList.toggle('on');renderMarksPreview()"></div>
+          <span class="toggle-label">向上 This Side Up</span>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle" id="mk-wet-toggle" onclick="this.classList.toggle('on');renderMarksPreview()"></div>
+          <span class="toggle-label">防潮 Keep Dry</span>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle" id="mk-stack-toggle" onclick="this.classList.toggle('on');renderMarksPreview()"></div>
+          <span class="toggle-label">堆码层数 Stack Limit</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="marks-preview" style="display:none">
+    <div class="preview-area">
+      <div id="marks-preview-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: PRODUCT SPECIFICATION ===================== -->
+<div class="page" id="page-spec">
+  <div class="page-header">
+    <div>
+      <div class="page-title">产品规格书</div>
+      <div class="page-subtitle">Product Specification · 产品技术参数与规格说明</div>
+    </div>
+    <div class="no-print">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('spec')">👁️ 预览</button>
+    </div>
+  </div>
+
+  <div id="spec-edit">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>产品基本信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">产品名称 <span class="req">*</span></label><input class="form-input" id="sp-name" placeholder="Product Name"></div>
+          <div class="form-group"><label class="form-label">型号 / Model</label><input class="form-input mono" id="sp-model" placeholder="Model No."></div>
+          <div class="form-group"><label class="form-label">品牌 / Brand</label><input class="form-input" id="sp-brand" placeholder="Brand Name"></div>
+          <div class="form-group"><label class="form-label">HS编码</label><input class="form-input mono" id="sp-hs" placeholder="HS Code"></div>
+          <div class="form-group"><label class="form-label">原产国</label><input class="form-input" id="sp-origin" placeholder="China"></div>
+          <div class="form-group"><label class="form-label">产品图片URL</label><input class="form-input" id="sp-img" placeholder="Image URL (optional)"></div>
+        </div>
+        <div class="form-group" style="margin-top:14px">
+          <label class="form-label">产品描述 / Description</label>
+          <textarea class="form-textarea" id="sp-desc" rows="3" placeholder="Brief product description..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot"></span>技术参数</div>
+        <button class="btn btn-outline btn-sm" onclick="addSpecRow()">+ 添加参数</button>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="data-table-wrap" style="border:none">
+          <table class="data-table" id="sp-table">
+            <thead>
+              <tr>
+                <th style="width:35%">参数名称 / Parameter</th>
+                <th>参数值 / Value</th>
+                <th style="width:100px">单位 / Unit</th>
+                <th style="width:40px" class="no-print"></th>
+              </tr>
+            </thead>
+            <tbody id="sp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot"></span>包装信息</div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">包装方式</label><input class="form-input" id="sp-pkg-type" placeholder="Carton"></div>
+          <div class="form-group"><label class="form-label">装箱数 / Qty per Carton</label><input class="form-input mono" id="sp-pkg-qty" placeholder="50"></div>
+          <div class="form-group"><label class="form-label">单件净重 (kg)</label><input class="form-input mono" id="sp-nw-unit" placeholder="0.3"></div>
+          <div class="form-group"><label class="form-label">整箱净重 (kg)</label><input class="form-input mono" id="sp-nw-carton" placeholder="15"></div>
+          <div class="form-group"><label class="form-label">整箱毛重 (kg)</label><input class="form-input mono" id="sp-gw-carton" placeholder="18"></div>
+          <div class="form-group"><label class="form-label">箱规 长×宽×高 (cm)</label><input class="form-input mono" id="sp-carton-size" placeholder="50×40×30"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>其他信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">质量标准</label><input class="form-input" id="sp-quality" placeholder="ISO 9001 / CE / FDA"></div>
+          <div class="form-group"><label class="form-label">保质期</label><input class="form-input" id="sp-shelf" placeholder="24 months"></div>
+          <div class="form-group"><label class="form-label">存储条件</label><input class="form-input" id="sp-storage" placeholder="Store in cool, dry place"></div>
+          <div class="form-group"><label class="form-label">最小起订量 MOQ</label><input class="form-input mono" id="sp-moq" placeholder="1000"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="spec-preview" style="display:none">
+    <div class="preview-area" id="spec-preview-area"></div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: WEIGHT CALCULATOR ===================== -->
+<div class="page" id="page-weight">
+  <div class="page-header">
+    <div>
+      <div class="page-title">重量计算器</div>
+      <div class="page-subtitle">Weight Calculator · 多件货物实重累加计算</div>
+    </div>
+    <div class="no-print">
+      <button class="btn btn-primary btn-sm" onclick="addWeightRow()">+ 添加货物</button>
+    </div>
+  </div>
+
+  <div class="calc-container">
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot"></span>货物清单</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:12px;color:var(--text-muted)">单位:</span>
+            <select class="form-select" style="width:70px;padding:4px 8px;font-size:12px" id="wt-unit" onchange="recalcWeight()">
+              <option value="kg">kg</option>
+              <option value="lb">lb</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="data-table-wrap" style="border:none">
+            <table class="data-table" id="wt-table">
+              <thead>
+                <tr>
+                  <th style="width:30px">#</th>
+                  <th>品名 / Description</th>
+                  <th style="width:90px">数量</th>
+                  <th style="width:100px">单件重量</th>
+                  <th style="width:120px">小计重量</th>
+                  <th style="width:40px" class="no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="wt-tbody"></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="text-align:right;font-weight:600">总件数 / Total Qty:</td>
+                  <td class="num" id="wt-total-qty" style="font-weight:600">0</td>
+                  <td class="num" id="wt-total-weight" style="font-weight:700;color:var(--accent-blue);font-size:15px">0.00</td>
+                  <td class="no-print"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-results">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>计算结果</div></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="summary-box">
+              <div class="summary-label">货物种类</div>
+              <div class="summary-value blue" id="wt-sum-types">0<span class="summary-unit">种</span></div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-label">总件数</div>
+              <div class="summary-value" id="wt-sum-qty">0<span class="summary-unit" id="wt-sum-qty-unit">PCS</span></div>
+            </div>
+            <div class="summary-box highlight">
+              <div class="summary-label">总重量</div>
+              <div class="summary-value gold" id="wt-sum-weight">0.00<span class="summary-unit" id="wt-sum-weight-unit">KG</span></div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-label">折合磅</div>
+              <div class="summary-value" id="wt-sum-lb">0.00<span class="summary-unit">LB</span></div>
+            </div>
+            <div class="summary-box">
+              <div class="summary-label">折合吨</div>
+              <div class="summary-value" id="wt-sum-ton">0.000<span class="summary-unit">TON</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: CONTAINER CALCULATOR ===================== -->
+<div class="page" id="page-container">
+  <div class="page-header">
+    <div>
+      <div class="page-title">集装箱装箱计算</div>
+      <div class="page-subtitle">Container Loading Calculator · 最优装箱方案与利用率</div>
+    </div>
+  </div>
+
+  <div class="calc-container">
+    <div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>集装箱选择</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">柜型</label>
+              <select class="form-select" id="ct-type" onchange="updateContainerInfo()">
+                <option value="20gp">20'GP (标准小柜)</option>
+                <option value="40gp">40'GP (标准大柜)</option>
+                <option value="40hq" selected>40'HQ (高柜)</option>
+                <option value="45hq">45'HQ (超高大柜)</option>
+                <option value="20rf">20'RF (冷藏小柜)</option>
+                <option value="40rf">40'RF (冷藏大柜)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">内部尺寸 L×W×H (mm)</label><input class="form-input mono" id="ct-dims" readonly></div>
+            <div class="form-group"><label class="form-label">最大载重 (kg)</label><input class="form-input mono" id="ct-payload" readonly></div>
+            <div class="form-group"><label class="form-label">容积 (CBM)</label><input class="form-input mono" id="ct-volume" readonly></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot"></span>货物信息</div>
+          <button class="btn btn-primary btn-sm" onclick="addCargoRow()">+ 添加货物</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="data-table-wrap" style="border:none">
+            <table class="data-table" id="ct-table">
+              <thead>
+                <tr>
+                  <th style="width:30px">#</th>
+                  <th>品名</th>
+                  <th style="width:80px">长(mm)</th>
+                  <th style="width:80px">宽(mm)</th>
+                  <th style="width:80px">高(mm)</th>
+                  <th style="width:80px">数量</th>
+                  <th style="width:80px">单件重(kg)</th>
+                  <th style="width:40px" class="no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="ct-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="toggle-row">
+            <div class="toggle on" id="ct-rotate-toggle" onclick="this.classList.toggle('on')"></div>
+            <span class="toggle-label">允许货物旋转（尝试6种放置方向）</span>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <button class="btn btn-gold" onclick="calculateContainer()">🚢 开始计算</button>
+            <button class="btn btn-outline" onclick="clearContainerCalc()">清空</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-results">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>计算结果</div></div>
+        <div class="card-body">
+          <div id="ct-result-empty" class="empty-state">
+            <div class="icon">🚢</div>
+            <div>添加货物后点击"开始计算"</div>
+          </div>
+          <div id="ct-result" style="display:none">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="summary-box highlight">
+                <div class="summary-label">空间利用率</div>
+                <div class="summary-value gold" id="ct-utilization">0<span class="summary-unit">%</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">已装件数</div>
+                <div class="summary-value blue" id="ct-loaded-qty">0<span class="summary-unit">PCS</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">已装体积</div>
+                <div class="summary-value" id="ct-loaded-cbm">0.00<span class="summary-unit">CBM</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">已装重量</div>
+                <div class="summary-value" id="ct-loaded-weight">0<span class="summary-unit">KG</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">剩余空间</div>
+                <div class="summary-value" id="ct-remaining">0.00<span class="summary-unit">CBM</span></div>
+              </div>
+              <div id="ct-warnings" style="margin-top:6px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="ct-detail-card" style="display:none">
+    <div class="card-header"><div class="card-title"><span class="dot"></span>装箱方案明细</div></div>
+    <div class="card-body" style="padding:0">
+      <div class="data-table-wrap" style="border:none">
+        <table class="data-table" id="ct-detail-table">
+          <thead>
+            <tr>
+              <th style="width:30px">#</th>
+              <th>品名</th>
+              <th>放置方向</th>
+              <th style="width:120px">单方向排列</th>
+              <th style="width:80px">装箱数</th>
+              <th style="width:100px">体积(CBM)</th>
+              <th style="width:100px">重量(kg)</th>
+            </tr>
+          </thead>
+          <tbody id="ct-detail-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: PRODUCT LIBRARY ===================== -->
+<div class="page" id="page-library">
+  <div class="page-header">
+    <div>
+      <div class="page-title">产品库</div>
+      <div class="page-subtitle">Product Library · 管理常用产品，各单据可一键导入</div>
+    </div>
+    <div class="no-print">
+      <button class="btn btn-primary btn-sm" onclick="addLibProduct()">+ 添加产品</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      <div class="data-table-wrap" style="border:none">
+        <table class="data-table" id="lib-table">
+          <thead>
+            <tr>
+              <th style="width:30px">#</th>
+              <th>品名 / Description</th>
+              <th style="width:120px">规格 / Spec</th>
+              <th style="width:80px">单位</th>
+              <th style="width:100px">单价</th>
+              <th style="width:80px">净重(kg)</th>
+              <th style="width:80px">毛重(kg)</th>
+              <th style="width:120px">箱规(cm)</th>
+              <th style="width:80px" class="no-print">操作</th>
+            </tr>
+          </thead>
+          <tbody id="lib-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: SETTINGS ===================== -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <div>
+      <div class="page-title">公司信息</div>
+      <div class="page-subtitle">Company Profile · 卖方默认信息，自动填充到各单据</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="dot"></span>卖方/公司信息</div></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">公司名称 (英文) <span class="req">*</span></label><input class="form-input" id="set-company-en" placeholder="ABC Manufacturing Co., Ltd."></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">公司名称 (中文)</label><input class="form-input" id="set-company-cn" placeholder="XX制造有限公司"></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">公司地址</label><textarea class="form-textarea" id="set-address" placeholder="No. 88 Industrial Road, Shanghai, China"></textarea></div>
+        <div class="form-group"><label class="form-label">电话</label><input class="form-input mono" id="set-tel" placeholder="+86 21 12345678"></div>
+        <div class="form-group"><label class="form-label">传真</label><input class="form-input mono" id="set-fax" placeholder="+86 21 87654321"></div>
+        <div class="form-group"><label class="form-label">邮箱</label><input class="form-input mono" id="set-email" placeholder="export@abcmanuf.com"></div>
+        <div class="form-group"><label class="form-label">网址</label><input class="form-input mono" id="set-website" placeholder="www.abcmanuf.com"></div>
+        <div class="form-group"><label class="form-label">税号/VAT</label><input class="form-input mono" id="set-vat" placeholder="VAT No."></div>
+        <div class="form-group"><label class="form-label">统一社会信用代码</label><input class="form-input mono" id="set-uscc" placeholder="USCC"></div>
+      </div>
+      <div class="form-group" style="margin-top:16px">
+        <label class="form-label">银行信息 / Bank Details</label>
+        <textarea class="form-textarea" id="set-bank" rows="5" placeholder="Bank Name:&#10;Account Name:&#10;Account No.:&#10;SWIFT Code:&#10;Bank Address:"></textarea>
+      </div>
+      <div style="margin-top:18px;display:flex;gap:10px">
+        <button class="btn btn-gold" onclick="saveSettings()">💾 保存公司信息</button>
+        <button class="btn btn-outline" onclick="loadSettings()">↻ 重新加载</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="dot"></span>数据管理</div></div>
+    <div class="card-body">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="exportData()">📥 导出全部数据</button>
+        <button class="btn btn-outline" onclick="document.getElementById('import-file').click()">📤 导入数据</button>
+        <input type="file" id="import-file" style="display:none" accept=".json" onchange="importData(event)">
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ 清空全部数据</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- end content-area -->
+</div><!-- end main -->
+
+<script>
+// ==================== GLOBAL DATA ====================
+const App = {
+  data: {
+    company: {},
+    products: [],
+    proforma: { items: [] },
+    commercial: { items: [] },
+    packing: { items: [] },
+    marks: {},
+    spec: { params: [] },
+    weight: { items: [] },
+    container: { cargo: [] }
+  },
+  currentPage: 'proforma'
+};
+
+// Container specs (internal dimensions in mm)
+const CONTAINERS = {
+  '20gp':  { name: "20'GP",  L: 5898, W: 2352, H: 2393, payload: 28000, volume: 33.2 },
+  '40gp':  { name: "40'GP",  L: 12032, W: 2352, H: 2393, payload: 28000, volume: 67.7 },
+  '40hq':  { name: "40'HQ",  L: 12032, W: 2352, H: 2698, payload: 28000, volume: 76.4 },
+  '45hq':  { name: "45'HQ",  L: 13556, W: 2352, H: 2698, payload: 27500, volume: 85.7 },
+  '20rf':  { name: "20'RF",  L: 5444, W: 2284, H: 2240, payload: 27500, volume: 27.8 },
+  '40rf':  { name: "40'RF",  L: 11583, W: 2284, H: 2240, payload: 27500, volume: 59.2 }
+};
+
+// ==================== INIT ====================
+function init() {
+  loadData();
+  loadSettings();
+  setupNavigation();
+  initAllTables();
+  updateContainerInfo();
+  // Auto-set today's date
+  const today = new Date().toISOString().split('T')[0];
+  ['pi-date','ci-date','pl-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.value) el.value = today;
+  });
+  // Generate default invoice numbers
+  if (!document.getElementById('pi-no').value) document.getElementById('pi-no').value = 'PI-' + today.replace(/-/g,'') + '-001';
+  if (!document.getElementById('ci-no').value) document.getElementById('ci-no').value = 'CI-' + today.replace(/-/g,'') + '-001';
+  if (!document.getElementById('pl-no').value) document.getElementById('pl-no').value = 'PL-' + today.replace(/-/g,'') + '-001';
+  // Add initial rows
+  if (App.data.proforma.items.length === 0) addRow('proforma');
+  if (App.data.commercial.items.length === 0) addRow('commercial');
+  if (App.data.packing.items.length === 0) addRow('packing');
+  if (App.data.spec.params.length === 0) { addSpecRow(); addSpecRow(); addSpecRow(); }
+  if (App.data.weight.items.length === 0) addWeightRow();
+  if (App.data.container.cargo.length === 0) addCargoRow();
+  // Render library
+  renderLibrary();
+  // Auto-fill company info into documents
+  autofillCompany();
+  // Auto-save on input change
+  document.addEventListener('input', () => debouncedSave());
+}
+
+// ==================== NAVIGATION ====================
+function setupNavigation() {
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const page = item.dataset.page;
+      if (!page) return;
+      switchPage(page);
+    });
+  });
+}
+
+const PAGE_TITLES = {
+  proforma:   ['形式发票', 'Proforma Invoice'],
+  commercial: ['商业发票', 'Commercial Invoice'],
+  packing:    ['装箱单', 'Packing List'],
+  marks:      ['唛头设计', 'Shipping Marks'],
+  spec:       ['产品规格书', 'Product Specification'],
+  weight:     ['重量计算器', 'Weight Calculator'],
+  container:  ['装箱计算', 'Container Loading Calculator'],
+  library:    ['产品库', 'Product Library'],
+  settings:   ['公司信息', 'Company Settings']
+};
+
+function switchPage(page) {
+  App.currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+
+  const [title, sub] = PAGE_TITLES[page] || ['', ''];
+  document.getElementById('topbarTitle').innerHTML = `${title} <span class="breadcrumb">/ ${sub}</span>`;
+
+  const printBtn = document.getElementById('printBtn');
+  printBtn.style.display = ['proforma','commercial','packing','marks','spec'].includes(page) ? '' : 'none';
+
+  // Close preview when switching
+  ['proforma','commercial','packing','marks','spec'].forEach(p => {
+    const pv = document.getElementById(p + '-preview');
+    const ed = document.getElementById(p + '-edit');
+    if (pv && pv.style.display !== 'none' && p !== page) {
+      pv.style.display = 'none';
+      if (ed) ed.style.display = '';
+    }
+  });
+
+  document.getElementById('contentArea').scrollTop = 0;
+}
+
+// ==================== DATA PERSISTENCE ====================
+let saveTimer;
+function debouncedSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveCurrentPage, 800);
+}
+
+function saveCurrentPage() {
+  const page = App.currentPage;
+  collectPageData(page);
+  localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+}
+
+function collectPageData(page) {
+  switch(page) {
+    case 'proforma':
+      App.data.proforma = {
+        no: v('pi-no'), date: v('pi-date'), valid: v('pi-valid'), terms: v('pi-terms'),
+        from: v('pi-from'), to: v('pi-to'), payment: v('pi-payment'), delivery: v('pi-delivery'),
+        currency: v('pi-currency'),
+        buyerName: v('pi-buyer-name'), buyerContact: v('pi-buyer-contact'),
+        buyerAddr: v('pi-buyer-addr'), buyerTel: v('pi-buyer-tel'), buyerEmail: v('pi-buyer-email'),
+        remarks: v('pi-remarks'), bank: v('pi-bank'),
+        items: collectTableRows('pi-tbody', ['desc','spec','qty','unit','price'])
+      };
+      break;
+    case 'commercial':
+      App.data.commercial = {
+        no: v('ci-no'), date: v('ci-date'), contract: v('ci-contract'), lc: v('ci-lc'),
+        terms: v('ci-terms'), from: v('ci-from'), to: v('ci-to'), currency: v('ci-currency'),
+        origin: v('ci-origin'), transport: v('ci-transport'),
+        buyerName: v('ci-buyer-name'), buyerAddr: v('ci-buyer-addr'), buyerVat: v('ci-buyer-vat'),
+        marks: v('ci-marks'), packing: v('ci-packing'), declaration: v('ci-declaration'), remarks: v('ci-remarks'),
+        items: collectTableRows('ci-tbody', ['desc','hs','qty','unit','price'])
+      };
+      break;
+    case 'packing':
+      App.data.packing = {
+        no: v('pl-no'), date: v('pl-date'), invNo: v('pl-inv-no'), terms: v('pl-terms'),
+        from: v('pl-from'), to: v('pl-to'), buyer: v('pl-buyer'), marks: v('pl-marks'),
+        items: collectTableRows('pl-tbody', ['cartonNo','desc','qty','unit','nw','gw','l','w','h'])
+      };
+      break;
+    case 'marks':
+      App.data.marks = {
+        consignee: v('mk-consignee'), port: v('mk-port'), cartonNo: v('mk-carton-no'),
+        po: v('mk-po'), origin: v('mk-origin'), qty: v('mk-qty'),
+        item: v('mk-item'), spec: v('mk-spec'), nw: v('mk-nw'), gw: v('mk-gw'),
+        meas: v('mk-meas'), color: v('mk-color'),
+        fragile: document.getElementById('mk-fragile-toggle').classList.contains('on'),
+        up: document.getElementById('mk-up-toggle').classList.contains('on'),
+        wet: document.getElementById('mk-wet-toggle').classList.contains('on'),
+        stack: document.getElementById('mk-stack-toggle').classList.contains('on')
+      };
+      break;
+    case 'spec':
+      App.data.spec = {
+        name: v('sp-name'), model: v('sp-model'), brand: v('sp-brand'), hs: v('sp-hs'),
+        origin: v('sp-origin'), img: v('sp-img'), desc: v('sp-desc'),
+        pkgType: v('sp-pkg-type'), pkgQty: v('sp-pkg-qty'), nwUnit: v('sp-nw-unit'),
+        nwCarton: v('sp-nw-carton'), gwCarton: v('sp-gw-carton'), cartonSize: v('sp-carton-size'),
+        quality: v('sp-quality'), shelf: v('sp-shelf'), storage: v('sp-storage'), moq: v('sp-moq'),
+        params: collectTableRows('sp-tbody', ['param','value','unit'])
+      };
+      break;
+    case 'weight':
+      App.data.weight = {
+        unit: v('wt-unit'),
+        items: collectTableRows('wt-tbody', ['desc','qty','unitWeight'])
+      };
+      break;
+    case 'container':
+      App.data.container = {
+        type: v('ct-type'),
+        cargo: collectTableRows('ct-tbody', ['name','l','w','h','qty','weight'])
+      };
+      break;
+    case 'library':
+      App.data.products = collectTableRows('lib-tbody', ['name','spec','unit','price','nw','gw','l','w','h']);
+      break;
+  }
+}
+
+function v(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+function collectTableRows(tbodyId, fields) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return [];
+  const rows = [];
+  tbody.querySelectorAll('tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input, select, textarea');
+    if (inputs.length === 0) return;
+    const row = {};
+    fields.forEach((f, i) => {
+      row[f] = inputs[i] ? inputs[i].value : '';
+    });
+    rows.push(row);
+  });
+  return rows;
+}
+
+function loadData() {
+  const saved = localStorage.getItem('tradepro_data');
+  if (saved) {
+    try {
+      const d = JSON.parse(saved);
+      Object.assign(App.data, d);
+    } catch(e) { console.warn('Data parse error', e); }
+  }
+  // Restore data to forms
+  restorePageData();
+}
+
+function restorePageData() {
+  // Proforma
+  const pi = App.data.proforma || {};
+  setVal('pi-no', pi.no); setVal('pi-date', pi.date); setVal('pi-valid', pi.valid);
+  setVal('pi-terms', pi.terms); setVal('pi-from', pi.from); setVal('pi-to', pi.to);
+  setVal('pi-payment', pi.payment); setVal('pi-delivery', pi.delivery); setVal('pi-currency', pi.currency);
+  setVal('pi-buyer-name', pi.buyerName); setVal('pi-buyer-contact', pi.buyerContact);
+  setVal('pi-buyer-addr', pi.buyerAddr); setVal('pi-buyer-tel', pi.buyerTel); setVal('pi-buyer-email', pi.buyerEmail);
+  setVal('pi-remarks', pi.remarks); setVal('pi-bank', pi.bank);
+
+  // Commercial
+  const ci = App.data.commercial || {};
+  setVal('ci-no', ci.no); setVal('ci-date', ci.date); setVal('ci-contract', ci.contract);
+  setVal('ci-lc', ci.lc); setVal('ci-terms', ci.terms); setVal('ci-from', ci.from); setVal('ci-to', ci.to);
+  setVal('ci-currency', ci.currency); setVal('ci-origin', ci.origin); setVal('ci-transport', ci.transport);
+  setVal('ci-buyer-name', ci.buyerName); setVal('ci-buyer-addr', ci.buyerAddr); setVal('ci-buyer-vat', ci.buyerVat);
+  setVal('ci-marks', ci.marks); setVal('ci-packing', ci.packing); setVal('ci-declaration', ci.declaration);
+  setVal('ci-remarks', ci.remarks);
+
+  // Packing
+  const pl = App.data.packing || {};
+  setVal('pl-no', pl.no); setVal('pl-date', pl.date); setVal('pl-inv-no', pl.invNo);
+  setVal('pl-terms', pl.terms); setVal('pl-from', pl.from); setVal('pl-to', pl.to);
+  setVal('pl-buyer', pl.buyer); setVal('pl-marks', pl.marks);
+
+  // Marks
+  const mk = App.data.marks || {};
+  setVal('mk-consignee', mk.consignee); setVal('mk-port', mk.port); setVal('mk-carton-no', mk.cartonNo);
+  setVal('mk-po', mk.po); setVal('mk-origin', mk.origin); setVal('mk-qty', mk.qty);
+  setVal('mk-item', mk.item); setVal('mk-spec', mk.spec); setVal('mk-nw', mk.nw); setVal('mk-gw', mk.gw);
+  setVal('mk-meas', mk.meas); setVal('mk-color', mk.color);
+  setToggle('mk-fragile-toggle', mk.fragile !== false);
+  setToggle('mk-up-toggle', mk.up !== false);
+  setToggle('mk-wet-toggle', mk.wet === true);
+  setToggle('mk-stack-toggle', mk.stack === true);
+
+  // Spec
+  const sp = App.data.spec || {};
+  setVal('sp-name', sp.name); setVal('sp-model', sp.model); setVal('sp-brand', sp.brand);
+  setVal('sp-hs', sp.hs); setVal('sp-origin', sp.origin); setVal('sp-img', sp.img); setVal('sp-desc', sp.desc);
+  setVal('sp-pkg-type', sp.pkgType); setVal('sp-pkg-qty', sp.pkgQty); setVal('sp-nw-unit', sp.nwUnit);
+  setVal('sp-nw-carton', sp.nwCarton); setVal('sp-gw-carton', sp.gwCarton); setVal('sp-carton-size', sp.cartonSize);
+  setVal('sp-quality', sp.quality); setVal('sp-shelf', sp.shelf); setVal('sp-storage', sp.storage); setVal('sp-moq', sp.moq);
+
+  // Weight
+  setVal('wt-unit', (App.data.weight && App.data.weight.unit) || 'kg');
+
+  // Container
+  setVal('ct-type', (App.data.container && App.data.container.type) || '40hq');
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+function setToggle(id, on) {
+  const el = document.getElementById(id);
+  if (el) { if (on) el.classList.add('on'); else el.classList.remove('on'); }
+}
+
+// ==================== TABLE ROWS ====================
+function initAllTables() {
+  const pi = App.data.proforma || {};
+  if (pi.items && pi.items.length) {
+    pi.items.forEach(r => addRow('proforma', r));
+  }
+  const ci = App.data.commercial || {};
+  if (ci.items && ci.items.length) {
+    ci.items.forEach(r => addRow('commercial', r));
+  }
+  const pl = App.data.packing || {};
+  if (pl.items && pl.items.length) {
+    pl.items.forEach(r => addRow('packing', r));
+  }
+  const sp = App.data.spec || {};
+  if (sp.params && sp.params.length) {
+    sp.params.forEach(r => addSpecRow(r));
+  }
+  const wt = App.data.weight || {};
+  if (wt.items && wt.items.length) {
+    wt.items.forEach(r => addWeightRow(r));
+  }
+  const ct = App.data.container || {};
+  if (ct.cargo && ct.cargo.length) {
+    ct.cargo.forEach(r => addCargoRow(r));
+  }
+  // Recalculate
+  recalcAll();
+}
+
+const DOC_CONFIG = {
+  proforma: {
+    tbody: 'pi-tbody',
+    fields: [
+      { name:'desc', placeholder:'Product name', style:'' },
+      { name:'spec', placeholder:'Spec', style:'width:100%' },
+      { name:'qty', placeholder:'0', cls:'mono', style:'text-align:right' },
+      { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
+      { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
+    ],
+    totalFn: 'recalcProforma'
+  },
+  commercial: {
+    tbody: 'ci-tbody',
+    fields: [
+      { name:'desc', placeholder:'Product name', style:'' },
+      { name:'hs', placeholder:'HS Code', cls:'mono', style:'width:100%' },
+      { name:'qty', placeholder:'0', cls:'mono', style:'text-align:right' },
+      { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
+      { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
+    ],
+    totalFn: 'recalcCommercial'
+  },
+  packing: {
+    tbody: 'pl-tbody',
+    fields: [
+      { name:'cartonNo', placeholder:'C-1', cls:'mono', style:'width:100%' },
+      { name:'desc', placeholder:'Product name', style:'' },
+      { name:'qty', placeholder:'0', cls:'mono', style:'text-align:right' },
+      { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
+      { name:'nw', placeholder:'0', cls:'mono', style:'text-align:right' },
+      { name:'gw', placeholder:'0', cls:'mono', style:'text-align:right' },
+      { name:'l', placeholder:'0', cls:'mono', style:'text-align:right' },
+      { name:'w', placeholder:'0', cls:'mono', style:'text-align:right' },
+      { name:'h', placeholder:'0', cls:'mono', style:'text-align:right' }
+    ],
+    totalFn: 'recalcPacking'
+  }
+};
+
+function addRow(docType, data) {
+  const cfg = DOC_CONFIG[docType];
+  if (!cfg) return;
+  const tbody = document.getElementById(cfg.tbody);
+  const tr = document.createElement('tr');
+  const idx = tbody.children.length + 1;
+
+  tr.innerHTML = `<td class="num-col">${idx}</td>`;
+  cfg.fields.forEach(f => {
+    let input;
+    if (f.type === 'select') {
+      const opts = f.options.map(o => `<option value="${o}" ${data && data[f.name]===o?'selected':''}>${o}</option>`).join('');
+      input = `<select style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''}><option value="">${f.placeholder}</option>${opts}</select>`;
+    } else {
+      input = `<input type="text" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}">`;
+    }
+    tr.innerHTML += `<td class="td-input">${input}</td>`;
+  });
+  tr.innerHTML += `<td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();${cfg.totalFn}();debouncedSave()" title="删除">✕</button></td>`;
+
+  // Attach recalc listeners
+  tr.querySelectorAll('input,select').forEach(inp => {
+    inp.addEventListener('input', () => { window[cfg.totalFn](); debouncedSave(); });
+  });
+
+  tbody.appendChild(tr);
+  window[cfg.totalFn]();
+}
+
+// ==================== RECALC ====================
+function recalcProforma() {
+  const rows = document.querySelectorAll('#pi-tbody tr');
+  let total = 0;
+  rows.forEach(r => {
+    const inputs = r.querySelectorAll('input');
+    const qty = parseFloat(inputs[2]?.value) || 0;
+    const price = parseFloat(inputs[4]?.value) || 0;
+    const amt = qty * price;
+    total += amt;
+    // Update amount cell if exists
+    const amtCell = r.querySelector('.amt-cell');
+    if (amtCell) amtCell.textContent = fmtNum(amt);
+  });
+  const cur = document.getElementById('pi-currency')?.value || 'USD';
+  document.getElementById('pi-total').textContent = cur + ' ' + fmtNum(total);
+}
+
+function recalcCommercial() {
+  const rows = document.querySelectorAll('#ci-tbody tr');
+  let total = 0;
+  rows.forEach(r => {
+    const inputs = r.querySelectorAll('input');
+    const qty = parseFloat(inputs[2]?.value) || 0;
+    const price = parseFloat(inputs[4]?.value) || 0;
+    total += qty * price;
+  });
+  const cur = document.getElementById('ci-currency')?.value || 'USD';
+  document.getElementById('ci-total').textContent = cur + ' ' + fmtNum(total);
+}
+
+function recalcPacking() {
+  const rows = document.querySelectorAll('#pl-tbody tr');
+  let totalQty = 0, totalNw = 0, totalGw = 0, totalCbm = 0;
+  rows.forEach(r => {
+    const inputs = r.querySelectorAll('input,select');
+    const qty = parseFloat(inputs[2]?.value) || 0;
+    const nw = parseFloat(inputs[4]?.value) || 0;
+    const gw = parseFloat(inputs[5]?.value) || 0;
+    const l = parseFloat(inputs[6]?.value) || 0;
+    const w = parseFloat(inputs[7]?.value) || 0;
+    const h = parseFloat(inputs[8]?.value) || 0;
+    const cbm = (l * w * h) / 1000000;
+    totalQty += qty;
+    totalNw += nw;
+    totalGw += gw;
+    totalCbm += cbm;
+  });
+  const cartonCount = rows.length;
+  document.getElementById('pl-total-qty').textContent = fmtNum(totalQty, 0);
+  document.getElementById('pl-total-nw').textContent = fmtNum(totalNw, 2);
+  document.getElementById('pl-total-gw').textContent = fmtNum(totalGw, 2);
+  document.getElementById('pl-total-cbm').textContent = fmtNum(totalCbm, 3);
+  document.getElementById('pl-sum-cartons').innerHTML = cartonCount + '<span class="summary-unit">CTNS</span>';
+  document.getElementById('pl-sum-qty').innerHTML = fmtNum(totalQty, 0) + '<span class="summary-unit">PCS</span>';
+  document.getElementById('pl-sum-nw').innerHTML = fmtNum(totalNw, 2) + '<span class="summary-unit">KG</span>';
+  document.getElementById('pl-sum-gw').innerHTML = fmtNum(totalGw, 2) + '<span class="summary-unit">KG</span>';
+  document.getElementById('pl-sum-cbm').innerHTML = fmtNum(totalCbm, 3) + '<span class="summary-unit">CBM</span>';
+}
+
+function recalcAll() {
+  recalcProforma();
+  recalcCommercial();
+  recalcPacking();
+  recalcWeight();
+}
+
+function fmtNum(n, decimals = 2) {
+  if (isNaN(n)) n = 0;
+  return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+// ==================== WEIGHT CALCULATOR ====================
+function addWeightRow(data) {
+  const tbody = document.getElementById('wt-tbody');
+  const tr = document.createElement('tr');
+  const idx = tbody.children.length + 1;
+  tr.innerHTML = `
+    <td class="num-col">${idx}</td>
+    <td class="td-input"><input type="text" placeholder="Product name" value="${data?(data.desc||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.qty||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0.00" class="mono" style="text-align:right" value="${data?(data.unitWeight||''):''}"></td>
+    <td class="num" style="font-family:var(--font-mono);font-weight:500">0.00</td>
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();recalcWeight();debouncedSave()">✕</button></td>
+  `;
+  tr.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => { recalcWeight(); debouncedSave(); });
+  });
+  tbody.appendChild(tr);
+  recalcWeight();
+}
+
+function recalcWeight() {
+  const rows = document.querySelectorAll('#wt-tbody tr');
+  const unit = document.getElementById('wt-unit').value;
+  let totalQty = 0, totalWeight = 0;
+  let types = 0;
+  rows.forEach(r => {
+    const inputs = r.querySelectorAll('input');
+    const qty = parseFloat(inputs[1]?.value) || 0;
+    const uw = parseFloat(inputs[2]?.value) || 0;
+    const subtotal = qty * uw;
+    totalQty += qty;
+    totalWeight += subtotal;
+    if (inputs[0]?.value || qty > 0) types++;
+    r.querySelector('td:nth-child(5)').textContent = fmtNum(subtotal);
+  });
+  document.getElementById('wt-total-qty').textContent = fmtNum(totalQty, 0);
+  document.getElementById('wt-total-weight').textContent = fmtNum(totalWeight);
+
+  const lbWeight = unit === 'kg' ? totalWeight * 2.20462 : totalWeight;
+  const kgWeight = unit === 'lb' ? totalWeight * 0.453592 : totalWeight;
+  const tonWeight = (unit === 'kg' ? totalWeight : kgWeight) / 1000;
+
+  document.getElementById('wt-sum-types').innerHTML = types + '<span class="summary-unit">种</span>';
+  document.getElementById('wt-sum-qty').innerHTML = fmtNum(totalQty, 0) + '<span class="summary-unit">PCS</span>';
+  document.getElementById('wt-sum-weight').innerHTML = fmtNum(totalWeight) + '<span class="summary-unit">' + unit.toUpperCase() + '</span>';
+  document.getElementById('wt-sum-weight-unit').textContent = unit.toUpperCase();
+  document.getElementById('wt-sum-lb').innerHTML = fmtNum(lbWeight) + '<span class="summary-unit">LB</span>';
+  document.getElementById('wt-sum-ton').innerHTML = fmtNum(tonWeight, 3) + '<span class="summary-unit">TON</span>';
+}
+
+// ==================== CONTAINER CALCULATOR ====================
+function updateContainerInfo() {
+  const type = document.getElementById('ct-type').value;
+  const c = CONTAINERS[type];
+  document.getElementById('ct-dims').value = `${c.L} × ${c.W} × ${c.H}`;
+  document.getElementById('ct-payload').value = c.payload.toLocaleString();
+  document.getElementById('ct-volume').value = c.volume.toFixed(1);
+  // Recalculate if there's existing data
+  if (document.getElementById('ct-result').style.display !== 'none') {
+    calculateContainer();
+  }
+}
+
+function addCargoRow(data) {
+  const tbody = document.getElementById('ct-tbody');
+  const tr = document.createElement('tr');
+  const idx = tbody.children.length + 1;
+  tr.innerHTML = `
+    <td class="num-col">${idx}</td>
+    <td class="td-input"><input type="text" placeholder="Product name" value="${data?(data.name||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.l||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.w||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.h||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.qty||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.weight||''):''}"></td>
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();debouncedSave()">✕</button></td>
+  `;
+  tr.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', debouncedSave);
+  });
+  tbody.appendChild(tr);
+}
+
+function calculateContainer() {
+  const type = document.getElementById('ct-type').value;
+  const c = CONTAINERS[type];
+  const allowRotate = document.getElementById('ct-rotate-toggle').classList.contains('on');
+  const cargoRows = document.querySelectorAll('#ct-tbody tr');
+
+  const cargos = [];
+  cargoRows.forEach(r => {
+    const inputs = r.querySelectorAll('input');
+    const name = inputs[0]?.value || `Item ${r.sectionRowIndex + 1}`;
+    const l = parseFloat(inputs[1]?.value) || 0;
+    const w = parseFloat(inputs[2]?.value) || 0;
+    const h = parseFloat(inputs[3]?.value) || 0;
+    const qty = parseInt(inputs[4]?.value) || 0;
+    const wt = parseFloat(inputs[5]?.value) || 0;
+    if (l > 0 && w > 0 && h > 0 && qty > 0) {
+      cargos.push({ name, l, w, h, qty, weight: wt, loaded: 0, orientation: null, arrangement: null });
+    }
+  });
+
+  if (cargos.length === 0) {
+    alert('请先输入有效的货物信息');
+    return;
+  }
+
+  // 6 possible orientations
+  const orientations = allowRotate ? [
+    { l:'l', w:'w', h:'h', label:'正常放置 (L×W×H)' },
+    { l:'w', w:'l', h:'h', label:'旋转90° (W×L×H)' },
+    { l:'l', w:'h', h:'w', label:'侧放 (L×H×W)' },
+    { l:'h', w:'l', h:'w', label:'侧放旋转 (H×L×W)' },
+    { l:'w', w:'h', h:'l', label:'倒放 (W×H×L)' },
+    { l:'h', w:'w', h:'l', label:'倒放旋转 (H×W×L)' }
+  ] : [
+    { l:'l', w:'w', h:'h', label:'正常放置 (L×W×H)' }
+  ];
+
+  let totalLoaded = 0;
+  let totalVolume = 0;
+  let totalWeight = 0;
+  let warnings = [];
+  const details = [];
+
+  cargos.forEach((cargo, idx) => {
+    let bestFit = { count: 0, orientation: null, arrangement: null };
+
+    orientations.forEach(ori => {
+      const bl = cargo[ori.l];
+      const bw = cargo[ori.w];
+      const bh = cargo[ori.h];
+
+      if (bl <= c.L && bw <= c.W && bh <= c.H) {
+        const rows = Math.floor(c.L / bl);
+        const cols = Math.floor(c.W / bw);
+        const layers = Math.floor(c.H / bh);
+        const count = Math.min(cargo.qty, rows * cols * layers);
+        if (count > bestFit.count) {
+          bestFit = { count, orientation: ori, arrangement: `${rows}×${cols}×${layers}` };
+        }
+      }
+    });
+
+    if (bestFit.count === 0) {
+      warnings.push(`<div style="color:var(--danger);font-size:12px;padding:6px 10px;background:#fdf0ee;border-radius:4px;margin-top:6px">⚠ ${cargo.name}: 单件尺寸超过集装箱，无法装入</div>`);
+    } else if (bestFit.count < cargo.qty) {
+      warnings.push(`<div style="color:var(--warning);font-size:12px;padding:6px 10px;background:#fef5ec;border-radius:4px;margin-top:6px">⚠ ${cargo.name}: 需求${cargo.qty}件，仅能装入${bestFit.count}件</div>`);
+    }
+
+    cargo.loaded = bestFit.count;
+    cargo.orientation = bestFit.orientation;
+    cargo.arrangement = bestFit.arrangement;
+
+    const vol = bestFit.count * cargo.l * cargo.w * cargo.h / 1e9; // mm³ to CBM
+    const wt = bestFit.count * cargo.weight;
+    totalLoaded += bestFit.count;
+    totalVolume += vol;
+    totalWeight += wt;
+
+    details.push({
+      idx: idx + 1,
+      name: cargo.name,
+      orientation: bestFit.orientation ? bestFit.orientation.label : 'N/A',
+      arrangement: bestFit.arrangement || '-',
+      count: bestFit.count,
+      vol: vol,
+      weight: wt
+    });
+  });
+
+  // Calculate utilization
+  const utilization = (totalVolume / c.volume * 100);
+  const remaining = c.volume - totalVolume;
+
+  // Weight warning
+  if (totalWeight > c.payload) {
+    warnings.push(`<div style="color:var(--danger);font-size:12px;padding:6px 10px;background:#fdf0ee;border-radius:4px;margin-top:6px">⚠ 总重量 ${fmtNum(totalWeight)}kg 超过集装箱最大载重 ${fmtNum(c.payload)}kg</div>`);
+  }
+
+  // Display results
+  document.getElementById('ct-result-empty').style.display = 'none';
+  document.getElementById('ct-result').style.display = '';
+  document.getElementById('ct-utilization').innerHTML = fmtNum(utilization, 1) + '<span class="summary-unit">%</span>';
+  document.getElementById('ct-loaded-qty').innerHTML = totalLoaded + '<span class="summary-unit">PCS</span>';
+  document.getElementById('ct-loaded-cbm').innerHTML = fmtNum(totalVolume, 2) + '<span class="summary-unit">CBM</span>';
+  document.getElementById('ct-loaded-weight').innerHTML = fmtNum(totalWeight, 1) + '<span class="summary-unit">KG</span>';
+  document.getElementById('ct-remaining').innerHTML = fmtNum(remaining, 2) + '<span class="summary-unit">CBM</span>';
+  document.getElementById('ct-warnings').innerHTML = warnings.join('');
+
+  // Detail table
+  const detailTbody = document.getElementById('ct-detail-tbody');
+  detailTbody.innerHTML = '';
+  details.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="num-col">${d.idx}</td>
+      <td>${d.name}</td>
+      <td style="font-size:12px">${d.orientation}</td>
+      <td class="num" style="font-family:var(--font-mono)">${d.arrangement}</td>
+      <td class="num" style="font-weight:600">${d.count}</td>
+      <td class="num">${fmtNum(d.vol, 3)}</td>
+      <td class="num">${fmtNum(d.weight, 1)}</td>
+    `;
+    detailTbody.appendChild(tr);
+  });
+  document.getElementById('ct-detail-card').style.display = '';
+}
+
+function clearContainerCalc() {
+  document.getElementById('ct-tbody').innerHTML = '';
+  addCargoRow();
+  document.getElementById('ct-result-empty').style.display = '';
+  document.getElementById('ct-result').style.display = 'none';
+  document.getElementById('ct-detail-card').style.display = 'none';
+}
+
+// ==================== SPEC ROWS ====================
+function addSpecRow(data) {
+  const tbody = document.getElementById('sp-tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="td-input"><input type="text" placeholder="参数名称" value="${data?(data.param||''):''}"></td>
+    <td class="td-input"><input type="text" placeholder="参数值" value="${data?(data.value||''):''}"></td>
+    <td class="td-input"><input type="text" placeholder="单位" value="${data?(data.unit||''):''}"></td>
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();debouncedSave()">✕</button></td>
+  `;
+  tr.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', debouncedSave);
+  });
+  tbody.appendChild(tr);
+}
+
+// ==================== PREVIEW TOGGLE ====================
+function togglePreview(docType) {
+  const editEl = document.getElementById(docType + '-edit');
+  const prevEl = document.getElementById(docType + '-preview');
+  if (prevEl.style.display === 'none') {
+    collectPageData(App.currentPage);
+    renderPreview(docType);
+    editEl.style.display = 'none';
+    prevEl.style.display = '';
+  } else {
+    editEl.style.display = '';
+    prevEl.style.display = 'none';
+  }
+}
+
+function renderPreview(docType) {
+  const company = App.data.company || {};
+  const companyName = company.en || company.cn || 'Your Company Name';
+  const companyAddr = company.address || '';
+  const companyTel = company.tel || '';
+  const companyEmail = company.email || '';
+  const companyFax = company.fax || '';
+
+  const companyBlock = `<div class="doc-company">${companyName}</div>
+    <div class="doc-company-sub">${companyAddr}${companyTel?'<br>Tel: '+companyTel:''}${companyFax?'<br>Fax: '+companyFax:''}${companyEmail?'<br>Email: '+companyEmail:''}</div>`;
+
+  switch(docType) {
+    case 'proforma': renderProformaPreview(companyBlock, companyName); break;
+    case 'commercial': renderCommercialPreview(companyBlock, companyName); break;
+    case 'packing': renderPackingPreview(companyBlock, companyName); break;
+    case 'marks': renderMarksPreview(); break;
+    case 'spec': renderSpecPreview(companyBlock, companyName); break;
+  }
+}
+
+function renderProformaPreview(companyBlock, companyName) {
+  const pi = App.data.proforma || {};
+  let itemsHtml = '';
+  let total = 0;
+  (pi.items || []).forEach((item, i) => {
+    const qty = parseFloat(item.qty) || 0;
+    const price = parseFloat(item.price) || 0;
+    const amt = qty * price;
+    total += amt;
+    itemsHtml += `<tr>
+      <td>${i+1}</td>
+      <td>${item.desc || ''}${item.spec ? '<br><span style="color:#888;font-size:10px">'+item.spec+'</span>' : ''}</td>
+      <td class="center">${item.spec || ''}</td>
+      <td class="num">${fmtNum(qty, 0)}</td>
+      <td class="center">${item.unit || ''}</td>
+      <td class="num">${fmtNum(price)}</td>
+      <td class="num">${fmtNum(amt)}</td>
+    </tr>`;
+  });
+
+  document.getElementById('proforma-preview-area').innerHTML = `
+    <div class="doc-paper">
+      <div class="doc-header">
+        <div>${companyBlock}</div>
+        <div class="doc-title-block">
+          <div class="doc-title">Proforma Invoice</div>
+          <div class="doc-meta">
+            <strong>No.:</strong> ${pi.no || ''}<br>
+            <strong>Date:</strong> ${pi.date || ''}<br>
+            <strong>Valid Until:</strong> ${pi.valid || ''}
+          </div>
+        </div>
+      </div>
+      <div class="doc-parties">
+        <div class="doc-party-block">
+          <div class="label">Seller / 卖方</div>
+          <div class="content"><strong>${companyName}</strong><br>${pi.buyerAddr ? '' : (App.data.company.address||'')}</div>
+        </div>
+        <div class="doc-party-block">
+          <div class="label">Buyer / 买方</div>
+          <div class="content"><strong>${pi.buyerName || ''}</strong>${pi.buyerContact?'<br>Attn: '+pi.buyerContact:''}<br>${pi.buyerAddr || ''}${pi.buyerTel?'<br>Tel: '+pi.buyerTel:''}${pi.buyerEmail?'<br>Email: '+pi.buyerEmail:''}</div>
+        </div>
+      </div>
+      <table class="doc-table">
+        <thead><tr>
+          <th style="width:25px">No.</th>
+          <th>Description</th>
+          <th>Spec</th>
+          <th class="num">Qty</th>
+          <th class="center">Unit</th>
+          <th class="num">Unit Price</th>
+          <th class="num">Amount</th>
+        </tr></thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot><tr>
+          <td colspan="6" style="text-align:right">Total Amount (${pi.currency || 'USD'}):</td>
+          <td class="num" style="font-size:13px">${fmtNum(total)}</td>
+        </tr></tfoot>
+      </table>
+      <div class="doc-footer">
+        <div class="doc-footer-block">
+          <div class="label">Terms & Conditions</div>
+          <div class="content">
+            Trade Terms: ${pi.terms || ''}<br>
+            Port of Loading: ${pi.from || ''}<br>
+            Port of Destination: ${pi.to || ''}<br>
+            Payment: ${pi.payment || ''}<br>
+            Delivery: ${pi.delivery || ''}
+          </div>
+        </div>
+        <div class="doc-footer-block">
+          <div class="label">Remarks</div>
+          <div class="content">${(pi.remarks||'').replace(/\n/g,'<br>')}</div>
+        </div>
+      </div>
+      ${pi.bank ? `<div style="margin-top:16px"><div class="doc-footer-block"><div class="label">Bank Details</div><div class="content">${(pi.bank||'').replace(/\n/g,'<br>')}</div></div></div>` : ''}
+      <div class="doc-signature">
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
+      </div>
+    </div>`;
+}
+
+function renderCommercialPreview(companyBlock, companyName) {
+  const ci = App.data.commercial || {};
+  let itemsHtml = '';
+  let total = 0;
+  (ci.items || []).forEach((item, i) => {
+    const qty = parseFloat(item.qty) || 0;
+    const price = parseFloat(item.price) || 0;
+    const amt = qty * price;
+    total += amt;
+    itemsHtml += `<tr>
+      <td>${i+1}</td>
+      <td>${item.desc || ''}</td>
+      <td>${item.hs || ''}</td>
+      <td class="num">${fmtNum(qty, 0)}</td>
+      <td class="center">${item.unit || ''}</td>
+      <td class="num">${fmtNum(price)}</td>
+      <td class="num">${fmtNum(amt)}</td>
+    </tr>`;
+  });
+  document.getElementById('commercial-preview-area').innerHTML = `
+    <div class="doc-paper">
+      <div class="doc-header">
+        <div>${companyBlock}</div>
+        <div class="doc-title-block">
+          <div class="doc-title">Commercial Invoice</div>
+          <div class="doc-meta">
+            <strong>No.:</strong> ${ci.no || ''}<br>
+            <strong>Date:</strong> ${ci.date || ''}<br>
+            ${ci.contract ? '<strong>Contract No.:</strong> '+ci.contract+'<br>' : ''}
+            ${ci.lc ? '<strong>L/C No.:</strong> '+ci.lc : ''}
+          </div>
+        </div>
+      </div>
+      <div class="doc-parties">
+        <div class="doc-party-block">
+          <div class="label">Shipper / Exporter</div>
+          <div class="content"><strong>${companyName}</strong><br>${App.data.company.address||''}</div>
+        </div>
+        <div class="doc-party-block">
+          <div class="label">Consignee / Buyer</div>
+          <div class="content"><strong>${ci.buyerName || ''}</strong><br>${ci.buyerAddr || ''}${ci.buyerVat?'<br>VAT/EORI: '+ci.buyerVat:''}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;font-size:11px">
+        <div><strong>Trade Terms:</strong> ${ci.terms || ''}</div>
+        <div><strong>From:</strong> ${ci.from || ''} <strong>To:</strong> ${ci.to || ''}</div>
+        <div><strong>Country of Origin:</strong> ${ci.origin || ''}</div>
+        <div><strong>Transport:</strong> ${ci.transport || ''}</div>
+        <div><strong>Marks:</strong> ${ci.marks || ''}</div>
+        <div><strong>Packing:</strong> ${ci.packing || ''}</div>
+      </div>
+      <table class="doc-table">
+        <thead><tr>
+          <th style="width:25px">No.</th>
+          <th>Description of Goods</th>
+          <th>HS Code</th>
+          <th class="num">Qty</th>
+          <th class="center">Unit</th>
+          <th class="num">Unit Price</th>
+          <th class="num">Amount</th>
+        </tr></thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot><tr>
+          <td colspan="6" style="text-align:right">Total (${ci.currency || 'USD'}):</td>
+          <td class="num" style="font-size:13px">${fmtNum(total)}</td>
+        </tr></tfoot>
+      </table>
+      ${ci.declaration ? `<div style="margin-top:16px;font-size:11px;font-style:italic;color:#555">${ci.declaration}</div>` : ''}
+      ${ci.remarks ? `<div style="margin-top:8px;font-size:11px"><strong>Remarks:</strong> ${ci.remarks.replace(/\n/g,'<br>')}</div>` : ''}
+      <div class="doc-signature">
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
+      </div>
+    </div>`;
+}
+
+function renderPackingPreview(companyBlock, companyName) {
+  const pl = App.data.packing || {};
+  let itemsHtml = '';
+  let totalQty = 0, totalNw = 0, totalGw = 0, totalCbm = 0;
+  (pl.items || []).forEach((item, i) => {
+    const qty = parseFloat(item.qty) || 0;
+    const nw = parseFloat(item.nw) || 0;
+    const gw = parseFloat(item.gw) || 0;
+    const l = parseFloat(item.l) || 0;
+    const w = parseFloat(item.w) || 0;
+    const h = parseFloat(item.h) || 0;
+    const cbm = (l * w * h) / 1000000;
+    totalQty += qty; totalNw += nw; totalGw += gw; totalCbm += cbm;
+    itemsHtml += `<tr>
+      <td>${i+1}</td>
+      <td>${item.cartonNo || ''}</td>
+      <td>${item.desc || ''}</td>
+      <td class="num">${fmtNum(qty, 0)}</td>
+      <td class="center">${item.unit || ''}</td>
+      <td class="num">${fmtNum(nw, 2)}</td>
+      <td class="num">${fmtNum(gw, 2)}</td>
+      <td class="num">${l || ''}×${w || ''}×${h || ''}</td>
+      <td class="num">${fmtNum(cbm, 3)}</td>
+    </tr>`;
+  });
+  document.getElementById('packing-preview-area').innerHTML = `
+    <div class="doc-paper">
+      <div class="doc-header">
+        <div>${companyBlock}</div>
+        <div class="doc-title-block">
+          <div class="doc-title">Packing List</div>
+          <div class="doc-meta">
+            <strong>No.:</strong> ${pl.no || ''}<br>
+            <strong>Date:</strong> ${pl.date || ''}<br>
+            ${pl.invNo ? '<strong>Invoice No.:</strong> '+pl.invNo : ''}
+          </div>
+        </div>
+      </div>
+      <div class="doc-parties">
+        <div class="doc-party-block">
+          <div class="label">Shipper</div>
+          <div class="content"><strong>${companyName}</strong><br>${App.data.company.address||''}</div>
+        </div>
+        <div class="doc-party-block">
+          <div class="label">Consignee</div>
+          <div class="content"><strong>${pl.buyer || ''}</strong></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;font-size:11px">
+        <div><strong>Trade Terms:</strong> ${pl.terms || ''}</div>
+        <div><strong>From:</strong> ${pl.from || ''} <strong>To:</strong> ${pl.to || ''}</div>
+        <div><strong>Marks:</strong> ${pl.marks || ''}</div>
+      </div>
+      <table class="doc-table">
+        <thead><tr>
+          <th style="width:25px">No.</th>
+          <th style="width:60px">Ctn No.</th>
+          <th>Description</th>
+          <th class="num">Qty</th>
+          <th class="center">Unit</th>
+          <th class="num">N.W.(kg)</th>
+          <th class="num">G.W.(kg)</th>
+          <th class="center">L×W×H(cm)</th>
+          <th class="num">CBM</th>
+        </tr></thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot><tr>
+          <td colspan="3" style="text-align:right">Total:</td>
+          <td class="num">${fmtNum(totalQty, 0)}</td>
+          <td></td>
+          <td class="num">${fmtNum(totalNw, 2)}</td>
+          <td class="num">${fmtNum(totalGw, 2)}</td>
+          <td></td>
+          <td class="num">${fmtNum(totalCbm, 3)}</td>
+        </tr></tfoot>
+      </table>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px">
+        <div style="text-align:center;border:1px solid #ddd;padding:10px;border-radius:4px"><div style="font-size:10px;color:#888">Total Cartons</div><div style="font-size:18px;font-weight:700;font-family:var(--font-mono)">${(pl.items||[]).length}</div></div>
+        <div style="text-align:center;border:1px solid #ddd;padding:10px;border-radius:4px"><div style="font-size:10px;color:#888">Total N.W.</div><div style="font-size:18px;font-weight:700;font-family:var(--font-mono)">${fmtNum(totalNw, 2)} kg</div></div>
+        <div style="text-align:center;border:1px solid #ddd;padding:10px;border-radius:4px"><div style="font-size:10px;color:#888">Total G.W.</div><div style="font-size:18px;font-weight:700;font-family:var(--font-mono)">${fmtNum(totalGw, 2)} kg</div></div>
+        <div style="text-align:center;border:1px solid var(--gold-light);background:#fdf8e8;padding:10px;border-radius:4px"><div style="font-size:10px;color:var(--gold-dim)">Total CBM</div><div style="font-size:18px;font-weight:700;font-family:var(--font-mono);color:var(--gold-dim)">${fmtNum(totalCbm, 3)}</div></div>
+      </div>
+      <div class="doc-signature">
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
+      </div>
+    </div>`;
+}
+
+function renderMarksPreview() {
+  const mk = App.data.marks || {};
+  let mainMarkContent = '';
+  if (mk.consignee) mainMarkContent += mk.consignee + '\n';
+  if (mk.port) mainMarkContent += mk.port + '\n';
+  if (mk.po) mainMarkContent += 'PO: ' + mk.po + '\n';
+  if (mk.cartonNo) mainMarkContent += 'No.: ' + mk.cartonNo + '\n';
+  if (mk.qty) mainMarkContent += 'QTY: ' + mk.qty + '\n';
+  if (mk.origin) mainMarkContent += mk.origin;
+
+  let sideMarkContent = '';
+  if (mk.item) sideMarkContent += 'ITEM: ' + mk.item + '\n';
+  if (mk.spec) sideMarkContent += 'SPEC: ' + mk.spec + '\n';
+  if (mk.nw) sideMarkContent += 'N.W.: ' + mk.nw + '\n';
+  if (mk.gw) sideMarkContent += 'G.W.: ' + mk.gw + '\n';
+  if (mk.meas) sideMarkContent += 'MEAS: ' + mk.meas + '\n';
+  if (mk.color) sideMarkContent += 'COLOR: ' + mk.color;
+
+  let handlingIcons = '';
+  if (mk.fragile !== false) handlingIcons += '<div style="display:inline-block;text-align:center;margin:0 8px"><div style="font-size:28px">🍷</div><div style="font-size:9px;margin-top:2px">FRAGILE</div></div>';
+  if (mk.up !== false) handlingIcons += '<div style="display:inline-block;text-align:center;margin:0 8px"><div style="font-size:28px">⬆️</div><div style="font-size:9px;margin-top:2px">THIS SIDE UP</div></div>';
+  if (mk.wet) handlingIcons += '<div style="display:inline-block;text-align:center;margin:0 8px"><div style="font-size:28px">☂️</div><div style="font-size:9px;margin-top:2px">KEEP DRY</div></div>';
+  if (mk.stack) handlingIcons += '<div style="display:inline-block;text-align:center;margin:0 8px"><div style="font-size:28px">📦</div><div style="font-size:9px;margin-top:2px">STACK LIMIT</div></div>';
+
+  document.getElementById('marks-preview-content').innerHTML = `
+    <div class="marks-preview">
+      <div class="mark-box">
+        <div class="mark-label">Main Mark · 正唛</div>
+        <div class="mark-content">${mainMarkContent || '(请填写正唛信息)'}</div>
+      </div>
+      <div class="mark-box">
+        <div class="mark-label">Side Mark · 侧唛</div>
+        <div class="mark-content">${sideMarkContent || '(请填写侧唛信息)'}</div>
+      </div>
+    </div>
+    ${handlingIcons ? `<div style="text-align:center;margin-top:30px;padding:20px;border:2px dashed var(--border-dark);border-radius:8px;background:#fff"><div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Handling Marks · 操作标记</div>${handlingIcons}</div>` : ''}
+  `;
+}
+
+function renderSpecPreview(companyBlock, companyName) {
+  const sp = App.data.spec || {};
+  let paramsHtml = '';
+  (sp.params || []).forEach(p => {
+    if (p.param || p.value) {
+      paramsHtml += `<tr><td style="font-weight:600;width:35%;background:#f8f9fd">${p.param || ''}</td><td>${p.value || ''} ${p.unit || ''}</td></tr>`;
+    }
+  });
+
+  document.getElementById('spec-preview-area').innerHTML = `
+    <div class="doc-paper">
+      <div class="doc-header">
+        <div>${companyBlock}</div>
+        <div class="doc-title-block">
+          <div class="doc-title">Product Specification</div>
+          <div class="doc-meta">
+            ${sp.model ? '<strong>Model:</strong> ' + sp.model + '<br>' : ''}
+            ${sp.brand ? '<strong>Brand:</strong> ' + sp.brand + '<br>' : ''}
+            ${sp.hs ? '<strong>HS Code:</strong> ' + sp.hs : ''}
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;margin:20px 0">
+        <div style="font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--accent-blue)">${sp.name || 'Product Name'}</div>
+        ${sp.origin ? '<div style="font-size:12px;color:var(--text-muted);margin-top:4px">Country of Origin: ' + sp.origin + '</div>' : ''}
+      </div>
+      ${sp.desc ? `<div style="font-size:12px;line-height:1.8;color:#444;margin-bottom:20px;padding:14px;background:#f8f9fd;border-radius:6px">${sp.desc.replace(/\n/g,'<br>')}</div>` : ''}
+      <table class="doc-table">
+        <thead><tr><th colspan="2">Technical Parameters · 技术参数</th></tr></thead>
+        <tbody>${paramsHtml || '<tr><td colspan="2" style="text-align:center;color:#999;padding:20px">No parameters added</td></tr>'}</tbody>
+      </table>
+      <table class="doc-table" style="margin-top:16px">
+        <thead><tr><th colspan="2">Packing Information · 包装信息</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Packing Type</td><td>${sp.pkgType || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Qty per Carton</td><td>${sp.pkgQty || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Unit N.W.</td><td>${sp.nwUnit ? sp.nwUnit + ' kg' : '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton N.W.</td><td>${sp.nwCarton ? sp.nwCarton + ' kg' : '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton G.W.</td><td>${sp.gwCarton ? sp.gwCarton + ' kg' : '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton Dimensions</td><td>${sp.cartonSize ? sp.cartonSize + ' cm' : '-'}</td></tr>
+        </tbody>
+      </table>
+      <table class="doc-table" style="margin-top:16px">
+        <thead><tr><th colspan="2">Other Information · 其他信息</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Quality Standard</td><td>${sp.quality || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Shelf Life</td><td>${sp.shelf || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Storage</td><td>${sp.storage || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">MOQ</td><td>${sp.moq || '-'}</td></tr>
+        </tbody>
+      </table>
+      <div class="doc-signature">
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Prepared By</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">Date</div></div>
+      </div>
+    </div>`;
+}
+
+// ==================== COPY BETWEEN DOCS ====================
+function copyFromDoc(srcType, dstType) {
+  collectPageData(srcType);
+  const srcItems = (App.data[srcType] || {}).items || [];
+  if (srcItems.length === 0 || (srcItems.length === 1 && !srcItems[0].desc)) {
+    alert('源单据没有产品数据');
+    return;
+  }
+  // Clear existing
+  const tbody = document.getElementById(DOC_CONFIG[dstType].tbody);
+  tbody.innerHTML = '';
+  // Map and add
+  srcItems.forEach(item => {
+    const mapped = {};
+    if (dstType === 'packing') {
+      mapped.desc = item.desc || '';
+      mapped.qty = item.qty || '';
+      mapped.unit = item.unit || '';
+    } else {
+      mapped.desc = item.desc || '';
+      mapped.qty = item.qty || '';
+      mapped.unit = item.unit || '';
+      mapped.price = item.price || '';
+      if (dstType === 'commercial') mapped.hs = '';
+    }
+    addRow(dstType, mapped);
+  });
+  window[DOC_CONFIG[dstType].totalFn]();
+}
+
+// ==================== IMPORT FROM LIBRARY ====================
+function importFromLibrary(docType) {
+  collectPageData('library');
+  const products = App.data.products || [];
+  if (products.length === 0 || (products.length === 1 && !products[0].name)) {
+    alert('产品库为空，请先在"产品库"中添加产品');
+    return;
+  }
+  // Create modal
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center';
+  const modal = document.createElement('div');
+  modal.style.cssText = 'background:#fff;border-radius:10px;padding:20px;width:500px;max-height:60vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)';
+  modal.innerHTML = `<div style="font-size:16px;font-weight:600;margin-bottom:14px">从产品库导入 <span style="font-size:12px;color:#888;font-weight:400">(勾选要导入的产品)</span></div>
+    <div id="lib-modal-list"></div>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-outline btn-sm" onclick="this.closest('div[style*=fixed]').remove()">取消</button>
+      <button class="btn btn-primary btn-sm" id="lib-modal-confirm">确认导入</button>
+    </div>`;
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  const listEl = modal.querySelector('#lib-modal-list');
+  products.forEach((p, i) => {
+    if (!p.name) return;
+    const item = document.createElement('div');
+    item.className = 'product-lib-item';
+    item.innerHTML = `
+      <input type="checkbox" style="margin-right:8px">
+      <div class="pl-name">${p.name}</div>
+      <div class="pl-info">${p.spec||''} · ${p.price||''}</div>
+    `;
+    listEl.appendChild(item);
+  });
+
+  modal.querySelector('#lib-modal-confirm').onclick = () => {
+    const checks = listEl.querySelectorAll('input[type=checkbox]');
+    const selected = [];
+    checks.forEach((c, i) => {
+      if (c.checked && products[i] && products[i].name) selected.push(products[i]);
+    });
+    if (selected.length === 0) {
+      alert('请勾选至少一个产品');
+      return;
+    }
+    // Add to current doc table
+    const tbody = document.getElementById(DOC_CONFIG[docType].tbody);
+    selected.forEach(p => {
+      const mapped = {};
+      if (docType === 'proforma') {
+        mapped.desc = p.name; mapped.spec = p.spec; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
+      } else if (docType === 'commercial') {
+        mapped.desc = p.name; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
+      } else if (docType === 'packing') {
+        mapped.desc = p.name; mapped.qty = ''; mapped.unit = p.unit || 'PCS';
+        mapped.nw = p.nw; mapped.gw = p.gw;
+        // Parse carton size
+        if (p.l && p.w && p.h) { mapped.l = p.l; mapped.w = p.w; mapped.h = p.h; }
+      }
+      addRow(docType, mapped);
+    });
+    overlay.remove();
+  };
+}
+
+// ==================== PRODUCT LIBRARY ====================
+function addLibProduct(data) {
+  const tbody = document.getElementById('lib-tbody');
+  const tr = document.createElement('tr');
+  const idx = tbody.children.length + 1;
+  tr.innerHTML = `
+    <td class="num-col">${idx}</td>
+    <td class="td-input"><input type="text" placeholder="Product name" value="${data?(data.name||''):''}"></td>
+    <td class="td-input"><input type="text" placeholder="Spec" value="${data?(data.spec||''):''}"></td>
+    <td class="td-input"><select><option value="">-</option><option ${data&&data.unit==='PCS'?'selected':''}>PCS</option><option ${data&&data.unit==='SET'?'selected':''}>SET</option><option ${data&&data.unit==='BOX'?'selected':''}>BOX</option><option ${data&&data.unit==='CTN'?'selected':''}>CTN</option><option ${data&&data.unit==='PAIR'?'selected':''}>PAIR</option><option ${data&&data.unit==='ROLL'?'selected':''}>ROLL</option><option ${data&&data.unit==='KG'?'selected':''}>KG</option></select></td>
+    <td class="td-input"><input type="text" placeholder="0.00" class="mono" style="text-align:right" value="${data?(data.price||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.nw||''):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.gw||''):''}"></td>
+    <td class="td-input"><input type="text" placeholder="L×W×H" class="mono" style="text-align:right" value="${data?(data.l&&data.w&&data.h?data.l+'×'+data.w+'×'+data.h:''):''}"></td>
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();debouncedSave()">✕</button></td>
+  `;
+  tr.querySelectorAll('input,select').forEach(inp => {
+    inp.addEventListener('input', debouncedSave);
+  });
+  tbody.appendChild(tr);
+}
+
+function renderLibrary() {
+  const tbody = document.getElementById('lib-tbody');
+  tbody.innerHTML = '';
+  const products = App.data.products || [];
+  if (products.length === 0) {
+    addLibProduct();
+  } else {
+    products.forEach(p => {
+      if (p.name || p.spec || p.price) addLibProduct(p);
+    });
+    if (tbody.children.length === 0) addLibProduct();
+  }
+}
+
+// ==================== SETTINGS ====================
+function saveSettings() {
+  App.data.company = {
+    en: v('set-company-en'), cn: v('set-company-cn'), address: v('set-address'),
+    tel: v('set-tel'), fax: v('set-fax'), email: v('set-email'), website: v('set-website'),
+    vat: v('set-vat'), uscc: v('set-uscc'), bank: v('set-bank')
+  };
+  localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+  // Show toast
+  showToast('公司信息已保存');
+  autofillCompany();
+}
+
+function loadSettings() {
+  const c = App.data.company || {};
+  setVal('set-company-en', c.en); setVal('set-company-cn', c.cn); setVal('set-address', c.address);
+  setVal('set-tel', c.tel); setVal('set-fax', c.fax); setVal('set-email', c.email);
+  setVal('set-website', c.website); setVal('set-vat', c.vat); setVal('set-uscc', c.uscc);
+  setVal('set-bank', c.bank);
+}
+
+function autofillCompany() {
+  const c = App.data.company || {};
+  // Fill bank info into proforma
+  if (c.bank && !document.getElementById('pi-bank').value) {
+    document.getElementById('pi-bank').value = c.bank;
+  }
+  // Fill buyer name from proforma to commercial/packing if empty
+  const piBuyer = document.getElementById('pi-buyer-name').value;
+  if (piBuyer) {
+    if (!document.getElementById('ci-buyer-name').value) document.getElementById('ci-buyer-name').value = piBuyer;
+    if (!document.getElementById('ci-buyer-addr').value) document.getElementById('ci-buyer-addr').value = document.getElementById('pi-buyer-addr').value;
+    if (!document.getElementById('pl-buyer').value) document.getElementById('pl-buyer').value = piBuyer;
+  }
+  // Sync trade terms and ports
+  const piTerms = document.getElementById('pi-terms').value;
+  const piFrom = document.getElementById('pi-from').value;
+  const piTo = document.getElementById('pi-to').value;
+  if (piTerms) {
+    if (!document.getElementById('ci-terms').value) document.getElementById('ci-terms').value = piTerms;
+    if (!document.getElementById('pl-terms').value) document.getElementById('pl-terms').value = piTerms;
+  }
+  if (piFrom) {
+    if (!document.getElementById('ci-from').value) document.getElementById('ci-from').value = piFrom;
+    if (!document.getElementById('pl-from').value) document.getElementById('pl-from').value = piFrom;
+  }
+  if (piTo) {
+    if (!document.getElementById('ci-to').value) document.getElementById('ci-to').value = piTo;
+    if (!document.getElementById('pl-to').value) document.getElementById('pl-to').value = piTo;
+  }
+}
+
+// ==================== DATA EXPORT/IMPORT ====================
+function exportData() {
+  collectPageData(App.currentPage);
+  collectPageData('library');
+  collectPageData('settings');
+  const blob = new Blob([JSON.stringify(App.data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'tradepro_data_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据已导出');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      Object.assign(App.data, data);
+      localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+      showToast('数据导入成功，即将刷新...');
+      setTimeout(() => location.reload(), 800);
+    } catch(err) {
+      alert('导入失败：文件格式错误');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (confirm('确定要清空所有数据吗？此操作不可撤销！')) {
+    localStorage.removeItem('tradepro_data');
+    showToast('数据已清空，即将刷新...');
+    setTimeout(() => location.reload(), 800);
+  }
+}
+
+// ==================== TOAST ====================
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:20px;right:20px;background:var(--accent-blue);color:#fff;padding:12px 20px;border-radius:6px;font-size:13px;z-index:10000;box-shadow:0 4px 16px rgba(0,0,0,0.15);animation:fadeIn 0.2s ease';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 2000);
+}
+
+// ==================== START ====================
+init();
+</script>
+</body>
+</html>
