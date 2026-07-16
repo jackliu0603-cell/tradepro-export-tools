@@ -908,8 +908,8 @@ body {
   @page { margin: 10mm; }
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
@@ -2575,17 +2575,18 @@ function renderContainer3D(container, details) {
   const container3D = document.getElementById('ct-3d-container');
   const legendEl = document.getElementById('ct-3d-legend');
 
-  // Cleanup previous
+  // Cleanup previous renderer
   if (window._ct3dRenderer) {
     try { window._ct3dRenderer.dispose(); } catch(e){}
     window._ct3dRenderer = null;
   }
-  // Reset inner HTML but keep the container reference working
+
+  // Empty container but keep reference
   while (container3D.firstChild) {
     container3D.removeChild(container3D.firstChild);
   }
 
-  // Create overlay elements
+  // Overlay elements
   const hintEl = document.createElement('div');
   hintEl.id = 'ct-3d-hint';
   hintEl.style.cssText = 'position:absolute;top:12px;left:12px;color:rgba(255,255,255,0.6);font-size:12px;pointer-events:none;z-index:5;transition:color 0.3s';
@@ -2598,7 +2599,7 @@ function renderContainer3D(container, details) {
   container3D.appendChild(infoEl);
 
   try {
-    // Check Three.js loaded
+    // Verify libraries loaded
     if (typeof THREE === 'undefined') {
       throw new Error('Three.js 未能加载，请检查网络连接后刷新页面。');
     }
@@ -2606,7 +2607,7 @@ function renderContainer3D(container, details) {
       throw new Error('OrbitControls 未能加载，请检查网络连接后刷新页面。');
     }
 
-    // Ensure container has valid dimensions using getComputedStyle (most reliable)
+    // Get container dimensions
     let clientWidth = container3D.clientWidth;
     let clientHeight = container3D.clientHeight;
     if (!clientWidth || !clientHeight) {
@@ -2615,223 +2616,152 @@ function renderContainer3D(container, details) {
       clientHeight = Math.round(parseFloat(cs.height));
     }
     if (!clientWidth || !clientHeight) {
-      const card = container3D.closest('.card');
-      clientWidth = card ? card.clientWidth : (container3D.parentElement?.clientWidth || 640);
+      clientWidth = container3D.parentElement ? container3D.parentElement.clientWidth : 640;
       clientHeight = 480;
     }
     if (!clientWidth || !clientHeight) {
-      throw new Error(`容器尺寸无效 (W:${clientWidth} × H:${clientHeight})，无法渲染 3D。`);
+      throw new Error('容器尺寸无效，无法渲染 3D。');
     }
 
-    hintEl.textContent = `渲染中… ${clientWidth}×${clientHeight}`;
+    hintEl.textContent = '渲染中…';
 
-  // Renderer
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(clientWidth, clientHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  container3D.appendChild(renderer.domElement);
+    const SCALE = 0.01;
+    const cL = container.L * SCALE;
+    const cW = container.W * SCALE;
+    const cH = container.H * SCALE;
+    const maxDim = Math.max(cL, cW, cH);
+    const offset = new THREE.Vector3(-cL / 2, 0, -cW / 2);
 
-  // Controls
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.08;
-  controls.minDistance = maxDim * 0.5;
-  controls.maxDistance = maxDim * 6;
-  controls.target.set(0, cH / 2, 0);
+    // Scene
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0d1117);
 
-  // Lights
-  const ambient = new THREE.AmbientLight(0x445566, 0.6);
-  scene.add(ambient);
+    // Camera
+    const camera = new THREE.PerspectiveCamera(45, clientWidth / clientHeight, 0.1, 200);
+    camera.position.set(maxDim * 2, maxDim * 1.4, maxDim * 2);
+    camera.lookAt(0, cH / 2, 0);
 
-  const keyLight = new THREE.DirectionalLight(0xffffff, 0.8);
-  keyLight.position.set(maxDim * 2, maxDim * 3, maxDim * 2);
-  keyLight.castShadow = true;
-  keyLight.shadow.mapSize.width = 2048;
-  keyLight.shadow.mapSize.height = 2048;
-  keyLight.shadow.camera.near = 0.5;
-  keyLight.shadow.camera.far = maxDim * 8;
-  keyLight.shadow.camera.left = -maxDim * 2;
-  keyLight.shadow.camera.right = maxDim * 2;
-  keyLight.shadow.camera.top = maxDim * 2;
-  keyLight.shadow.camera.bottom = -maxDim * 2;
-  scene.add(keyLight);
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(clientWidth, clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container3D.appendChild(renderer.domElement);
 
-  const fillLight = new THREE.DirectionalLight(0x8899ff, 0.3);
-  fillLight.position.set(-maxDim * 2, maxDim, -maxDim * 2);
-  scene.add(fillLight);
+    // Controls
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.target.set(0, cH / 2, 0);
 
-  const rimLight = new THREE.DirectionalLight(0xffaa44, 0.2);
-  rimLight.position.set(0, -maxDim, maxDim * 2);
-  scene.add(rimLight);
+    // Lights: Ambient + 2 Directional (safer than ShadowMaterial setup)
+    scene.add(new THREE.AmbientLight(0x445566, 0.7));
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight1.position.set(maxDim * 2, maxDim * 3, maxDim * 2);
+    scene.add(dirLight1);
+    const dirLight2 = new THREE.DirectionalLight(0xaabbcc, 0.4);
+    dirLight2.position.set(-maxDim * 2, maxDim, -maxDim * 2);
+    scene.add(dirLight2);
 
-  // Ground plane (for shadows)
-  const groundGeo = new THREE.PlaneGeometry(cL * 4, cW * 4);
-  const groundMat = new THREE.ShadowMaterial({ opacity: 0.3 });
-  const ground = new THREE.Mesh(groundGeo, groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -0.01;
-  ground.receiveShadow = true;
-  scene.add(ground);
+    // Grid
+    scene.add(new THREE.GridHelper(maxDim * 4, 40, 0x222831, 0x1a1f2e));
 
-  // Grid
-  const grid = new THREE.GridHelper(maxDim * 4, 40, 0x222831, 0x1a1f2e);
-  grid.position.y = 0;
-  scene.add(grid);
+    // Container wireframe only (no translucent walls)
+    const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(cL, cH, cW));
+    const wireMat = new THREE.LineBasicMaterial({ color: 0xc9a227, transparent: true, opacity: 0.9 });
+    const wireframe = new THREE.LineSegments(edges, wireMat);
+    wireframe.position.set(offset.x + cL / 2, cH / 2, offset.z + cW / 2);
+    scene.add(wireframe);
 
-  // Container shell - wireframe + semi-transparent walls
-  const containerGroup = new THREE.Group();
+    // Legend
+    legendEl.innerHTML = '';
 
-  // Container origin at corner (0,0,0), centered by offsetting group
-  const offset = new THREE.Vector3(-cL / 2, 0, -cW / 2);
-
-  // Wireframe edges
-  const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(cL, cH, cW));
-  const wireMat = new THREE.LineBasicMaterial({ color: 0xc9a227, transparent: true, opacity: 0.8 });
-  const wireframe = new THREE.LineSegments(edges, wireMat);
-  wireframe.position.set(offset.x + cL / 2, cH / 2, offset.z + cW / 2);
-  containerGroup.add(wireframe);
-
-  // Semi-transparent walls (back, left, bottom only - so front/right/top are open for viewing)
-  const wallMat = new THREE.MeshBasicMaterial({
-    color: 0x2d4a8a,
-    transparent: true,
-    opacity: 0.06,
-    side: THREE.DoubleSide
-  });
-
-  // Bottom
-  const bottomGeo = new THREE.PlaneGeometry(cL, cW);
-  const bottom = new THREE.Mesh(bottomGeo, wallMat);
-  bottom.rotation.x = -Math.PI / 2;
-  bottom.position.set(offset.x + cL / 2, 0, offset.z + cW / 2);
-  containerGroup.add(bottom);
-
-  // Back wall (Z-negative side)
-  const backGeo = new THREE.PlaneGeometry(cL, cH);
-  const back = new THREE.Mesh(backGeo, wallMat);
-  back.position.set(offset.x + cL / 2, cH / 2, offset.z);
-  containerGroup.add(back);
-
-  // Left wall (X-negative side)
-  const leftGeo = new THREE.PlaneGeometry(cW, cH);
-  const left = new THREE.Mesh(leftGeo, wallMat);
-  left.rotation.y = Math.PI / 2;
-  left.position.set(offset.x, cH / 2, offset.z + cW / 2);
-  containerGroup.add(left);
-
-  scene.add(containerGroup);
-
-  // Color legend
-  legendEl.innerHTML = '';
-
-  // Place cargo boxes
-  details.forEach((d, idx) => {
-    if (d.count === 0 || !d.arrangementParts) return;
-
-    const color = CARGO_COLORS[idx % CARGO_COLORS.length];
-    const bl = d.boxL * SCALE;
-    const bw = d.boxW * SCALE;
-    const bh = d.boxH * SCALE;
-
-    const [rows, cols, layers] = d.arrangementParts;
-    const placedCount = Math.min(d.count, rows * cols * layers);
-
-    // Box material - slightly transparent to see inner boxes
-    const boxMat = new THREE.MeshLambertMaterial({
-      color: color,
-      transparent: true,
-      opacity: 0.88
+    // Cargo boxes
+    details.forEach((d, idx) => {
+      if (!d.count || !d.arrangementParts) return;
+      const color = CARGO_COLORS[idx % CARGO_COLORS.length];
+      const bl = d.boxL * SCALE;
+      const bw = d.boxW * SCALE;
+      const bh = d.boxH * SCALE;
+      const [rows, cols, layers] = d.arrangementParts;
+      const placedCount = Math.min(d.count, rows * cols * layers);
+      const boxMat = new THREE.MeshLambertMaterial({ color: color });
+      const edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+      let placed = 0;
+      for (let layer = 0; layer < layers && placed < placedCount; layer++) {
+        for (let row = 0; row < rows && placed < placedCount; row++) {
+          for (let col = 0; col < cols && placed < placedCount; col++) {
+            const x = offset.x + bl / 2 + row * bl;
+            const z = offset.z + bw / 2 + col * bw;
+            const y = bh / 2 + layer * bh;
+            const boxGeo = new THREE.BoxGeometry(bl * 0.98, bh * 0.98, bw * 0.98);
+            const box = new THREE.Mesh(boxGeo, boxMat);
+            box.position.set(x, y, z);
+            scene.add(box);
+            const boxEdges = new THREE.EdgesGeometry(boxGeo);
+            const boxWire = new THREE.LineSegments(boxEdges, edgeMat);
+            boxWire.position.copy(box.position);
+            scene.add(boxWire);
+            placed++;
+          }
+        }
+      }
+      // Legend entry
+      const legendItem = document.createElement('div');
+      legendItem.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary)';
+      legendItem.innerHTML = `<span style="width:12px;height:12px;border-radius:2px;background:#${color.toString(16).padStart(6,'0')};display:inline-block"></span>${d.name}`;
+      legendEl.appendChild(legendItem);
     });
 
-    // Edge material for box outlines
-    const edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
+    // Info text
+    infoEl.textContent = `${container.name}  ${container.L}×${container.W}×${container.H}mm`;
+    hintEl.textContent = '🖱️ 拖拽旋转 · 滚轮缩放 · 右键平移';
 
-    let actualPlaced = 0;
-    for (let layer = 0; layer < layers && actualPlaced < placedCount; layer++) {
-      for (let row = 0; row < rows && actualPlaced < placedCount; row++) {
-        for (let col = 0; col < cols && actualPlaced < placedCount; col++) {
-          const x = offset.x + bl / 2 + row * bl;
-          const z = offset.z + bw / 2 + col * bw;
-          const y = bh / 2 + layer * bh;
+    // Animation loop
+    let animationId = null;
+    function animate() {
+      animationId = requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
 
-          const boxGeo = new THREE.BoxGeometry(bl * 0.98, bh * 0.98, bw * 0.98);
-          const box = new THREE.Mesh(boxGeo, boxMat);
-          box.position.set(x, y, z);
-          box.castShadow = true;
-          box.receiveShadow = true;
-          scene.add(box);
-
-          // Box edges
-          const boxEdges = new THREE.EdgesGeometry(boxGeo);
-          const boxWire = new THREE.LineSegments(boxEdges, edgeMat);
-          boxWire.position.copy(box.position);
-          scene.add(boxWire);
-
-          actualPlaced++;
-        }
+    // Resize handler
+    function onResize() {
+      const w = container3D.clientWidth || (container3D.parentElement && container3D.parentElement.clientWidth) || 640;
+      const h = container3D.clientHeight || 480;
+      if (w && h && camera && renderer) {
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
       }
     }
+    window.addEventListener('resize', onResize);
 
-    // Legend entry
-    const legendItem = document.createElement('div');
-    legendItem.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary)';
-    legendItem.innerHTML = `<span style="width:12px;height:12px;border-radius:2px;background:#${color.toString(16).padStart(6,'0')};display:inline-block"></span>${d.name}`;
-    legendEl.appendChild(legendItem);
-  });
-
-  // Info display
-  const infoText = `${container.name}  ${container.L}×${container.W}×${container.H}mm`;
-  infoEl.textContent = infoText;
-  hintEl.textContent = '🖱️ 拖拽旋转 · 滚轮缩放 · 右键平移';
-
-  // Animation loop
-  let animationId = null;
-  function animate() {
-    animationId = requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  // Handle resize
-  function onResize() {
-    const w = container3D.clientWidth || container3D.parentElement?.clientWidth || 640;
-    const h = container3D.clientHeight || 480;
-    if (w && h && camera && renderer) {
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    }
-  }
-  window.addEventListener('resize', onResize);
-
-  // Store renderer info for cleanup
-  window._ct3dRenderer = {
-    dispose() {
-      if (animationId) cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', onResize);
-      controls.dispose();
-      renderer.dispose();
-      scene.traverse(obj => {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
-          else obj.material.dispose();
+    // Store for cleanup
+    window._ct3dRenderer = {
+      dispose() {
+        if (animationId) cancelAnimationFrame(animationId);
+        window.removeEventListener('resize', onResize);
+        controls.dispose();
+        renderer.dispose();
+        scene.traverse(function(obj) {
+          if (obj.geometry) obj.geometry.dispose();
+          if (obj.material) {
+            if (Array.isArray(obj.material)) obj.material.forEach(function(m) { m.dispose(); });
+            else obj.material.dispose();
+          }
+        });
+        if (renderer.domElement && renderer.domElement.parentNode) {
+          renderer.domElement.parentNode.removeChild(renderer.domElement);
         }
-      });
-      if (renderer.domElement && renderer.domElement.parentNode) {
-        renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
-    }
-  };
-} catch (e) {
-  console.error('3D render error:', e);
-  hintEl.style.color = 'rgba(232,93,117,0.9)';
-  hintEl.textContent = '❌ 3D 渲染失败: ' + (e.message || String(e));
-  infoEl.textContent = '请检查浏览器是否支持 WebGL，或刷新页面重试。';
-}
+    };
+  } catch (e) {
+    console.error('3D render error:', e);
+    hintEl.style.color = 'rgba(232,93,117,0.9)';
+    hintEl.textContent = '❌ 3D 渲染失败: ' + (e.message || String(e));
+    infoEl.textContent = '请检查浏览器是否支持 WebGL，或刷新页面重试。';
+  }
 }
 function addSpecRow(data) {
   const tbody = document.getElementById('sp-tbody');
