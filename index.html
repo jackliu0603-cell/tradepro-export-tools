@@ -2545,9 +2545,11 @@ function calculateContainer() {
   });
   document.getElementById('ct-detail-card').style.display = '';
 
-  // Show 3D visualization
+  // Show 3D visualization with layout delay to ensure container has dimensions
   document.getElementById('ct-3d-card').style.display = '';
-  renderContainer3D(c, details);
+  requestAnimationFrame(() => {
+    setTimeout(() => renderContainer3D(c, details), 80);
+  });
 }
 
 function clearContainerCalc() {
@@ -2571,43 +2573,61 @@ const CARGO_COLORS = [
 
 function renderContainer3D(container, details) {
   const container3D = document.getElementById('ct-3d-container');
-  const hintEl = document.getElementById('ct-3d-hint');
-  const infoEl = document.getElementById('ct-3d-info');
   const legendEl = document.getElementById('ct-3d-legend');
 
   // Cleanup previous
   if (window._ct3dRenderer) {
-    window._ct3dRenderer.dispose();
+    try { window._ct3dRenderer.dispose(); } catch(e){}
     window._ct3dRenderer = null;
   }
-  container3D.innerHTML = '<div id="ct-3d-hint" style="position:absolute;top:12px;left:12px;color:rgba(255,255,255,0.35);font-size:11px;pointer-events:none;z-index:5"></div><div id="ct-3d-info" style="position:absolute;bottom:12px;left:12px;color:rgba(255,255,255,0.5);font-size:11px;pointer-events:none;z-index:5;font-family:var(--font-mono)"></div>';
-
-  // Check Three.js loaded
-  if (typeof THREE === 'undefined') {
-    hintEl.textContent = 'Three.js failed to load. Check network connection.';
-    return;
+  // Reset inner HTML but keep the container reference working
+  while (container3D.firstChild) {
+    container3D.removeChild(container3D.firstChild);
   }
 
-  // Scale: convert mm to scene units (divide by 1000 → meters, then scale up for visibility)
-  const SCALE = 0.01; // mm → scene units (10mm = 0.1 unit)
-  const cL = container.L * SCALE;
-  const cW = container.W * SCALE;
-  const cH = container.H * SCALE;
+  // Create overlay elements
+  const hintEl = document.createElement('div');
+  hintEl.id = 'ct-3d-hint';
+  hintEl.style.cssText = 'position:absolute;top:12px;left:12px;color:rgba(255,255,255,0.6);font-size:12px;pointer-events:none;z-index:5;transition:color 0.3s';
+  hintEl.textContent = '初始化 3D 场景...';
+  container3D.appendChild(hintEl);
 
-  // Scene
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0d1117);
-  scene.fog = new THREE.Fog(0x0d1117, 30, 80);
+  const infoEl = document.createElement('div');
+  infoEl.id = 'ct-3d-info';
+  infoEl.style.cssText = 'position:absolute;bottom:12px;left:12px;color:rgba(255,255,255,0.5);font-size:11px;pointer-events:none;z-index:5;font-family:var(--font-mono);white-space:pre-line';
+  container3D.appendChild(infoEl);
 
-  // Camera
-  const maxDim = Math.max(cL, cW, cH);
-  const camera = new THREE.PerspectiveCamera(45, container3D.clientWidth / container3D.clientHeight, 0.1, 200);
-  camera.position.set(maxDim * 1.8, maxDim * 1.4, maxDim * 2.2);
-  camera.lookAt(0, 0, 0);
+  try {
+    // Check Three.js loaded
+    if (typeof THREE === 'undefined') {
+      throw new Error('Three.js 未能加载，请检查网络连接后刷新页面。');
+    }
+    if (!THREE.OrbitControls) {
+      throw new Error('OrbitControls 未能加载，请检查网络连接后刷新页面。');
+    }
+
+    // Ensure container has valid dimensions using getComputedStyle (most reliable)
+    let clientWidth = container3D.clientWidth;
+    let clientHeight = container3D.clientHeight;
+    if (!clientWidth || !clientHeight) {
+      const cs = window.getComputedStyle(container3D);
+      clientWidth = Math.round(parseFloat(cs.width));
+      clientHeight = Math.round(parseFloat(cs.height));
+    }
+    if (!clientWidth || !clientHeight) {
+      const card = container3D.closest('.card');
+      clientWidth = card ? card.clientWidth : (container3D.parentElement?.clientWidth || 640);
+      clientHeight = 480;
+    }
+    if (!clientWidth || !clientHeight) {
+      throw new Error(`容器尺寸无效 (W:${clientWidth} × H:${clientHeight})，无法渲染 3D。`);
+    }
+
+    hintEl.textContent = `渲染中… ${clientWidth}×${clientHeight}`;
 
   // Renderer
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(container3D.clientWidth, container3D.clientHeight);
+  renderer.setSize(clientWidth, clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -2777,11 +2797,13 @@ function renderContainer3D(container, details) {
 
   // Handle resize
   function onResize() {
-    const w = container3D.clientWidth;
-    const h = container3D.clientHeight;
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
+    const w = container3D.clientWidth || container3D.parentElement?.clientWidth || 640;
+    const h = container3D.clientHeight || 480;
+    if (w && h && camera && renderer) {
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
   }
   window.addEventListener('resize', onResize);
 
@@ -2804,6 +2826,12 @@ function renderContainer3D(container, details) {
       }
     }
   };
+} catch (e) {
+  console.error('3D render error:', e);
+  hintEl.style.color = 'rgba(232,93,117,0.9)';
+  hintEl.textContent = '❌ 3D 渲染失败: ' + (e.message || String(e));
+  infoEl.textContent = '请检查浏览器是否支持 WebGL，或刷新页面重试。';
+}
 }
 function addSpecRow(data) {
   const tbody = document.getElementById('sp-tbody');
