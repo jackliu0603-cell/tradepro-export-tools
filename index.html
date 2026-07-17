@@ -978,6 +978,10 @@ body {
       <span class="nav-icon">🚢</span>
       <span>装箱计算</span>
     </div>
+    <div class="nav-item" data-page="pallet">
+      <span class="nav-icon">📦</span>
+      <span>托盘计算</span>
+    </div>
     <div class="nav-section-label">数据中心</div>
     <div class="nav-item" data-page="library">
       <span class="nav-icon">🗂️</span>
@@ -1772,6 +1776,174 @@ body {
   </div>
 </div>
 
+<!-- ===================== PAGE: PALLET CALCULATOR ===================== -->
+<div class="page" id="page-pallet">
+  <div class="page-header">
+    <div>
+      <div class="page-title">托盘计算器</div>
+      <div class="page-subtitle">Pallet Calculator · 打托方案、层数、总重与利用率</div>
+    </div>
+    <div class="no-print">
+      <button class="btn btn-primary btn-sm" onclick="addPalletRow()">+ 添加纸箱</button>
+    </div>
+  </div>
+
+  <div class="calc-container">
+    <div>
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>托盘选择</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">托盘类型</label>
+              <select class="form-select" id="pt-type" onchange="updatePalletInfo()">
+                <option value="1200x1000">1200×1000mm (欧洲标准)</option>
+                <option value="1200x800">1200×800mm (欧洲标准)</option>
+                <option value="1140x1140">1140×1140mm (澳洲标准)</option>
+                <option value="1100x1100">1100×1100mm (亚洲标准)</option>
+                <option value="1219x1016">1219×1016mm (美国标准)</option>
+                <option value="custom">自定义尺寸</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">托盘长 (mm)</label>
+              <input class="form-input mono" id="pt-pl" type="number" value="1200" onchange="recalcPallet()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">托盘宽 (mm)</label>
+              <input class="form-input mono" id="pt-pw" type="number" value="1000" onchange="recalcPallet()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">最大堆叠层数</label>
+              <input class="form-input mono" id="pt-max-layers" type="number" placeholder="不限" onchange="recalcPallet()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">最大高度限制 (mm)</label>
+              <input class="form-input mono" id="pt-max-height" type="number" value="1800" onchange="recalcPallet()">
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end">
+              <div class="toggle-row" style="white-space:nowrap">
+                <div class="toggle" id="pt-overhang-toggle" onclick="this.classList.toggle('on');recalcPallet()"></div>
+                <span class="toggle-label">允许悬空（overhang）</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot"></span>纸箱信息</div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="data-table-wrap" style="border:none">
+            <table class="data-table" id="pt-table">
+              <thead>
+                <tr>
+                  <th style="width:30px">#</th>
+                  <th>品名 / Description</th>
+                  <th style="width:70px">长(mm)</th>
+                  <th style="width:70px">宽(mm)</th>
+                  <th style="width:70px">高(mm)</th>
+                  <th style="width:70px">数量</th>
+                  <th style="width:80px">单件重(kg)</th>
+                  <th style="width:40px" class="no-print"></th>
+                </tr>
+              </thead>
+              <tbody id="pt-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-gold" onclick="calculatePallet()">📦 开始计算</button>
+            <button class="btn btn-outline" onclick="clearPalletCalc()">清空</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="calc-results">
+      <div class="card">
+        <div class="card-header"><div class="card-title"><span class="dot"></span>计算结果</div></div>
+        <div class="card-body">
+          <div id="pt-result-empty" class="empty-state">
+            <div class="icon">📦</div>
+            <div>添加纸箱后点击"开始计算"</div>
+          </div>
+          <div id="pt-result" style="display:none">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="summary-box highlight">
+                <div class="summary-label">托盘面积利用率</div>
+                <div class="summary-value gold" id="pt-utilization">0<span class="summary-unit">%</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">每层箱数</div>
+                <div class="summary-value blue" id="pt-per-layer">0<span class="summary-unit">箱</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">堆叠层数</div>
+                <div class="summary-value" id="pt-layers">0<span class="summary-unit">层</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">单托总箱数</div>
+                <div class="summary-value" id="pt-total-boxes">0<span class="summary-unit">箱</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">托盘总高度</div>
+                <div class="summary-value" id="pt-total-height">0<span class="summary-unit">mm</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">单托总重量</div>
+                <div class="summary-value" id="pt-total-weight">0<span class="summary-unit">KG</span></div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">所需托盘数</div>
+                <div class="summary-value blue" id="pt-pallet-count">0<span class="summary-unit">托</span></div>
+              </div>
+              <div id="pt-warnings" style="margin-top:6px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="pt-detail-card" style="display:none">
+    <div class="card-header"><div class="card-title"><span class="dot"></span>打托方案明细</div></div>
+    <div class="card-body" style="padding:0">
+      <div class="data-table-wrap" style="border:none">
+        <table class="data-table" id="pt-detail-table">
+          <thead>
+            <tr>
+              <th style="width:30px">#</th>
+              <th>品名</th>
+              <th>放置方向</th>
+              <th style="width:100px">单层排列</th>
+              <th style="width:80px">每层箱数</th>
+              <th style="width:70px">层数</th>
+              <th style="width:80px">总箱数</th>
+              <th style="width:100px">总重量(kg)</th>
+              <th style="width:80px">托盘数</th>
+            </tr>
+          </thead>
+          <tbody id="pt-detail-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="pt-visual-card" style="display:none">
+    <div class="card-header"><div class="card-title"><span class="dot"></span>托盘俯视图</div></div>
+    <div class="card-body">
+      <div id="pt-visual-container" style="display:flex;justify-content:center;padding:20px;background:#f0f2f7;border-radius:var(--radius)"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== PAGE: PRODUCT LIBRARY ===================== -->
 <div class="page" id="page-library">
   <div class="page-header">
@@ -1902,7 +2074,8 @@ const App = {
     marks: {},
     spec: { params: [] },
     weight: { items: [] },
-    container: { cargo: [] }
+    container: { cargo: [] },
+    pallet: { items: [] }
   },
   currentPage: 'proforma'
 };
@@ -1944,6 +2117,7 @@ function init() {
   if (App.data.spec.params.length === 0) { addSpecRow(); addSpecRow(); addSpecRow(); }
   if (App.data.weight.items.length === 0) addWeightRow();
   if (App.data.container.cargo.length === 0) addCargoRow();
+  if (App.data.pallet.items.length === 0) addPalletRow();
   // Render library
   renderLibrary();
   // Auto-fill company info into documents
@@ -1971,6 +2145,7 @@ const PAGE_TITLES = {
   spec:       ['产品规格书', 'Product Specification'],
   weight:     ['重量计算器', 'Weight Calculator'],
   container:  ['装箱计算', 'Container Loading Calculator'],
+  pallet:     ['托盘计算', 'Pallet Calculator'],
   library:    ['产品库', 'Product Library'],
   settings:   ['公司信息', 'Company Settings']
 };
@@ -2078,6 +2253,17 @@ function collectPageData(page) {
         cargo: collectTableRows('ct-tbody', ['name','l','w','h','qty','weight'])
       };
       break;
+    case 'pallet':
+      App.data.pallet = {
+        palletType: v('pt-type'),
+        palletL: v('pt-pl'),
+        palletW: v('pt-pw'),
+        maxLayers: v('pt-max-layers'),
+        maxHeight: v('pt-max-height'),
+        overhang: document.getElementById('pt-overhang-toggle') ? document.getElementById('pt-overhang-toggle').classList.contains('on') : false,
+        items: collectTableRows('pt-tbody', ['desc','l','w','h','qty','weight'])
+      };
+      break;
     case 'library':
       App.data.products = collectTableRows('lib-tbody', ['img','name','spec','unit','price','nw','gw','l','w','h']);
       break;
@@ -2174,6 +2360,15 @@ function restorePageData() {
 
   // Container
   setVal('ct-type', (App.data.container && App.data.container.type) || '40hq');
+
+  // Pallet
+  const pt = App.data.pallet || {};
+  setVal('pt-type', pt.palletType || '1200x1000');
+  setVal('pt-pl', pt.palletL || '1200');
+  setVal('pt-pw', pt.palletW || '1000');
+  setVal('pt-max-layers', pt.maxLayers || '');
+  setVal('pt-max-height', pt.maxHeight || '1800');
+  setToggle('pt-overhang-toggle', pt.overhang === true);
 }
 
 function setVal(id, val) {
@@ -2210,6 +2405,10 @@ function initAllTables() {
   const ct = App.data.container || {};
   if (ct.cargo && ct.cargo.length) {
     ct.cargo.forEach(r => addCargoRow(r));
+  }
+  const pt = App.data.pallet || {};
+  if (pt.items && pt.items.length) {
+    pt.items.forEach(r => addPalletRow(r));
   }
   // Recalculate
   recalcAll();
@@ -3686,6 +3885,280 @@ function renderSpecPreview(companyBlock, companyName) {
     </div>`;
 }
 
+// ==================== PALLET CALCULATOR ====================
+var PALLET_TYPES = {
+  '1200x1000': { L: 1200, W: 1000 },
+  '1200x800':  { L: 1200, W: 800 },
+  '1140x1140': { L: 1140, W: 1140 },
+  '1100x1100': { L: 1100, W: 1100 },
+  '1219x1016': { L: 1219, W: 1016 }
+};
+
+function updatePalletInfo() {
+  var type = document.getElementById('pt-type').value;
+  if (type !== 'custom') {
+    var p = PALLET_TYPES[type];
+    if (p) {
+      document.getElementById('pt-pl').value = p.L;
+      document.getElementById('pt-pw').value = p.W;
+    }
+  }
+  recalcPallet();
+}
+
+function addPalletRow(data) {
+  var tbody = document.getElementById('pt-tbody');
+  var tr = document.createElement('tr');
+  var idx = tbody.children.length + 1;
+  tr.innerHTML = '\
+    <td class="num-col">' + idx + '</td>\
+    <td class="td-input"><input type="text" placeholder="Carton name" value="' + (data ? (data.desc || '') : '') + '"></td>\
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="' + (data ? (data.l || '') : '') + '"></td>\
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="' + (data ? (data.w || '') : '') + '"></td>\
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="' + (data ? (data.h || '') : '') + '"></td>\
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="' + (data ? (data.qty || '') : '') + '"></td>\
+    <td class="td-input"><input type="number" placeholder="0.00" class="mono" style="text-align:right" value="' + (data ? (data.weight || '') : '') + '"></td>\
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest(\'tr\').remove();recalcPallet();debouncedSave()">✕</button></td>';
+  tr.querySelectorAll('input').forEach(function(inp) {
+    inp.addEventListener('input', recalcPallet);
+  });
+  tbody.appendChild(tr);
+  recalcPallet();
+}
+
+function recalcPallet() {
+  // Placeholder for live updates if needed
+}
+
+function clearPalletCalc() {
+  document.getElementById('pt-tbody').innerHTML = '';
+  addPalletRow();
+  document.getElementById('pt-result-empty').style.display = '';
+  document.getElementById('pt-result').style.display = 'none';
+  document.getElementById('pt-detail-card').style.display = 'none';
+  document.getElementById('pt-visual-card').style.display = 'none';
+}
+
+// Core: compute best-fit box layout on a single pallet layer
+function computeBoxLayout(boxL, boxW, palletL, palletW, allowOverhang) {
+  var oL = allowOverhang ? palletL + 50 : palletL;
+  var oW = allowOverhang ? palletW + 50 : palletW;
+
+  // Try both orientations, pick the one with more boxes
+  var layouts = [];
+  // Orientation 1: boxL along palletL, boxW along palletW
+  var r1c = Math.floor(oL / boxL);
+  var r1r = Math.floor(oW / boxW);
+  if (r1c > 0 && r1r > 0) {
+    layouts.push({ cols: r1c, rows: r1r, perLayer: r1c * r1r, orient: 'L×W', boxL: boxL, boxW: boxW });
+  }
+  // Orientation 2: boxW along palletL, boxL along palletW (rotated 90°)
+  var r2c = Math.floor(oL / boxW);
+  var r2r = Math.floor(oW / boxL);
+  if (r2c > 0 && r2r > 0) {
+    layouts.push({ cols: r2c, rows: r2r, perLayer: r2c * r2r, orient: 'W×L', boxL: boxW, boxW: boxL });
+  }
+
+  // Try mixed layout: split pallet into two regions
+  // Region A: orientation 1, Region B: orientation 2 in remaining space
+  if (r1c > 0 && r1r > 0) {
+    var remW = oW - r1r * boxW;
+    if (remW >= boxL) {
+      var mc = Math.floor(oL / boxL);
+      var mr = Math.floor(remW / boxL);
+      if (mc > 0 && mr > 0) {
+        var mixed = r1c * r1r + mc * mr;
+        if (mixed > r1c * r1r) {
+          layouts.push({ cols: r1c, rows: r1r, perLayer: mixed, orient: '混合', boxL: boxL, boxW: boxW, mixed: true });
+        }
+      }
+    }
+  }
+
+  if (layouts.length === 0) return null;
+  // Pick best
+  layouts.sort(function(a, b) { return b.perLayer - a.perLayer; });
+  return layouts[0];
+}
+
+function calculatePallet() {
+  collectPageData('pallet');
+  var pt = App.data.pallet || {};
+  var palletL = parseFloat(pt.palletL) || 1200;
+  var palletW = parseFloat(pt.palletW) || 1000;
+  var maxLayers = parseInt(pt.maxLayers) || 0;
+  var maxHeight = parseFloat(pt.maxHeight) || 0;
+  var allowOverhang = pt.overhang === true;
+  var items = pt.items || [];
+
+  if (items.length === 0 || (items.length === 1 && !items[0].l)) {
+    showToast('请先添加纸箱数据');
+    return;
+  }
+
+  var validItems = items.filter(function(it) {
+    return parseFloat(it.l) > 0 && parseFloat(it.w) > 0 && parseFloat(it.h) > 0;
+  });
+  if (validItems.length === 0) {
+    showToast('请填写有效的纸箱尺寸');
+    return;
+  }
+
+  var results = [];
+  var totalBoxesAll = 0;
+  var totalWeightAll = 0;
+  var totalPallets = 0;
+  var maxLayerArea = 0;
+
+  validItems.forEach(function(item, i) {
+    var bl = parseFloat(item.l);
+    var bw = parseFloat(item.w);
+    var bh = parseFloat(item.h);
+    var qty = parseInt(item.qty) || 0;
+    var unitWeight = parseFloat(item.weight) || 0;
+
+    var layout = computeBoxLayout(bl, bw, palletL, palletW, allowOverhang);
+    if (!layout) {
+      results.push({
+        idx: i + 1, desc: item.desc || 'Item ' + (i + 1),
+        perLayer: 0, layers: 0, totalBoxes: 0, totalWeight: 0, pallets: 0,
+        orient: '-', arrangement: '-', warning: '纸箱尺寸超出托盘'
+      });
+      return;
+    }
+
+    // Calculate layers based on max height or max layers
+    var layersByHeight = maxHeight > 0 ? Math.floor(maxHeight / bh) : 0;
+    var actualLayers;
+    if (maxLayers > 0 && layersByHeight > 0) {
+      actualLayers = Math.min(maxLayers, layersByHeight);
+    } else if (maxLayers > 0) {
+      actualLayers = maxLayers;
+    } else if (layersByHeight > 0) {
+      actualLayers = layersByHeight;
+    } else {
+      actualLayers = 1;
+    }
+    if (actualLayers < 1) actualLayers = 1;
+
+    var perPalletBoxes = layout.perLayer * actualLayers;
+    var neededPallets = qty > 0 ? Math.ceil(qty / perPalletBoxes) : 0;
+    var actualBoxes = qty > 0 ? qty : perPalletBoxes;
+    var totalWeight = actualBoxes * unitWeight;
+    var totalHeight = actualLayers * bh;
+    var layerArea = layout.perLayer * (bl * bw);
+    var palletArea = palletL * palletW;
+    var utilization = palletArea > 0 ? (layerArea / palletArea * 100) : 0;
+    if (utilization > 100) utilization = 100;
+
+    if (layerArea > maxLayerArea) maxLayerArea = layerArea;
+
+    results.push({
+      idx: i + 1,
+      desc: item.desc || 'Item ' + (i + 1),
+      orient: layout.orient,
+      arrangement: layout.cols + '×' + layout.rows + (layout.mixed ? '+' : ''),
+      perLayer: layout.perLayer,
+      layers: actualLayers,
+      perPalletBoxes: perPalletBoxes,
+      totalBoxes: actualBoxes,
+      totalWeight: totalWeight,
+      pallets: neededPallets,
+      totalHeight: totalHeight,
+      utilization: utilization,
+      boxL: layout.boxL,
+      boxW: layout.boxW,
+      boxH: bh,
+      warning: totalHeight > maxHeight && maxHeight > 0 ? '高度超出限制' : ''
+    });
+
+    totalBoxesAll += actualBoxes;
+    totalWeightAll += totalWeight;
+    totalPallets += neededPallets;
+  });
+
+  // Show results
+  document.getElementById('pt-result-empty').style.display = 'none';
+  document.getElementById('pt-result').style.display = '';
+
+  var palletArea = palletL * palletW;
+  var overallUtil = palletArea > 0 ? Math.min(100, maxLayerArea / palletArea * 100) : 0;
+
+  document.getElementById('pt-utilization').innerHTML = fmtNum(overallUtil, 1) + '<span class="summary-unit">%</span>';
+  // Per-layer from first item
+  var firstPerLayer = results.length > 0 ? results[0].perLayer : 0;
+  var firstLayers = results.length > 0 ? results[0].layers : 0;
+  var firstTotalBoxes = results.length > 0 ? results[0].perPalletBoxes : 0;
+  var firstHeight = results.length > 0 ? results[0].totalHeight : 0;
+  var firstWeight = results.length > 0 ? results[0].totalWeight : 0;
+
+  document.getElementById('pt-per-layer').innerHTML = firstPerLayer + '<span class="summary-unit">箱</span>';
+  document.getElementById('pt-layers').innerHTML = firstLayers + '<span class="summary-unit">层</span>';
+  document.getElementById('pt-total-boxes').innerHTML = firstTotalBoxes + '<span class="summary-unit">箱</span>';
+  document.getElementById('pt-total-height').innerHTML = firstHeight + '<span class="summary-unit">mm</span>';
+  document.getElementById('pt-total-weight').innerHTML = fmtNum(firstWeight, 2) + '<span class="summary-unit">KG</span>';
+  document.getElementById('pt-pallet-count').innerHTML = totalPallets + '<span class="summary-unit">托</span>';
+
+  // Warnings
+  var warnings = '';
+  results.forEach(function(r) {
+    if (r.warning) warnings += '<div style="color:var(--danger);font-size:12px;margin-top:4px">⚠ ' + r.desc + ': ' + r.warning + '</div>';
+  });
+  document.getElementById('pt-warnings').innerHTML = warnings;
+
+  // Detail table
+  document.getElementById('pt-detail-card').style.display = '';
+  var detailHtml = '';
+  results.forEach(function(r) {
+    detailHtml += '<tr>\
+      <td class="num-col">' + r.idx + '</td>\
+      <td>' + (r.desc || '') + '</td>\
+      <td>' + r.orient + '</td>\
+      <td class="num" style="font-family:var(--font-mono)">' + r.arrangement + '</td>\
+      <td class="num" style="font-family:var(--font-mono);font-weight:600">' + r.perLayer + '</td>\
+      <td class="num" style="font-family:var(--font-mono)">' + r.layers + '</td>\
+      <td class="num" style="font-family:var(--font-mono);font-weight:600">' + r.totalBoxes + '</td>\
+      <td class="num" style="font-family:var(--font-mono)">' + fmtNum(r.totalWeight, 2) + '</td>\
+      <td class="num" style="font-family:var(--font-mono);color:var(--accent-blue);font-weight:600">' + r.pallets + '</td>\
+    </tr>';
+  });
+  document.getElementById('pt-detail-tbody').innerHTML = detailHtml;
+
+  // Draw top-view visual
+  drawPalletTopView(results[0], palletL, palletW);
+}
+
+function drawPalletTopView(result, palletL, palletW) {
+  document.getElementById('pt-visual-card').style.display = '';
+  var container = document.getElementById('pt-visual-container');
+  if (!result || !result.boxL) { container.innerHTML = '<div style="color:var(--text-muted)">无数据</div>'; return; }
+
+  var scale = Math.min(380 / palletL, 280 / palletW);
+  var sW = palletL * scale;
+  var sH = palletW * scale;
+  var boxW = result.boxL * scale;
+  var boxH = result.boxW * scale;
+  var cols = Math.floor(palletL / result.boxL);
+  var rows = Math.floor(palletW / result.boxW);
+
+  var colors = ['#3b5998','#4267B2','#5B7FD9','#6B8FDF','#7B9FE5','#8BAFEB'];
+  var html = '<div style="position:relative;width:' + sW + 'px;height:' + sH + 'px;background:#d4d8e0;border:2px solid #8a92a6;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15)">';
+  html += '<div style="position:absolute;top:-22px;left:0;font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">' + palletL + 'mm</div>';
+  html += '<div style="position:absolute;top:0;left:' + (sW + 8) + 'px;font-size:11px;color:var(--text-muted);font-family:var(--font-mono);writing-mode:vertical-lr">' + palletW + 'mm</div>';
+
+  for (var r = 0; r < rows; r++) {
+    for (var c = 0; c < cols; c++) {
+      var x = c * boxW;
+      var y = r * boxH;
+      var colorIdx = (r * cols + c) % colors.length;
+      html += '<div style="position:absolute;left:' + (x + 1) + 'px;top:' + (y + 1) + 'px;width:' + (boxW - 2) + 'px;height:' + (boxH - 2) + 'px;background:' + colors[colorIdx] + ';border:1px solid rgba(255,255,255,0.4);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.7);font-family:var(--font-mono)">' + (r * cols + c + 1) + '</div>';
+    }
+  }
+  html += '</div>';
+  html += '<div style="margin-top:12px;font-size:12px;color:var(--text-muted);text-align:center">每层 ' + result.perLayer + ' 箱 · ' + cols + '列 × ' + rows + '行 · 利用率 ' + fmtNum(result.utilization, 1) + '%</div>';
+  container.innerHTML = html;
+}
+
 // ==================== COPY BETWEEN DOCS ====================
 function copyFromDoc(srcType, dstType) {
   collectPageData(srcType);
@@ -3947,12 +4420,14 @@ var DOC_STAMP_SIG = {
 };
 
 // Default positions (relative to .doc-paper, in px within the A4 preview)
-// A4 @96dpi ≈ 794×1123px, content area after 18mm/16mm padding ≈ 667×1035px
+// A4 @96dpi ≈ 794×1123px, padding 18mm(top/bottom) 16mm(left/right)
+//   padding in px: left/right ≈ 60px, top/bottom ≈ 68px
+//   content area: x∈[60, 734], y∈[68, 1055]
 // Real-world stamp ≈ 40mm diameter → 40/25.4*96 ≈ 151px
-// Real-world signature ≈ 30mm×15mm → 30/25.4*96 ≈ 113px × 57px
-// Stamp at bottom-right, overlapping the signature line (half on text)
-var STAMP_DEFAULT = { x: 480, y: 970, w: 151, h: 151 };
-var SIG_DEFAULT   = { x: 80, y: 985, w: 113, h: 57 };
+// Real-world signature ≈ 30mm×15mm → 113px × 57px
+// Stamp at bottom-right of paper, overlapping signature line (half on text)
+var STAMP_DEFAULT = { x: 563, y: 904, w: 151, h: 151 };
+var SIG_DEFAULT   = { x: 60, y: 920, w: 113, h: 57 };
 
 function getStampPos(docType) {
   var s = DOC_STAMP_SIG[docType];
