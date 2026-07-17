@@ -557,6 +557,7 @@ body {
   color: #1a1f2e;
   font-size: 12px;
   line-height: 1.7;
+  position: relative;
 }
 .doc-header {
   display: flex;
@@ -905,6 +906,8 @@ body {
   .doc-paper { box-shadow: none; width: 100%; min-height: auto; padding: 10mm; }
   .page { display: none; }
   .page.active { display: block; }
+  .seal-resize { display: none !important; }
+  .seal-stamp { cursor: default !important; }
   @page { margin: 10mm; }
 }
 </style>
@@ -1920,6 +1923,7 @@ function init() {
   loadSettings();
   updateStampPreview();
   updateSignaturePreview();
+  loadStampSigPositions();
   setupNavigation();
   initAllTables();
   updateContainerInfo();
@@ -3302,6 +3306,8 @@ function togglePreview(docType) {
     renderPreview(docType);
     editEl.style.display = 'none';
     prevEl.style.display = '';
+    // Bind seal drag/resize after DOM is updated
+    setTimeout(function() { bindSealInteractions(docType); }, 50);
   } else {
     editEl.style.display = '';
     prevEl.style.display = 'none';
@@ -3931,13 +3937,57 @@ function updateSignaturePreview() {
   }
 }
 
-// Per-document stamp/signature toggle state
+// Per-document stamp/signature toggle state + position/size config
+// Each doc stores: { stamp: bool, sig: bool, stampPos: {x,y,w,h}, sigPos: {x,y,w,h} }
 var DOC_STAMP_SIG = {
-  proforma: { stamp: false, sig: false },
-  commercial: { stamp: false, sig: false },
-  packing: { stamp: false, sig: false },
-  spec: { stamp: false, sig: false }
+  proforma:   { stamp: false, sig: false, stampPos: null, sigPos: null },
+  commercial: { stamp: false, sig: false, stampPos: null, sigPos: null },
+  packing:    { stamp: false, sig: false, stampPos: null, sigPos: null },
+  spec:       { stamp: false, sig: false, stampPos: null, sigPos: null }
 };
+
+// Default positions (relative to .doc-paper, in px within the A4 preview)
+var STAMP_DEFAULT = { x: 400, y: 620, w: 120, h: 120 };
+var SIG_DEFAULT   = { x: 150, y: 640, w: 100, h: 50 };
+
+function getStampPos(docType) {
+  var s = DOC_STAMP_SIG[docType];
+  return s.stampPos || Object.assign({}, STAMP_DEFAULT);
+}
+function getSigPos(docType) {
+  var s = DOC_STAMP_SIG[docType];
+  return s.sigPos || Object.assign({}, SIG_DEFAULT);
+}
+function saveStampSigPositions() {
+  if (!App.data.stampSig) App.data.stampSig = {};
+  for (var key in DOC_STAMP_SIG) {
+    App.data.stampSig[key] = {
+      stamp: DOC_STAMP_SIG[key].stamp,
+      sig: DOC_STAMP_SIG[key].sig,
+      stampPos: DOC_STAMP_SIG[key].stampPos,
+      sigPos: DOC_STAMP_SIG[key].sigPos
+    };
+  }
+  localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+}
+function loadStampSigPositions() {
+  var saved = App.data.stampSig;
+  if (saved) {
+    for (var key in saved) {
+      if (DOC_STAMP_SIG[key]) {
+        DOC_STAMP_SIG[key].stamp = saved[key].stamp || false;
+        DOC_STAMP_SIG[key].sig = saved[key].sig || false;
+        DOC_STAMP_SIG[key].stampPos = saved[key].stampPos || null;
+        DOC_STAMP_SIG[key].sigPos = saved[key].sigPos || null;
+        // Update button states
+        var sBtn = document.getElementById(key + '-stamp-btn');
+        var gBtn = document.getElementById(key + '-sig-btn');
+        if (sBtn && DOC_STAMP_SIG[key].stamp) { sBtn.textContent = '印章: 开'; sBtn.classList.add('btn-gold'); sBtn.classList.remove('btn-outline'); }
+        if (gBtn && DOC_STAMP_SIG[key].sig) { gBtn.textContent = '签字: 开'; gBtn.classList.add('btn-gold'); gBtn.classList.remove('btn-outline'); }
+      }
+    }
+  }
+}
 
 function toggleStamp(docType) {
   DOC_STAMP_SIG[docType].stamp = !DOC_STAMP_SIG[docType].stamp;
@@ -3951,6 +4001,7 @@ function toggleStamp(docType) {
     btn.classList.remove('btn-gold');
     btn.classList.add('btn-outline');
   }
+  saveStampSigPositions();
 }
 
 function toggleSignature(docType) {
@@ -3965,15 +4016,160 @@ function toggleSignature(docType) {
     btn.classList.remove('btn-gold');
     btn.classList.add('btn-outline');
   }
+  saveStampSigPositions();
 }
 
-// Helper: get stamp/signature HTML for a document's signature area
+// Helper: get stamp/signature HTML — absolute positioned, draggable, resizable
 function getStampSigHtml(docType) {
   var state = DOC_STAMP_SIG[docType];
   var company = App.data.company || {};
-  var stampImg = state.stamp && company.stamp ? '<img src="' + company.stamp + '" style="max-width:120px;max-height:120px;object-fit:contain;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.85">' : '';
-  var sigImg = state.sig && company.signature ? '<img src="' + company.signature + '" style="max-width:100px;max-height:60px;object-fit:contain;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">' : '';
+  var stampImg = '';
+  var sigImg = '';
+
+  if (state.stamp && company.stamp) {
+    var sp = getStampPos(docType);
+    stampImg = '<div class="seal-stamp" data-doc="' + docType + '" data-type="stamp" style="position:absolute;left:' + sp.x + 'px;top:' + sp.y + 'px;width:' + sp.w + 'px;height:' + sp.h + 'px;cursor:move;z-index:10">' +
+      '<img src="' + company.stamp + '" style="width:100%;height:100%;object-fit:contain;opacity:0.85;pointer-events:none;user-select:none">' +
+      '<div class="seal-resize" data-doc="' + docType + '" data-type="stamp" style="position:absolute;bottom:-4px;right:-4px;width:12px;height:12px;background:var(--accent-gold);border:1px solid #fff;border-radius:2px;cursor:nwse-resize"></div>' +
+      '</div>';
+  }
+  if (state.sig && company.signature) {
+    var gp = getSigPos(docType);
+    sigImg = '<div class="seal-stamp" data-doc="' + docType + '" data-type="sig" style="position:absolute;left:' + gp.x + 'px;top:' + gp.y + 'px;width:' + gp.w + 'px;height:' + gp.h + 'px;cursor:move;z-index:10">' +
+      '<img src="' + company.signature + '" style="width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none">' +
+      '<div class="seal-resize" data-doc="' + docType + '" data-type="sig" style="position:absolute;bottom:-4px;right:-4px;width:12px;height:12px;background:var(--accent-gold);border:1px solid #fff;border-radius:2px;cursor:nwse-resize"></div>' +
+      '</div>';
+  }
   return { stampImg: stampImg, sigImg: sigImg };
+}
+
+// Bind drag & resize interactions after preview is rendered
+function bindSealInteractions(docType) {
+  var previewArea = document.getElementById(docType + '-preview-area');
+  if (!previewArea) return;
+  var sealEls = previewArea.querySelectorAll('.seal-stamp');
+  sealEls.forEach(function(el) {
+    var type = el.dataset.type;
+    var doc = el.dataset.doc;
+
+    // Drag
+    el.addEventListener('mousedown', function(e) {
+      if (e.target.classList.contains('seal-resize')) return; // handled by resize
+      e.preventDefault();
+      var startX = e.clientX, startY = e.clientY;
+      var origLeft = parseInt(el.style.left), origTop = parseInt(el.style.top);
+      var paperEl = el.parentElement;
+      var maxW = paperEl.clientWidth - el.offsetWidth;
+      var maxH = paperEl.clientHeight - el.offsetHeight;
+
+      function onMove(e2) {
+        var dx = e2.clientX - startX, dy = e2.clientY - startY;
+        var nx = Math.max(0, Math.min(maxW, origLeft + dx));
+        var ny = Math.max(0, Math.min(maxH, origTop + dy));
+        el.style.left = nx + 'px';
+        el.style.top = ny + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        // Save position
+        var pos = { x: parseInt(el.style.left), y: parseInt(el.style.top), w: parseInt(el.style.width), h: parseInt(el.style.height) };
+        if (type === 'stamp') DOC_STAMP_SIG[doc].stampPos = pos;
+        else DOC_STAMP_SIG[doc].sigPos = pos;
+        saveStampSigPositions();
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    // Touch drag
+    el.addEventListener('touchstart', function(e) {
+      if (e.target.classList.contains('seal-resize')) return;
+      e.preventDefault();
+      var touch = e.touches[0];
+      var startX = touch.clientX, startY = touch.clientY;
+      var origLeft = parseInt(el.style.left), origTop = parseInt(el.style.top);
+      var paperEl = el.parentElement;
+      var maxW = paperEl.clientWidth - el.offsetWidth;
+      var maxH = paperEl.clientHeight - el.offsetHeight;
+
+      function onMove(e2) {
+        var t = e2.touches[0];
+        var dx = t.clientX - startX, dy = t.clientY - startY;
+        var nx = Math.max(0, Math.min(maxW, origLeft + dx));
+        var ny = Math.max(0, Math.min(maxH, origTop + dy));
+        el.style.left = nx + 'px';
+        el.style.top = ny + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onUp);
+        var pos = { x: parseInt(el.style.left), y: parseInt(el.style.top), w: parseInt(el.style.width), h: parseInt(el.style.height) };
+        if (type === 'stamp') DOC_STAMP_SIG[doc].stampPos = pos;
+        else DOC_STAMP_SIG[doc].sigPos = pos;
+        saveStampSigPositions();
+      }
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+    }, { passive: false });
+
+    // Resize handle
+    var resizeHandle = el.querySelector('.seal-resize');
+    if (resizeHandle) {
+      resizeHandle.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var startX = e.clientX, startY = e.clientY;
+        var origW = parseInt(el.style.width), origH = parseInt(el.style.height);
+
+        function onMove(e2) {
+          var dx = e2.clientX - startX, dy = e2.clientY - startY;
+          var nw = Math.max(30, Math.min(400, origW + dx));
+          var nh = Math.max(20, Math.min(400, origH + dy));
+          el.style.width = nw + 'px';
+          el.style.height = nh + 'px';
+        }
+        function onUp() {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          var pos = { x: parseInt(el.style.left), y: parseInt(el.style.top), w: parseInt(el.style.width), h: parseInt(el.style.height) };
+          if (type === 'stamp') DOC_STAMP_SIG[doc].stampPos = pos;
+          else DOC_STAMP_SIG[doc].sigPos = pos;
+          saveStampSigPositions();
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      // Touch resize
+      resizeHandle.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var touch = e.touches[0];
+        var startX = touch.clientX, startY = touch.clientY;
+        var origW = parseInt(el.style.width), origH = parseInt(el.style.height);
+
+        function onMove(e2) {
+          var t = e2.touches[0];
+          var dx = t.clientX - startX, dy = t.clientY - startY;
+          var nw = Math.max(30, Math.min(400, origW + dx));
+          var nh = Math.max(20, Math.min(400, origH + dy));
+          el.style.width = nw + 'px';
+          el.style.height = nh + 'px';
+        }
+        function onUp() {
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onUp);
+          var pos = { x: parseInt(el.style.left), y: parseInt(el.style.top), w: parseInt(el.style.width), h: parseInt(el.style.height) };
+          if (type === 'stamp') DOC_STAMP_SIG[doc].stampPos = pos;
+          else DOC_STAMP_SIG[doc].sigPos = pos;
+          saveStampSigPositions();
+        }
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onUp);
+      }, { passive: false });
+    }
+  });
 }
 
 function loadSettings() {
