@@ -2852,49 +2852,54 @@ function renderContainer3D(container, details) {
       });
 
       // ====== DIMENSION ANNOTATIONS ======
-      // Extension offset distance from container edge
-      var EXT = 0.35;  // how far annotation lines extend from container corners
       var allSprites = []; // collect for fixed-size scaling
 
       // Helper to register sprite for dynamic scaling
       function regSprite(s) { allSprites.push(s); return s; }
 
-      // ====== 1. Container Dimensions (gold, along container edges) ======
-      // L (X-axis): along front-bottom-left to front-bottom-right corner
-      // Extension lines from container corners going outward in -Z
-      var cL_s = new THREE.Vector3(cx0, 0, cz0 - EXT);
-      var cL_e = new THREE.Vector3(cx1, 0, cz0 - EXT);
-      labelGroup.add(makeDimLine(cL_s, cL_e, CLR_CONTAINER.hex, 0.8));
+      // ====== 1. Container Dimensions (gold, ALL from front-bottom-left corner) ======
+      // All three dimension lines emanate from the same corner (cx0, 0, cz0)
+      // L extends in -Z (front), W extends in -X (left), H goes up at the intersection
+      var EXT_C = 0.5;  // offset distance for container dim lines
+
+      // L (X-axis): in front of container, offset in -Z
+      var cL_s = new THREE.Vector3(cx0, 0, cz0 - EXT_C);
+      var cL_e = new THREE.Vector3(cx1, 0, cz0 - EXT_C);
+      labelGroup.add(makeDimLine(cL_s, cL_e, CLR_CONTAINER.hex, 0.85));
       labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz0), cL_s, CLR_CONTAINER.hex));
       labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz0), cL_e, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cL_s, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cL_e, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
-      var sCL = regSprite(makeTextSprite('L: ' + container.L + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 56 }));
-      sCL.position.set((cx0 + cx1) / 2, 0, cz0 - EXT - 0.25);
+      var sCL = regSprite(makeTextSprite('L: ' + container.L + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
+      sCL.position.set((cx0 + cx1) / 2, 0, cz0 - EXT_C - 0.3);
       labelGroup.add(sCL);
 
-      // W (Z-axis): along right-bottom edge, extension in +X
-      var cW_s = new THREE.Vector3(cx1 + EXT, 0, cz0);
-      var cW_e = new THREE.Vector3(cx1 + EXT, 0, cz1);
-      labelGroup.add(makeDimLine(cW_s, cW_e, CLR_CONTAINER.hex, 0.8));
-      labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz0), cW_s, CLR_CONTAINER.hex));
-      labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz1), cW_e, CLR_CONTAINER.hex));
+      // W (Z-axis): to the left of container, offset in -X
+      var cW_s = new THREE.Vector3(cx0 - EXT_C, 0, cz0);
+      var cW_e = new THREE.Vector3(cx0 - EXT_C, 0, cz1);
+      labelGroup.add(makeDimLine(cW_s, cW_e, CLR_CONTAINER.hex, 0.85));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz0), cW_s, CLR_CONTAINER.hex));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz1), cW_e, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cW_s, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cW_e, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
-      var sCW = regSprite(makeTextSprite('W: ' + container.W + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 56 }));
-      sCW.position.set(cx1 + EXT + 0.25, 0, (cz0 + cz1) / 2);
+      var sCW = regSprite(makeTextSprite('W: ' + container.W + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
+      sCW.position.set(cx0 - EXT_C - 0.3, 0, (cz0 + cz1) / 2);
       labelGroup.add(sCW);
 
-      // H (Y-axis): along back-left edge, extension in -X
-      var cH_s = new THREE.Vector3(cx0 - EXT, 0, cz1);
-      var cH_e = new THREE.Vector3(cx0 - EXT, cH, cz1);
-      labelGroup.add(makeDimLine(cH_s, cH_e, CLR_CONTAINER.hex, 0.8));
-      labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz1), cH_s, CLR_CONTAINER.hex));
-      labelGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz1), cH_e, CLR_CONTAINER.hex));
-      labelGroup.add(makeEndpointTick(cH_s, new THREE.Vector3(0, 0, 1), 0.08, CLR_CONTAINER.hex));
-      labelGroup.add(makeEndpointTick(cH_e, new THREE.Vector3(0, 0, 1), 0.08, CLR_CONTAINER.hex));
-      var sCH = regSprite(makeTextSprite('H: ' + container.H + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 56 }));
-      sCH.position.set(cx0 - EXT - 0.25, cH / 2, cz1);
+      // H (Y-axis): going up, at the intersection of L and W extensions
+      // Position: (cx0 - EXT_C, *, cz0 - EXT_C) — the corner where L and W meet
+      var cH_s = new THREE.Vector3(cx0 - EXT_C, 0, cz0 - EXT_C);
+      var cH_e = new THREE.Vector3(cx0 - EXT_C, cH, cz0 - EXT_C);
+      labelGroup.add(makeDimLine(cH_s, cH_e, CLR_CONTAINER.hex, 0.85));
+      // Extension from W line to H line start (along -Z)
+      labelGroup.add(makeExtLine(cW_s, cH_s, CLR_CONTAINER.hex));
+      // Extension from container top corner to H line end (L-shaped: -X then -Z)
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz0), new THREE.Vector3(cx0 - EXT_C, cH, cz0), CLR_CONTAINER.hex));
+      labelGroup.add(makeExtLine(new THREE.Vector3(cx0 - EXT_C, cH, cz0), cH_e, CLR_CONTAINER.hex));
+      labelGroup.add(makeEndpointTick(cH_s, new THREE.Vector3(1, 0, 0), 0.08, CLR_CONTAINER.hex));
+      labelGroup.add(makeEndpointTick(cH_e, new THREE.Vector3(1, 0, 0), 0.08, CLR_CONTAINER.hex));
+      var sCH = regSprite(makeTextSprite('H: ' + container.H + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
+      sCH.position.set(cx0 - EXT_C - 0.3, cH / 2, cz0 - EXT_C);
       labelGroup.add(sCH);
 
       // ====== 2. Package Dimensions (cyan, annotate first box) ======
@@ -2903,7 +2908,7 @@ function renderContainer3D(container, details) {
         var fbx0 = fb.x - fb.bl / 2, fbx1 = fb.x + fb.bl / 2;
         var fby0 = fb.y - fb.bh / 2, fby1 = fb.y + fb.bh / 2;
         var fbz0 = fb.z - fb.bw / 2, fbz1 = fb.z + fb.bw / 2;
-        var pEXT = 0.15;
+        var pEXT = 0.2;
 
         // Package L (X-axis): extension in -Z from front face
         var pL_s = new THREE.Vector3(fbx0, fby0, fbz0 - pEXT);
@@ -2913,44 +2918,48 @@ function renderContainer3D(container, details) {
         labelGroup.add(makeExtLine(new THREE.Vector3(fbx1, fby0, fbz0), pL_e, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pL_s, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pL_e, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
-        var sPL = regSprite(makeTextSprite(fb.origL + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 44 }));
-        sPL.position.set(fb.x, fby0 - 0.12, fbz0 - pEXT - 0.18);
+        var sPL = regSprite(makeTextSprite(fb.origL + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+        sPL.position.set(fb.x, fby0 - 0.15, fbz0 - pEXT - 0.2);
         labelGroup.add(sPL);
 
-        // Package W (Z-axis): extension in +X from right face
-        var pW_s = new THREE.Vector3(fbx1 + pEXT, fby0, fbz0);
-        var pW_e = new THREE.Vector3(fbx1 + pEXT, fby0, fbz1);
+        // Package W (Z-axis): extension in -X from left face
+        var pW_s = new THREE.Vector3(fbx0 - pEXT, fby0, fbz0);
+        var pW_e = new THREE.Vector3(fbx0 - pEXT, fby0, fbz1);
         labelGroup.add(makeDimLine(pW_s, pW_e, CLR_PACKAGE.hex, 0.8));
-        labelGroup.add(makeExtLine(new THREE.Vector3(fbx1, fby0, fbz0), pW_s, CLR_PACKAGE.hex));
-        labelGroup.add(makeExtLine(new THREE.Vector3(fbx1, fby0, fbz1), pW_e, CLR_PACKAGE.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby0, fbz0), pW_s, CLR_PACKAGE.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby0, fbz1), pW_e, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pW_s, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pW_e, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
-        var sPW = regSprite(makeTextSprite(fb.origW + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 44 }));
-        sPW.position.set(fbx1 + pEXT + 0.18, fby0 - 0.12, fb.z);
+        var sPW = regSprite(makeTextSprite(fb.origW + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+        sPW.position.set(fbx0 - pEXT - 0.2, fby0 - 0.15, fb.z);
         labelGroup.add(sPW);
 
-        // Package H (Y-axis): extension in -X from left face
-        var pH_s = new THREE.Vector3(fbx0 - pEXT, fby0, fbz0);
-        var pH_e = new THREE.Vector3(fbx0 - pEXT, fby1, fbz0);
+        // Package H (Y-axis): at front-left corner intersection
+        var pH_s = new THREE.Vector3(fbx0 - pEXT, fby0, fbz0 - pEXT);
+        var pH_e = new THREE.Vector3(fbx0 - pEXT, fby1, fbz0 - pEXT);
         labelGroup.add(makeDimLine(pH_s, pH_e, CLR_PACKAGE.hex, 0.8));
-        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby0, fbz0), pH_s, CLR_PACKAGE.hex));
-        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby1, fbz0), pH_e, CLR_PACKAGE.hex));
-        labelGroup.add(makeEndpointTick(pH_s, new THREE.Vector3(0, 0, 1), 0.05, CLR_PACKAGE.hex));
-        labelGroup.add(makeEndpointTick(pH_e, new THREE.Vector3(0, 0, 1), 0.05, CLR_PACKAGE.hex));
-        var sPH = regSprite(makeTextSprite(fb.origH + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 44 }));
-        sPH.position.set(fbx0 - pEXT - 0.18, fb.y, fbz0 - 0.12);
+        // Extension connecting from W line to H line
+        labelGroup.add(makeExtLine(pW_s, pH_s, CLR_PACKAGE.hex));
+        // Extension from box top corner
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby1, fbz0), new THREE.Vector3(fbx0 - pEXT, fby1, fbz0), CLR_PACKAGE.hex));
+        labelGroup.add(makeExtLine(new THREE.Vector3(fbx0 - pEXT, fby1, fbz0), pH_e, CLR_PACKAGE.hex));
+        labelGroup.add(makeEndpointTick(pH_s, new THREE.Vector3(1, 0, 0), 0.05, CLR_PACKAGE.hex));
+        labelGroup.add(makeEndpointTick(pH_e, new THREE.Vector3(1, 0, 0), 0.05, CLR_PACKAGE.hex));
+        var sPH = regSprite(makeTextSprite(fb.origH + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+        sPH.position.set(fbx0 - pEXT - 0.2, fb.y, fbz0 - pEXT - 0.15);
         labelGroup.add(sPH);
       }
 
       // ====== 3. Gap Annotations (orange, cargo edge to container wall) ======
+      // All gap lines also emanate from the front-left area for visual consistency
       if (details.length > 0 && details[0].arrangementParts) {
         var d0 = details[0];
         var bl0 = d0.boxL * SCALE, bw0 = d0.boxW * SCALE, bh0 = d0.boxH * SCALE;
         var parts0 = d0.arrangementParts;
         var rows0 = parts0[0] || 1, cols0 = parts0[1] || 1, layers0 = parts0[2] || 1;
-        var gEXT = 0.3;
+        var gEXT = 0.35;
 
-        // X gap: cargo right edge to container right wall
+        // X gap: cargo right edge to container right wall — along the top-front edge
         var cargoRightX = offset.x + rows0 * bl0;
         var xGapMm = Math.round(container.L - rows0 * d0.boxL);
         if (xGapMm > 0) {
@@ -2961,12 +2970,12 @@ function renderContainer3D(container, details) {
           gapGroup.add(makeExtLine(new THREE.Vector3(cx1, cH, cz0), xg_e, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(xg_s, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(xg_e, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
-          var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 48 }));
-          sXG.position.set((cargoRightX + cx1) / 2, cH + gEXT + 0.22, cz0);
+          var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 54 }));
+          sXG.position.set((cargoRightX + cx1) / 2, cH + gEXT + 0.25, cz0);
           gapGroup.add(sXG);
         }
 
-        // Z gap: cargo back edge to container back wall
+        // Z gap: cargo back edge to container back wall — along the top-left edge
         var cargoBackZ = offset.z + cols0 * bw0;
         var zGapMm = Math.round(container.W - cols0 * d0.boxW);
         if (zGapMm > 0) {
@@ -2977,24 +2986,24 @@ function renderContainer3D(container, details) {
           gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz1), zg_e, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(zg_s, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(zg_e, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
-          var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 48 }));
-          sZG.position.set(cx0, cH + gEXT + 0.22, (cargoBackZ + cz1) / 2);
+          var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 54 }));
+          sZG.position.set(cx0 - 0.25, cH + gEXT + 0.25, (cargoBackZ + cz1) / 2);
           gapGroup.add(sZG);
         }
 
-        // Y gap: cargo top to container ceiling
+        // Y gap: cargo top to container ceiling — along the front-left edge
         var cargoTopY = layers0 * bh0;
         var yGapMm = Math.round(container.H - layers0 * d0.boxH);
         if (yGapMm > 0) {
-          var yg_s = new THREE.Vector3(cx1 + gEXT, cargoTopY, cz1);
-          var yg_e = new THREE.Vector3(cx1 + gEXT, cH, cz1);
+          var yg_s = new THREE.Vector3(cx0, cargoTopY, cz0 - gEXT);
+          var yg_e = new THREE.Vector3(cx0, cH, cz0 - gEXT);
           gapGroup.add(makeDimLine(yg_s, yg_e, CLR_GAP.hex, 0.85));
-          gapGroup.add(makeExtLine(new THREE.Vector3(cx1, cargoTopY, cz1), yg_s, CLR_GAP.hex));
-          gapGroup.add(makeExtLine(new THREE.Vector3(cx1, cH, cz1), yg_e, CLR_GAP.hex));
-          gapGroup.add(makeEndpointTick(yg_s, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
-          gapGroup.add(makeEndpointTick(yg_e, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
-          var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 48 }));
-          sYG.position.set(cx1 + gEXT + 0.22, (cargoTopY + cH) / 2, cz1);
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cargoTopY, cz0), yg_s, CLR_GAP.hex));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz0), yg_e, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(yg_s, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(yg_e, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
+          var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 54 }));
+          sYG.position.set(cx0 - 0.25, (cargoTopY + cH) / 2, cz0 - gEXT);
           gapGroup.add(sYG);
         }
       }
@@ -3077,7 +3086,7 @@ function renderContainer3D(container, details) {
 
       // ====== Animation Loop with Fixed-Size Label Scaling ======
       // Target sprite on-screen height (in 3D world units at distance 1)
-      var TARGET_SCREEN_PX = 22;  // desired sprite height in screen pixels
+      var TARGET_SCREEN_PX = 28;  // desired sprite height in screen pixels
       var animationId = null;
 
       function updateSpriteSizes() {
