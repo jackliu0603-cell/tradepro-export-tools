@@ -2950,60 +2950,70 @@ function renderContainer3D(container, details) {
         labelGroup.add(sPH);
       }
 
-      // ====== 3. Gap Annotations (orange, cargo edge to container wall) ======
-      // All gap lines also emanate from the front-left area for visual consistency
+      // ====== 3. Gap Annotations (orange, ALL from front-top-left corner) ======
+      // All three gap lines cluster around the same corner (cx0, cH, cz0)
+      // ΔX extends in -Z (front), ΔZ extends in -X (left), ΔY goes up at intersection
       if (details.length > 0 && details[0].arrangementParts) {
         var d0 = details[0];
         var bl0 = d0.boxL * SCALE, bw0 = d0.boxW * SCALE, bh0 = d0.boxH * SCALE;
         var parts0 = d0.arrangementParts;
         var rows0 = parts0[0] || 1, cols0 = parts0[1] || 1, layers0 = parts0[2] || 1;
-        var gEXT = 0.35;
+        var gEXT = 0.5;  // offset distance, same as container dim for visual alignment
 
-        // X gap: cargo right edge to container right wall — along the top-front edge
+        // Cargo edges
         var cargoRightX = offset.x + rows0 * bl0;
+        var cargoBackZ = offset.z + cols0 * bw0;
+        var cargoTopY = layers0 * bh0;
+
+        // ΔX: cargo right edge → container right wall, along top-front, offset in -Z
         var xGapMm = Math.round(container.L - rows0 * d0.boxL);
         if (xGapMm > 0) {
-          var xg_s = new THREE.Vector3(cargoRightX, cH + gEXT, cz0);
-          var xg_e = new THREE.Vector3(cx1, cH + gEXT, cz0);
+          var xg_s = new THREE.Vector3(cargoRightX, cH, cz0 - gEXT);
+          var xg_e = new THREE.Vector3(cx1, cH, cz0 - gEXT);
           gapGroup.add(makeDimLine(xg_s, xg_e, CLR_GAP.hex, 0.85));
           gapGroup.add(makeExtLine(new THREE.Vector3(cargoRightX, cH, cz0), xg_s, CLR_GAP.hex));
           gapGroup.add(makeExtLine(new THREE.Vector3(cx1, cH, cz0), xg_e, CLR_GAP.hex));
-          gapGroup.add(makeEndpointTick(xg_s, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
-          gapGroup.add(makeEndpointTick(xg_e, new THREE.Vector3(0, 0, 1), 0.06, CLR_GAP.hex));
-          var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 54 }));
-          sXG.position.set((cargoRightX + cx1) / 2, cH + gEXT + 0.25, cz0);
+          gapGroup.add(makeEndpointTick(xg_s, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(xg_e, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
+          var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+          sXG.position.set((cargoRightX + cx1) / 2, cH, cz0 - gEXT - 0.3);
           gapGroup.add(sXG);
         }
 
-        // Z gap: cargo back edge to container back wall — along the top-left edge
-        var cargoBackZ = offset.z + cols0 * bw0;
+        // ΔZ: cargo back edge → container back wall, along top-left, offset in -X
         var zGapMm = Math.round(container.W - cols0 * d0.boxW);
         if (zGapMm > 0) {
-          var zg_s = new THREE.Vector3(cx0, cH + gEXT, cargoBackZ);
-          var zg_e = new THREE.Vector3(cx0, cH + gEXT, cz1);
+          var zg_s = new THREE.Vector3(cx0 - gEXT, cH, cargoBackZ);
+          var zg_e = new THREE.Vector3(cx0 - gEXT, cH, cz1);
           gapGroup.add(makeDimLine(zg_s, zg_e, CLR_GAP.hex, 0.85));
           gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cargoBackZ), zg_s, CLR_GAP.hex));
           gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz1), zg_e, CLR_GAP.hex));
-          gapGroup.add(makeEndpointTick(zg_s, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
-          gapGroup.add(makeEndpointTick(zg_e, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
-          var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 54 }));
-          sZG.position.set(cx0 - 0.25, cH + gEXT + 0.25, (cargoBackZ + cz1) / 2);
+          gapGroup.add(makeEndpointTick(zg_s, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(zg_e, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
+          var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+          sZG.position.set(cx0 - gEXT - 0.3, cH, (cargoBackZ + cz1) / 2);
           gapGroup.add(sZG);
         }
 
-        // Y gap: cargo top to container ceiling — along the front-left edge
-        var cargoTopY = layers0 * bh0;
+        // ΔY: cargo top → container ceiling, at the intersection of ΔX and ΔZ lines
+        // Position: (cx0 - gEXT, *, cz0 - gEXT) — the corner where ΔX and ΔZ meet
         var yGapMm = Math.round(container.H - layers0 * d0.boxH);
         if (yGapMm > 0) {
-          var yg_s = new THREE.Vector3(cx0, cargoTopY, cz0 - gEXT);
-          var yg_e = new THREE.Vector3(cx0, cH, cz0 - gEXT);
+          var yg_s = new THREE.Vector3(cx0 - gEXT, cargoTopY, cz0 - gEXT);
+          var yg_e = new THREE.Vector3(cx0 - gEXT, cH, cz0 - gEXT);
           gapGroup.add(makeDimLine(yg_s, yg_e, CLR_GAP.hex, 0.85));
-          gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cargoTopY, cz0), yg_s, CLR_GAP.hex));
-          gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz0), yg_e, CLR_GAP.hex));
-          gapGroup.add(makeEndpointTick(yg_s, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
-          gapGroup.add(makeEndpointTick(yg_e, new THREE.Vector3(1, 0, 0), 0.06, CLR_GAP.hex));
-          var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 54 }));
-          sYG.position.set(cx0 - 0.25, (cargoTopY + cH) / 2, cz0 - gEXT);
+          // Extension connecting ΔZ line start to ΔY line start
+          gapGroup.add(makeExtLine(zg_s, yg_s, CLR_GAP.hex));
+          // Extension from cargo top corner (L-shaped: -X then -Z)
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cargoTopY, cz0), new THREE.Vector3(cx0 - gEXT, cargoTopY, cz0), CLR_GAP.hex));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx0 - gEXT, cargoTopY, cz0), yg_s, CLR_GAP.hex));
+          // Extension from container top corner
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz0), new THREE.Vector3(cx0 - gEXT, cH, cz0), CLR_GAP.hex));
+          gapGroup.add(makeExtLine(new THREE.Vector3(cx0 - gEXT, cH, cz0), yg_e, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(yg_s, new THREE.Vector3(1, 0, 0), 0.07, CLR_GAP.hex));
+          gapGroup.add(makeEndpointTick(yg_e, new THREE.Vector3(1, 0, 0), 0.07, CLR_GAP.hex));
+          var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+          sYG.position.set(cx0 - gEXT - 0.3, (cargoTopY + cH) / 2, cz0 - gEXT);
           gapGroup.add(sYG);
         }
       }
