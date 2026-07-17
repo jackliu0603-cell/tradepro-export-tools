@@ -1384,15 +1384,45 @@ body {
 /* ========== Print ========== */
 @media print {
   .sidebar, .topbar, .page-header, .no-print { display: none !important; }
-  .main { margin-left: 0; }
-  .content-area { padding: 0; overflow: visible; }
-  .preview-area { background: #fff; padding: 0; }
-  .doc-paper { box-shadow: none; width: 100%; min-height: auto; padding: 10mm; }
+  .main { margin-left: 0; height: auto; overflow: visible; }
+  .content-area { padding: 0; overflow: visible; height: auto; }
+  .preview-area { background: #fff; padding: 0; overflow: visible; }
   .page { display: none; }
   .page.active { display: block; }
   .seal-resize { display: none !important; }
   .seal-stamp { cursor: default !important; }
-  @page { margin: 10mm; }
+
+  /* —— Keep doc-paper layout identical to on-screen preview —— */
+  .doc-paper {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 18mm 16mm;
+    box-shadow: none;
+    margin: 0 auto;
+    font-size: 12px;
+  }
+  /* Reset any mobile overrides that might change layout */
+  .doc-header {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+  }
+  .doc-parties { grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
+  .doc-footer { grid-template-columns: 1fr 1fr !important; gap: 20px !important; }
+  .doc-signature { display: flex !important; justify-content: space-between !important; }
+  .doc-paper table { font-size: 11px !important; }
+  .doc-paper th { padding: 7px 8px !important; font-size: 10px !important; }
+  .doc-paper td { padding: 6px 8px !important; font-size: 11px !important; }
+  .doc-company { font-size: 22px !important; }
+  .doc-title { font-size: 18px !important; }
+  .doc-meta { font-size: 11px !important; }
+  .doc-sig-block .line { width: 180px !important; }
+
+  /* Reset marks preview to desktop layout */
+  .marks-preview { flex-direction: row !important; gap: 24px !important; }
+
+  /* —— Page margins: zero, because .doc-paper has its own padding —— */
+  @page { margin: 0; }
 }
 </style>
 <script>
