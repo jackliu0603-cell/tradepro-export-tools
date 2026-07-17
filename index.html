@@ -1745,16 +1745,18 @@ body {
   <div class="card" id="ct-3d-card" style="display:none">
     <div class="card-header">
       <div class="card-title"><span class="dot"></span>3D 装箱可视化</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:12px;color:var(--text-muted)">拖拽旋转 · 滚轮缩放 · 右键平移</span>
-        <div style="display:flex;gap:4px" id="ct-3d-legend"></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none">
+          <input type="checkbox" id="ct-3d-toggle-labels" checked style="cursor:pointer"> 尺寸标注
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer;user-select:none">
+          <input type="checkbox" id="ct-3d-toggle-gaps" checked style="cursor:pointer"> 间隙标注
+        </label>
+        <div style="display:flex;gap:6px" id="ct-3d-legend"></div>
       </div>
     </div>
     <div class="card-body" style="padding:0">
-      <div id="ct-3d-container" style="width:100%;height:480px;background:linear-gradient(135deg,#1a1f2e 0%,#0d1117 100%);border-radius:0 0 var(--radius) var(--radius);position:relative;overflow:hidden">
-        <div id="ct-3d-hint" style="position:absolute;top:12px;left:12px;color:rgba(255,255,255,0.35);font-size:11px;pointer-events:none;z-index:5">Loading 3D...</div>
-        <div id="ct-3d-info" style="position:absolute;bottom:12px;left:12px;color:rgba(255,255,255,0.5);font-size:11px;pointer-events:none;z-index:5;font-family:var(--font-mono)"></div>
-      </div>
+      <div id="ct-3d-container" style="width:100%;height:520px;background:radial-gradient(ellipse at center,#1a2030 0%,#0a0e15 100%);border-radius:0 0 var(--radius) var(--radius);position:relative;overflow:hidden"></div>
     </div>
   </div>
 </div>
@@ -2591,6 +2593,68 @@ const CARGO_COLORS = [
   0x1abc9c, 0xe67e22, 0x3498db, 0x2ecc71, 0xe74c3c
 ];
 
+// ---- helper: create text sprite for dimension labels ----
+function makeTextSprite(text, opts) {
+  opts = opts || {};
+  var fontSize = opts.fontSize || 48;
+  var fontColor = opts.fontColor || '#4ec9b0';
+  var bgColor = opts.bgColor || 'rgba(15,20,30,0.85)';
+  var bold = opts.bold !== false;
+  var cv = document.createElement('canvas');
+  var ctx = cv.getContext('2d');
+  ctx.font = (bold ? 'bold ' : '') + fontSize + 'px "Segoe UI", Arial, sans-serif';
+  var metrics = ctx.measureText(text);
+  var tw = Math.ceil(metrics.width) + 24;
+  var th = fontSize + 16;
+  cv.width = tw; cv.height = th;
+  // re-set font after resize
+  ctx.font = (bold ? 'bold ' : '') + fontSize + 'px "Segoe UI", Arial, sans-serif';
+  // bg
+  ctx.fillStyle = bgColor;
+  ctx.beginPath();
+  var r = 6;
+  ctx.moveTo(r, 0); ctx.lineTo(tw - r, 0); ctx.quadraticCurveTo(tw, 0, tw, r);
+  ctx.lineTo(tw, th - r); ctx.quadraticCurveTo(tw, th, tw - r, th);
+  ctx.lineTo(r, th); ctx.quadraticCurveTo(0, th, 0, th - r);
+  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath(); ctx.fill();
+  // border
+  ctx.strokeStyle = fontColor;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // text
+  ctx.fillStyle = fontColor;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, tw / 2, th / 2);
+  var tex = new THREE.CanvasTexture(cv);
+  tex.needsUpdate = true;
+  var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+  sprite.scale.set(tw * 0.012, th * 0.012, 1);
+  return sprite;
+}
+
+// ---- helper: create dimension annotation line with arrows ----
+function makeDimensionLine(start, end, color) {
+  color = color || 0x4ec9b0;
+  var geo = new THREE.BufferGeometry().setFromPoints([start, end]);
+  var mat = new THREE.LineDashedMaterial({ color: color, dashSize: 0.15, gapSize: 0.08, transparent: true, opacity: 0.8 });
+  var line = new THREE.Line(geo, mat);
+  line.computeLineDistances();
+  return line;
+}
+
+// ---- helper: create arrow tick marks at line endpoints ----
+function makeTickMark(pos, dir, size, color) {
+  color = color || 0x4ec9b0;
+  size = size || 0.12;
+  var geo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(pos.x - dir.x * size, pos.y - dir.y * size, pos.z - dir.z * size),
+    new THREE.Vector3(pos.x + dir.x * size, pos.y + dir.y * size, pos.z + dir.z * size)
+  ]);
+  return new THREE.Line(geo, new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.8 }));
+}
+
 function renderContainer3D(container, details) {
   var container3D = document.getElementById('ct-3d-container');
   var legendEl = document.getElementById('ct-3d-legend');
@@ -2608,15 +2672,19 @@ function renderContainer3D(container, details) {
   container3D.appendChild(hintEl);
 
   var infoEl = document.createElement('div');
-  infoEl.style.cssText = 'position:absolute;bottom:12px;left:12px;color:rgba(255,255,255,0.5);font-size:11px;pointer-events:none;z-index:5;font-family:monospace;white-space:pre-line';
+  infoEl.style.cssText = 'position:absolute;bottom:12px;left:12px;color:rgba(255,255,255,0.45);font-size:11px;pointer-events:none;z-index:5;font-family:monospace;white-space:pre-line';
   container3D.appendChild(infoEl);
 
-  // Wait for THREE to be ready (CDN async loading)
+  var controlsEl = document.createElement('div');
+  controlsEl.style.cssText = 'position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:5';
+  container3D.appendChild(controlsEl);
+
+  // Wait for THREE to be ready
   var waitAttempts = 0;
   function waitForThree() {
     if (typeof THREE !== 'undefined' && window.THREE_READY) {
       doRender();
-    } else if (waitAttempts < 50) { // 50 × 200ms = 10s max
+    } else if (waitAttempts < 50) {
       waitAttempts++;
       hintEl.textContent = '正在加载 Three.js 引擎… (' + waitAttempts + '/50)';
       setTimeout(waitForThree, 200);
@@ -2629,9 +2697,8 @@ function renderContainer3D(container, details) {
 
   function doRender() {
     try {
-      // Get dimensions
       var clientWidth = container3D.clientWidth || (container3D.parentElement && container3D.parentElement.clientWidth) || 640;
-      var clientHeight = container3D.clientHeight || 480;
+      var clientHeight = container3D.clientHeight || 520;
       if (clientWidth < 2 || clientHeight < 2) throw new Error('容器尺寸无效: ' + clientWidth + 'x' + clientHeight);
 
       hintEl.textContent = '渲染中…';
@@ -2643,11 +2710,11 @@ function renderContainer3D(container, details) {
 
       // Scene
       var scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0d1117);
+      scene.background = new THREE.Color(0x0a0e15);
 
       // Camera
-      var camera = new THREE.PerspectiveCamera(45, clientWidth / clientHeight, 0.1, 200);
-      camera.position.set(maxDim * 2, maxDim * 1.5, maxDim * 2.5);
+      var camera = new THREE.PerspectiveCamera(42, clientWidth / clientHeight, 0.1, 200);
+      camera.position.set(maxDim * 2.2, maxDim * 1.6, maxDim * 2.8);
       camera.lookAt(0, cH / 2, 0);
 
       // Renderer
@@ -2657,27 +2724,28 @@ function renderContainer3D(container, details) {
       container3D.appendChild(renderer.domElement);
 
       // Lights
-      scene.add(new THREE.AmbientLight(0x667788, 0.8));
-      var d1 = new THREE.DirectionalLight(0xffffff, 0.7);
+      scene.add(new THREE.AmbientLight(0x667788, 0.9));
+      var d1 = new THREE.DirectionalLight(0xffffff, 0.65);
       d1.position.set(maxDim * 2, maxDim * 3, maxDim * 2);
       scene.add(d1);
-      var d2 = new THREE.DirectionalLight(0xaabbcc, 0.4);
+      var d2 = new THREE.DirectionalLight(0xaabbcc, 0.35);
       d2.position.set(-maxDim * 2, maxDim, -maxDim * 2);
       scene.add(d2);
 
-      // Grid
-      scene.add(new THREE.GridHelper(maxDim * 4, 40, 0x2a3142, 0x1a1f2e));
+      // Grid (subtle)
+      var grid = new THREE.GridHelper(maxDim * 4, 40, 0x222a3a, 0x161b26);
+      scene.add(grid);
 
       // Container wireframe (golden)
       var edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(cL, cH, cW));
-      var wire = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xc9a227, transparent: true, opacity: 0.9 }));
+      var wire = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xc9a227, transparent: true, opacity: 0.85 }));
       wire.position.set(offset.x + cL / 2, cH / 2, offset.z + cW / 2);
       scene.add(wire);
 
-      // Floor plane (subtle)
+      // Floor plane
       var floor = new THREE.Mesh(
         new THREE.PlaneGeometry(cL, cW),
-        new THREE.MeshBasicMaterial({ color: 0x141821, transparent: true, opacity: 0.5, side: THREE.DoubleSide })
+        new THREE.MeshBasicMaterial({ color: 0x111620, transparent: true, opacity: 0.4, side: THREE.DoubleSide })
       );
       floor.rotation.x = -Math.PI / 2;
       floor.position.set(offset.x + cL / 2, 0.01, offset.z + cW / 2);
@@ -2685,6 +2753,14 @@ function renderContainer3D(container, details) {
 
       // Cargo boxes
       legendEl.innerHTML = '';
+      var labelGroup = new THREE.Group();      // for dimension labels
+      var gapGroup = new THREE.Group();         // for gap annotations
+      scene.add(labelGroup);
+      scene.add(gapGroup);
+
+      // Track first cargo's first box position for annotation
+      var firstBoxData = null;
+
       details.forEach(function(d, idx) {
         if (!d.count || !d.arrangementParts) return;
         var color = CARGO_COLORS[idx % CARGO_COLORS.length];
@@ -2692,8 +2768,8 @@ function renderContainer3D(container, details) {
         var parts = d.arrangementParts;
         var rows = parts[0] || 1, cols = parts[1] || 1, layers = parts[2] || 1;
         var placedCount = Math.min(d.count, rows * cols * layers);
-        var boxMat = new THREE.MeshLambertMaterial({ color: color });
-        var edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
+        var boxMat = new THREE.MeshLambertMaterial({ color: color, transparent: true, opacity: 0.88 });
+        var edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
 
         for (var layer = 0; layer < layers; layer++) {
           for (var row = 0; row < rows; row++) {
@@ -2709,10 +2785,16 @@ function renderContainer3D(container, details) {
               var be = new THREE.LineSegments(new THREE.EdgesGeometry(bg), edgeMat);
               be.position.copy(box.position);
               scene.add(be);
+
+              // Save first box of first cargo type for annotation
+              if (idx === 0 && layer === 0 && row === 0 && col === 0) {
+                firstBoxData = { x: x, y: y, z: z, bl: bl, bw: bw, bh: bh, origL: d.origL || d.boxL, origW: d.origW || d.boxW, origH: d.origH || d.boxH };
+              }
             }
           }
         }
 
+        // Legend
         var li = document.createElement('div');
         li.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary)';
         var hex = color.toString(16); while (hex.length < 6) hex = '0' + hex;
@@ -2720,10 +2802,144 @@ function renderContainer3D(container, details) {
         legendEl.appendChild(li);
       });
 
-      infoEl.textContent = container.name + '  ' + container.L + '×' + container.W + '×' + container.H + 'mm';
-      hintEl.textContent = '🖱️ 拖拽旋转 · 滚轮缩放';
+      // ====== DIMENSION ANNOTATIONS ======
+      var LABEL_COLOR = '#4ec9b0';
+      var LABEL_HEX = 0x4ec9b0;
+      var GAP_COLOR = '#f0a050';
+      var GAP_HEX = 0xf0a050;
+      var CONTAINER_COLOR = '#c9a227';
+      var CONTAINER_HEX = 0xc9a227;
 
-      // ---- Inline orbit controls (no external dependency) ----
+      // --- 1. Container dimensions (3 edges: length, width, height) ---
+      // Length (X axis) - front bottom edge
+      var cLenStart = new THREE.Vector3(offset.x, -0.02, offset.z + cW + 0.3);
+      var cLenEnd = new THREE.Vector3(offset.x + cL, -0.02, offset.z + cW + 0.3);
+      labelGroup.add(makeDimensionLine(cLenStart, cLenEnd, CONTAINER_HEX));
+      labelGroup.add(makeTickMark(cLenStart, new THREE.Vector3(0, 1, 0), 0.1, CONTAINER_HEX));
+      labelGroup.add(makeTickMark(cLenEnd, new THREE.Vector3(0, 1, 0), 0.1, CONTAINER_HEX));
+      var cLenLabel = makeTextSprite('L: ' + container.L + 'mm', { fontColor: CONTAINER_COLOR, fontSize: 42 });
+      cLenLabel.position.set(offset.x + cL / 2, -0.02, offset.z + cW + 0.55);
+      labelGroup.add(cLenLabel);
+
+      // Width (Z axis) - right bottom edge
+      var cWidStart = new THREE.Vector3(offset.x + cL + 0.3, -0.02, offset.z);
+      var cWidEnd = new THREE.Vector3(offset.x + cL + 0.3, -0.02, offset.z + cW);
+      labelGroup.add(makeDimensionLine(cWidStart, cWidEnd, CONTAINER_HEX));
+      labelGroup.add(makeTickMark(cWidStart, new THREE.Vector3(1, 0, 0), 0.1, CONTAINER_HEX));
+      labelGroup.add(makeTickMark(cWidEnd, new THREE.Vector3(1, 0, 0), 0.1, CONTAINER_HEX));
+      var cWidLabel = makeTextSprite('W: ' + container.W + 'mm', { fontColor: CONTAINER_COLOR, fontSize: 42 });
+      cWidLabel.position.set(offset.x + cL + 0.55, -0.02, offset.z + cW / 2);
+      labelGroup.add(cWidLabel);
+
+      // Height (Y axis) - back left edge
+      var cHeiStart = new THREE.Vector3(offset.x - 0.3, 0, offset.z + cW);
+      var cHeiEnd = new THREE.Vector3(offset.x - 0.3, cH, offset.z + cW);
+      labelGroup.add(makeDimensionLine(cHeiStart, cHeiEnd, CONTAINER_HEX));
+      labelGroup.add(makeTickMark(cHeiStart, new THREE.Vector3(0, 0, 1), 0.1, CONTAINER_HEX));
+      labelGroup.add(makeTickMark(cHeiEnd, new THREE.Vector3(0, 0, 1), 0.1, CONTAINER_HEX));
+      var cHeiLabel = makeTextSprite('H: ' + container.H + 'mm', { fontColor: CONTAINER_COLOR, fontSize: 42 });
+      cHeiLabel.position.set(offset.x - 0.6, cH / 2, offset.z + cW);
+      labelGroup.add(cHeiLabel);
+
+      // --- 2. Single package dimensions (annotate first cargo's first box) ---
+      if (firstBoxData) {
+        var fb = firstBoxData;
+        // Package Length (X) - front face, slightly offset in -Z
+        var pLenStart = new THREE.Vector3(fb.x - fb.bl / 2, fb.y - fb.bh / 2, fb.z - fb.bw / 2 - 0.2);
+        var pLenEnd = new THREE.Vector3(fb.x + fb.bl / 2, fb.y - fb.bh / 2, fb.z - fb.bw / 2 - 0.2);
+        labelGroup.add(makeDimensionLine(pLenStart, pLenEnd, LABEL_HEX));
+        var pLenLabel = makeTextSprite(fb.origL + 'mm', { fontColor: LABEL_COLOR, fontSize: 36 });
+        pLenLabel.position.set(fb.x, fb.y - fb.bh / 2 - 0.15, fb.z - fb.bw / 2 - 0.35);
+        labelGroup.add(pLenLabel);
+
+        // Package Width (Z) - right face
+        var pWidStart = new THREE.Vector3(fb.x + fb.bl / 2 + 0.2, fb.y - fb.bh / 2, fb.z - fb.bw / 2);
+        var pWidEnd = new THREE.Vector3(fb.x + fb.bl / 2 + 0.2, fb.y - fb.bh / 2, fb.z + fb.bw / 2);
+        labelGroup.add(makeDimensionLine(pWidStart, pWidEnd, LABEL_HEX));
+        var pWidLabel = makeTextSprite(fb.origW + 'mm', { fontColor: LABEL_COLOR, fontSize: 36 });
+        pWidLabel.position.set(fb.x + fb.bl / 2 + 0.38, fb.y - fb.bh / 2 - 0.15, fb.z);
+        labelGroup.add(pWidLabel);
+
+        // Package Height (Y) - front left corner
+        var pHeiStart = new THREE.Vector3(fb.x - fb.bl / 2 - 0.2, fb.y - fb.bh / 2, fb.z - fb.bw / 2 - 0.2);
+        var pHeiEnd = new THREE.Vector3(fb.x - fb.bl / 2 - 0.2, fb.y + fb.bh / 2, fb.z - fb.bw / 2 - 0.2);
+        labelGroup.add(makeDimensionLine(pHeiStart, pHeiEnd, LABEL_HEX));
+        var pHeiLabel = makeTextSprite(fb.origH + 'mm', { fontColor: LABEL_COLOR, fontSize: 36 });
+        pHeiLabel.position.set(fb.x - fb.bl / 2 - 0.4, fb.y, fb.z - fb.bw / 2 - 0.35);
+        labelGroup.add(pHeiLabel);
+      }
+
+      // --- 3. Gap annotations (cargo edge to container wall) ---
+      if (details.length > 0 && details[0].arrangementParts) {
+        var d0 = details[0];
+        var bl0 = d0.boxL * SCALE, bw0 = d0.boxW * SCALE, bh0 = d0.boxH * SCALE;
+        var parts0 = d0.arrangementParts;
+        var rows0 = parts0[0] || 1, cols0 = parts0[1] || 1, layers0 = parts0[2] || 1;
+
+        // X gap (cargo stack right edge to container right wall)
+        var cargoRightEdge = offset.x + rows0 * bl0;
+        var xGap = cL - rows0 * bl0;
+        if (xGap > 0.001) {
+          var xGapStart = new THREE.Vector3(cargoRightEdge, cH + 0.3, offset.z + cW / 2);
+          var xGapEnd = new THREE.Vector3(offset.x + cL, cH + 0.3, offset.z + cW / 2);
+          gapGroup.add(makeDimensionLine(xGapStart, xGapEnd, GAP_HEX));
+          gapGroup.add(makeTickMark(xGapStart, new THREE.Vector3(0, 1, 0), 0.08, GAP_HEX));
+          gapGroup.add(makeTickMark(xGapEnd, new THREE.Vector3(0, 1, 0), 0.08, GAP_HEX));
+          var xGapLabel = makeTextSprite('ΔX: ' + Math.round(xGap / SCALE) + 'mm', { fontColor: GAP_COLOR, fontSize: 36 });
+          xGapLabel.position.set((cargoRightEdge + offset.x + cL) / 2, cH + 0.5, offset.z + cW / 2);
+          gapGroup.add(xGapLabel);
+        }
+
+        // Z gap (cargo back edge to container back wall)
+        var cargoBackEdge = offset.z + cols0 * bw0;
+        var zGap = cW - cols0 * bw0;
+        if (zGap > 0.001) {
+          var zGapStart = new THREE.Vector3(offset.x + cL / 2, cH + 0.3, cargoBackEdge);
+          var zGapEnd = new THREE.Vector3(offset.x + cL / 2, cH + 0.3, offset.z + cW);
+          gapGroup.add(makeDimensionLine(zGapStart, zGapEnd, GAP_HEX));
+          gapGroup.add(makeTickMark(zGapStart, new THREE.Vector3(1, 0, 0), 0.08, GAP_HEX));
+          gapGroup.add(makeTickMark(zGapEnd, new THREE.Vector3(1, 0, 0), 0.08, GAP_HEX));
+          var zGapLabel = makeTextSprite('ΔZ: ' + Math.round(zGap / SCALE) + 'mm', { fontColor: GAP_COLOR, fontSize: 36 });
+          zGapLabel.position.set(offset.x + cL / 2, cH + 0.5, (cargoBackEdge + offset.z + cW) / 2);
+          gapGroup.add(zGapLabel);
+        }
+
+        // Y gap (cargo top to container ceiling)
+        var cargoTopEdge = layers0 * bh0;
+        var yGap = cH - layers0 * bh0;
+        if (yGap > 0.001) {
+          var yGapStart = new THREE.Vector3(offset.x + cL + 0.3, cargoTopEdge, offset.z + cW / 2);
+          var yGapEnd = new THREE.Vector3(offset.x + cL + 0.3, cH, offset.z + cW / 2);
+          gapGroup.add(makeDimensionLine(yGapStart, yGapEnd, GAP_HEX));
+          gapGroup.add(makeTickMark(yGapStart, new THREE.Vector3(1, 0, 0), 0.08, GAP_HEX));
+          gapGroup.add(makeTickMark(yGapEnd, new THREE.Vector3(1, 0, 0), 0.08, GAP_HEX));
+          var yGapLabel = makeTextSprite('ΔY: ' + Math.round(yGap / SCALE) + 'mm', { fontColor: GAP_COLOR, fontSize: 36 });
+          yGapLabel.position.set(offset.x + cL + 0.55, (cargoTopEdge + cH) / 2, offset.z + cW / 2);
+          gapGroup.add(yGapLabel);
+        }
+      }
+
+      // Info text
+      var totalBoxes = details.reduce(function(s, d) { return s + (d.count || 0); }, 0);
+      infoEl.textContent = container.name + '  ' + container.L + '×' + container.W + '×' + container.H + 'mm  |  货物: ' + totalBoxes + '件';
+      hintEl.textContent = '拖拽旋转 · 滚轮缩放 · 右键平移';
+
+      // ---- Toggle controls ----
+      var showLabels = true, showGaps = true;
+      var toggleLabels = document.getElementById('ct-3d-toggle-labels');
+      var toggleGaps = document.getElementById('ct-3d-toggle-gaps');
+      function applyToggles() {
+        labelGroup.visible = showLabels;
+        gapGroup.visible = showGaps;
+      }
+      if (toggleLabels) {
+        toggleLabels.onchange = function() { showLabels = this.checked; applyToggles(); };
+      }
+      if (toggleGaps) {
+        toggleGaps.onchange = function() { showGaps = this.checked; applyToggles(); };
+      }
+
+      // ---- Inline orbit controls ----
       var isDragging = false, isPanning = false;
       var prevX = 0, prevY = 0;
       var target = { x: 0, y: cH / 2, z: 0 };
@@ -2751,7 +2967,6 @@ function renderContainer3D(container, details) {
           spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
         } else if (isPanning) {
           var panScale = spherical.radius * 0.0015;
-          var sinPhi = Math.sin(spherical.phi);
           camera.position.x -= dx * panScale;
           camera.position.y += dy * panScale;
           target.x -= dx * panScale;
@@ -2794,7 +3009,7 @@ function renderContainer3D(container, details) {
 
       // Resize handler
       function onResize() {
-        var w = container3D.clientWidth || 640, h = container3D.clientHeight || 480;
+        var w = container3D.clientWidth || 640, h = container3D.clientHeight || 520;
         if (w > 1 && h > 1) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); }
       }
       window.addEventListener('resize', onResize);
