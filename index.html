@@ -446,7 +446,7 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 8px rgba(201,162,39,0.4);
 }
-.card-body { padding: 20px; }
+.card-body { padding: 20px; overflow: visible; }
 
 /* ========== Forms ========== */
 .form-grid {
@@ -532,7 +532,7 @@ input:focus + .history-toggle,
   border: 1px solid var(--border-dark);
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   box-shadow: var(--shadow-md);
-  z-index: 50;
+  z-index: 9999;
   display: none;
 }
 .history-panel.show { display: block; }
@@ -1975,6 +1975,7 @@ input:focus + .history-toggle,
     <div class="topbar-actions no-print">
       <button class="btn btn-outline btn-sm" onclick="saveCurrentPage()">💾 保存</button>
       <button class="btn btn-gold btn-sm" onclick="printAndClear()" id="printBtn" style="display:none">🖨️ 打印 / PDF</button>
+      <button class="btn btn-outline btn-sm" onclick="clearCurrentDoc()" id="clearBtn" style="display:none">🗑️ 清空</button>
     </div>
   </div>
   <div class="content-area" id="contentArea">
@@ -2296,8 +2297,11 @@ input:focus + .history-toggle,
       <div class="card-header"><div class="card-title"><span class="dot"></span>买方信息</div></div>
       <div class="card-body">
         <div class="form-grid">
-          <div class="form-group"><label class="form-label">买方名称</label><input class="form-input" id="ci-buyer-name"></div>
-          <div class="form-group"><label class="form-label">买方地址</label><textarea class="form-textarea" id="ci-buyer-addr"></textarea></div>
+          <div class="form-group"><label class="form-label">买方名称</label><input class="form-input" id="ci-buyer-name" placeholder="ABC Trading Co., Ltd."></div>
+          <div class="form-group"><label class="form-label">联系人</label><input class="form-input" id="ci-buyer-contact" placeholder="John Smith"></div>
+          <div class="form-group" style="Grid-column:span 2"><label class="form-label">地址</label><textarea class="form-textarea" id="ci-buyer-addr" placeholder="No. 123 Main Street, Hamburg, Germany"></textarea></div>
+          <div class="form-group"><label class="form-label">电话</label><input class="form-input mono" id="ci-buyer-tel" placeholder="+49 40 1234567"></div>
+          <div class="form-group"><label class="form-label">邮箱</label><input class="form-input mono" id="ci-buyer-email" placeholder="john@abctrading.com"></div>
           <div class="form-group" style="grid-column:span 2"><label class="form-label">买方税号/VAT/EORI</label><input class="form-input mono" id="ci-buyer-vat" placeholder="VAT/EORI No."></div>
         </div>
       </div>
@@ -2390,7 +2394,7 @@ input:focus + .history-toggle,
           <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="pl-date"></div>
           <div class="form-group"><label class="form-label">发票号</label><input class="form-input mono" id="pl-inv-no" placeholder="Reference Invoice No."></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <select class="form-select" id="pl-terms"><option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option></select>
+            <select class="form-select" id="pl-terms"><option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option><option>DAP</option><option>DDP</option></select>
           </div>
           <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="pl-from"></div>
           <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="pl-to"></div>
@@ -3095,7 +3099,7 @@ input:focus + .history-toggle,
               <th style="width:100px">单价</th>
               <th style="width:80px">净重(kg)</th>
               <th style="width:80px">毛重(kg)</th>
-              <th style="width:120px">箱规(cm)</th>
+              <th style="width:165px">箱规 L×W×H (cm)</th>
               <th style="width:60px" class="no-print">操作</th>
             </tr>
           </thead>
@@ -3507,7 +3511,10 @@ function switchPage(page) {
   }, 150);
 
   const printBtn = document.getElementById('printBtn');
-  printBtn.style.display = ['proforma','salescontract','commercial','packing','marks','spec'].includes(page) ? '' : 'none';
+  const clearBtn = document.getElementById('clearBtn');
+  const showBtns = ['proforma','salescontract','commercial','packing','marks','spec'].includes(page);
+  printBtn.style.display = showBtns ? '' : 'none';
+  if (clearBtn) clearBtn.style.display = showBtns ? '' : 'none';
 
   // Close preview when switching
   ['proforma','salescontract','commercial','packing','marks','spec'].forEach(p => {
@@ -3778,7 +3785,9 @@ function collectPageData(page) {
         no: v('ci-no'), date: v('ci-date'), contract: v('ci-contract'), lc: v('ci-lc'),
         terms: v('ci-terms'), from: v('ci-from'), to: v('ci-to'), currency: v('ci-currency'),
         origin: v('ci-origin'), transport: v('ci-transport'),
-        buyerName: v('ci-buyer-name'), buyerAddr: v('ci-buyer-addr'), buyerVat: v('ci-buyer-vat'),
+        buyerName: v('ci-buyer-name'), buyerContact: v('ci-buyer-contact'),
+        buyerAddr: v('ci-buyer-addr'), buyerTel: v('ci-buyer-tel'), buyerEmail: v('ci-buyer-email'),
+        buyerVat: v('ci-buyer-vat'),
         marks: v('ci-marks'), packing: v('ci-packing'), declaration: v('ci-declaration'), remarks: v('ci-remarks'),
         items: collectTableRows('ci-tbody', ['img','desc','hs','qty','unit','price'])
       };
@@ -3849,6 +3858,27 @@ function v(id) {
   return el ? el.value : '';
 }
 
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeHtmlBR(str) {
+  return escapeHtml(str).replace(/\n/g, '<br>');
+}
+
+function delRow(btn, afterFn) {
+  var tr = btn.closest('tr');
+  if (tr) tr.remove();
+  if (typeof afterFn === 'function') afterFn();
+  if (typeof debouncedSave === 'function') debouncedSave();
+}
+
 function collectTableRows(tbodyId, fields) {
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return [];
@@ -3912,7 +3942,9 @@ function restorePageData() {
   setVal('ci-no', ci.no); setVal('ci-date', ci.date); setVal('ci-contract', ci.contract);
   setVal('ci-lc', ci.lc); setVal('ci-terms', ci.terms); setVal('ci-from', ci.from); setVal('ci-to', ci.to);
   setVal('ci-currency', ci.currency); setVal('ci-origin', ci.origin); setVal('ci-transport', ci.transport);
-  setVal('ci-buyer-name', ci.buyerName); setVal('ci-buyer-addr', ci.buyerAddr); setVal('ci-buyer-vat', ci.buyerVat);
+  setVal('ci-buyer-name', ci.buyerName); setVal('ci-buyer-contact', ci.buyerContact);
+  setVal('ci-buyer-addr', ci.buyerAddr); setVal('ci-buyer-tel', ci.buyerTel); setVal('ci-buyer-email', ci.buyerEmail);
+  setVal('ci-buyer-vat', ci.buyerVat);
   setVal('ci-marks', ci.marks); setVal('ci-packing', ci.packing); setVal('ci-declaration', ci.declaration);
   setVal('ci-remarks', ci.remarks);
 
@@ -4092,7 +4124,7 @@ function addRow(docType, data) {
   // Action buttons: save to library + delete
   tr.innerHTML += `<td class="no-print" style="text-align:center;white-space:nowrap">
     <button class="save-lib-btn" onclick="saveRowToLibrary(this,'${docType}')" title="保存到产品库">📥 存库</button>
-    <button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();${cfg.totalFn}();debouncedSave()" title="删除">✕</button>
+    <button class="btn btn-danger btn-sm btn-icon" onclick="delRow(this, ${cfg.totalFn})" title="删除">✕</button>
   </td>`;
 
   // Attach recalc listeners
@@ -4211,7 +4243,7 @@ function addWeightRow(data) {
     <td class="num" style="font-family:var(--font-mono);font-weight:500">0.00</td>
     <td class="num" style="font-family:var(--font-mono);font-weight:500">0.00</td>
     <td class="num" style="font-family:var(--font-mono);font-weight:600;color:var(--accent-blue)">0.00</td>
-    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();recalcWeight();debouncedSave()">✕</button></td>
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="delRow(this, recalcWeight)">✕</button></td>
   `;
   tr.querySelectorAll('input').forEach(inp => {
     inp.addEventListener('input', () => { recalcWeight(); debouncedSave(); });
@@ -4296,7 +4328,7 @@ function addCargoRow(data) {
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.h||''):''}"></td>
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.qty||''):''}"></td>
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.weight||''):''}"></td>
-    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();debouncedSave()">✕</button></td>
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="delRow(this)">✕</button></td>
   `;
   tr.querySelectorAll('input').forEach(inp => {
     inp.addEventListener('input', debouncedSave);
@@ -5032,7 +5064,7 @@ function addSpecRow(data) {
     <td class="td-input"><input type="text" placeholder="参数名称" value="${data?(data.param||''):''}"></td>
     <td class="td-input"><input type="text" placeholder="参数值" value="${data?(data.value||''):''}"></td>
     <td class="td-input"><input type="text" placeholder="单位" value="${data?(data.unit||''):''}"></td>
-    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();debouncedSave()">✕</button></td>
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="delRow(this)">✕</button></td>
   `;
   tr.querySelectorAll('input').forEach(inp => {
     inp.addEventListener('input', debouncedSave);
@@ -5045,20 +5077,13 @@ function addSpecRow(data) {
 // Print the current document, then clear the form data
 function printAndClear() {
   window.print();
-  // Use afterprint to clear after the print dialog closes
-  const clearHandler = () => {
-    setTimeout(() => {
-      if (confirm('打印完成。是否清空当前单据的编辑数据？\n清空后下次打开将不会显示本次填写的信息。')) {
-        resetCurrentDocForm();
-      }
-      window.removeEventListener('afterprint', clearHandler);
-    }, 300);
-  };
-  window.addEventListener('afterprint', clearHandler);
-  // Fallback: if afterprint doesn't fire (some browsers), use timeout
-  setTimeout(() => {
-    window.removeEventListener('afterprint', clearHandler);
-  }, 60000);
+}
+
+function clearCurrentDoc() {
+  if (confirm('确定要清空当前单据的编辑数据吗？\n清空后下次打开将不会显示本次填写的信息。')) {
+    resetCurrentDocForm();
+    showToast('当前单据数据已清空');
+  }
 }
 
 // Clear the form for the current document page and remove its saved data
@@ -5150,8 +5175,8 @@ function renderPreview(docType) {
   const companyEmail = company.email || '';
   const companyFax = company.fax || '';
 
-  const companyBlock = `<div class="doc-company">${companyName}</div>
-    <div class="doc-company-sub">${companyAddr}${companyTel?'<br>Tel: '+companyTel:''}${companyFax?'<br>Fax: '+companyFax:''}${companyEmail?'<br>Email: '+companyEmail:''}</div>`;
+  const companyBlock = `<div class="doc-company">${escapeHtml(companyName)}</div>
+    <div class="doc-company-sub">${escapeHtml(companyAddr)}${companyTel?'<br>Tel: '+escapeHtml(companyTel):''}${companyFax?'<br>Fax: '+escapeHtml(companyFax):''}${companyEmail?'<br>Email: '+escapeHtml(companyEmail):''}</div>`;
 
   switch(docType) {
     case 'proforma': renderProformaPreview(companyBlock, companyName); break;
@@ -5172,13 +5197,13 @@ function renderProformaPreview(companyBlock, companyName) {
     const price = parseFloat(item.price) || 0;
     const amt = qty * price;
     total += amt;
-    const imgHtml = item.img ? `<img src="${item.img}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
+    const imgHtml = item.img ? `<img src="${escapeHtml(item.img)}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
     itemsHtml += `<tr>
       <td>${i+1}</td>
-      <td>${imgHtml}${item.desc || ''}${item.spec ? '<br><span style="color:#888;font-size:10px">'+item.spec+'</span>' : ''}</td>
-      <td class="center">${item.spec || ''}</td>
+      <td>${imgHtml}${escapeHtml(item.desc)}</td>
+      <td class="center">${escapeHtml(item.spec)}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
-      <td class="center">${item.unit || ''}</td>
+      <td class="center">${escapeHtml(item.unit)}</td>
       <td class="num">${fmtNum(price)}</td>
       <td class="num">${fmtNum(amt)}</td>
     </tr>`;
@@ -5191,20 +5216,20 @@ function renderProformaPreview(companyBlock, companyName) {
         <div class="doc-title-block">
           <div class="doc-title">Proforma Invoice</div>
           <div class="doc-meta">
-            <strong>No.:</strong> ${pi.no || ''}<br>
-            <strong>Date:</strong> ${pi.date || ''}<br>
-            <strong>Valid Until:</strong> ${pi.valid || ''}
+            <strong>No.:</strong> ${escapeHtml(pi.no)}<br>
+            <strong>Date:</strong> ${escapeHtml(pi.date)}<br>
+            <strong>Valid Until:</strong> ${escapeHtml(pi.valid)}
           </div>
         </div>
       </div>
       <div class="doc-parties">
         <div class="doc-party-block">
           <div class="label">Seller / 卖方</div>
-          <div class="content"><strong>${companyName}</strong><br>${pi.buyerAddr ? '' : (App.data.company.address||'')}</div>
+          <div class="content"><strong>${escapeHtml(companyName)}</strong><br>${pi.buyerAddr ? '' : escapeHtml(App.data.company.address||'')}</div>
         </div>
         <div class="doc-party-block">
           <div class="label">Buyer / 买方</div>
-          <div class="content"><strong>${pi.buyerName || ''}</strong>${pi.buyerContact?'<br>Attn: '+pi.buyerContact:''}<br>${pi.buyerAddr || ''}${pi.buyerTel?'<br>Tel: '+pi.buyerTel:''}${pi.buyerEmail?'<br>Email: '+pi.buyerEmail:''}</div>
+          <div class="content"><strong>${escapeHtml(pi.buyerName)}</strong>${pi.buyerContact?'<br>Attn: '+escapeHtml(pi.buyerContact):''}<br>${escapeHtml(pi.buyerAddr)}${pi.buyerTel?'<br>Tel: '+escapeHtml(pi.buyerTel):''}${pi.buyerEmail?'<br>Email: '+escapeHtml(pi.buyerEmail):''}</div>
         </div>
       </div>
       <table class="doc-table">
@@ -5219,7 +5244,7 @@ function renderProformaPreview(companyBlock, companyName) {
         </tr></thead>
         <tbody>${itemsHtml}</tbody>
         <tfoot><tr>
-          <td colspan="6" style="text-align:right">Total Amount (${pi.currency || 'USD'}):</td>
+          <td colspan="6" style="text-align:right">Total Amount (${escapeHtml(pi.currency) || 'USD'}):</td>
           <td class="num" style="font-size:13px">${fmtNum(total)}</td>
         </tr></tfoot>
       </table>
@@ -5227,19 +5252,19 @@ function renderProformaPreview(companyBlock, companyName) {
         <div class="doc-footer-block">
           <div class="label">Terms & Conditions</div>
           <div class="content">
-            Trade Terms: ${pi.terms || ''}<br>
-            Port of Loading: ${pi.from || ''}<br>
-            Port of Destination: ${pi.to || ''}<br>
-            Payment: ${pi.payment || ''}<br>
-            Delivery: ${pi.delivery || ''}
+            Trade Terms: ${escapeHtml(pi.terms)}<br>
+            Port of Loading: ${escapeHtml(pi.from)}<br>
+            Port of Destination: ${escapeHtml(pi.to)}<br>
+            Payment: ${escapeHtml(pi.payment)}<br>
+            Delivery: ${escapeHtml(pi.delivery)}
           </div>
         </div>
         <div class="doc-footer-block">
           <div class="label">Remarks</div>
-          <div class="content">${(pi.remarks||'').replace(/\n/g,'<br>')}</div>
+          <div class="content">${escapeHtmlBR(pi.remarks)}</div>
         </div>
       </div>
-      ${pi.bank ? `<div class="doc-footer" style="margin-top:0"><div class="doc-footer-block"><div class="label">Bank Details</div><div class="content">${(pi.bank||'').replace(/\n/g,'<br>')}</div></div></div>` : ''}
+      ${pi.bank ? `<div class="doc-footer" style="margin-top:0"><div class="doc-footer-block"><div class="label">Bank Details</div><div class="content">${escapeHtmlBR(pi.bank)}</div></div></div>` : ''}
       <div class="doc-signature">
         <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
         <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
@@ -5282,13 +5307,13 @@ function renderSalesContractPreview(companyBlock, companyName) {
     const price = parseFloat(item.price) || 0;
     const amt = qty * price;
     total += amt;
-    const imgHtml = item.img ? `<img src="${item.img}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
+    const imgHtml = item.img ? `<img src="${escapeHtml(item.img)}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
     itemsHtml += `<tr>
       <td>${i+1}</td>
-      <td>${imgHtml}${item.desc || ''}${item.spec ? '<br><span style="color:#888;font-size:10px">'+item.spec+'</span>' : ''}</td>
-      <td class="center">${item.spec || ''}</td>
+      <td>${imgHtml}${escapeHtml(item.desc)}</td>
+      <td class="center">${escapeHtml(item.spec)}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
-      <td class="center">${item.unit || ''}</td>
+      <td class="center">${escapeHtml(item.unit)}</td>
       <td class="num">${fmtNum(price)}</td>
       <td class="num">${fmtNum(amt)}</td>
     </tr>`;
@@ -5307,29 +5332,29 @@ function renderSalesContractPreview(companyBlock, companyName) {
         <div class="doc-title-block">
           <div class="doc-title">Sales Contract</div>
           <div class="doc-meta">
-            <strong>No.:</strong> ${sc.no || ''}<br>
-            <strong>Date:</strong> ${sc.date || ''}<br>
-            <strong>Place:</strong> ${sc.place || ''}
+            <strong>No.:</strong> ${escapeHtml(sc.no)}<br>
+            <strong>Date:</strong> ${escapeHtml(sc.date)}<br>
+            <strong>Place:</strong> ${escapeHtml(sc.place)}
           </div>
         </div>
       </div>
       <div class="doc-parties">
         <div class="doc-party-block">
           <div class="label">The Seller / 卖方</div>
-          <div class="content"><strong>${sellerName}</strong><br>${sellerAddr}${sellerTel?'<br>Tel: '+sellerTel:''}${sellerEmail?'<br>Email: '+sellerEmail:''}${sc.sellerContact?'<br>Attn: '+sc.sellerContact:''}</div>
+          <div class="content"><strong>${escapeHtml(sellerName)}</strong><br>${escapeHtml(sellerAddr)}${sellerTel?'<br>Tel: '+escapeHtml(sellerTel):''}${sellerEmail?'<br>Email: '+escapeHtml(sellerEmail):''}${sc.sellerContact?'<br>Attn: '+escapeHtml(sc.sellerContact):''}</div>
         </div>
         <div class="doc-party-block">
           <div class="label">The Buyer / 买方</div>
-          <div class="content"><strong>${sc.buyerName || ''}</strong>${sc.buyerContact?'<br>Attn: '+sc.buyerContact:''}<br>${sc.buyerAddr || ''}${sc.buyerTel?'<br>Tel: '+sc.buyerTel:''}${sc.buyerEmail?'<br>Email: '+sc.buyerEmail:''}</div>
+          <div class="content"><strong>${escapeHtml(sc.buyerName)}</strong>${sc.buyerContact?'<br>Attn: '+escapeHtml(sc.buyerContact):''}<br>${escapeHtml(sc.buyerAddr)}${sc.buyerTel?'<br>Tel: '+escapeHtml(sc.buyerTel):''}${sc.buyerEmail?'<br>Email: '+escapeHtml(sc.buyerEmail):''}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:11px;padding:10px 14px;background:#f8f9fb;border-radius:6px;border:1px solid #e2e5ec">
-        <div><strong>Trade Terms:</strong> ${sc.terms || ''}</div>
-        <div><strong>Port of Loading:</strong> ${sc.from || ''}</div>
-        <div><strong>Port of Destination:</strong> ${sc.to || ''}</div>
-        <div><strong>Payment:</strong> ${sc.payment || ''}</div>
-        <div><strong>Delivery:</strong> ${sc.delivery || ''}</div>
-        <div><strong>Currency:</strong> ${currency}</div>
+        <div><strong>Trade Terms:</strong> ${escapeHtml(sc.terms)}</div>
+        <div><strong>Port of Loading:</strong> ${escapeHtml(sc.from)}</div>
+        <div><strong>Port of Destination:</strong> ${escapeHtml(sc.to)}</div>
+        <div><strong>Payment:</strong> ${escapeHtml(sc.payment)}</div>
+        <div><strong>Delivery:</strong> ${escapeHtml(sc.delivery)}</div>
+        <div><strong>Currency:</strong> ${escapeHtml(currency)}</div>
       </div>
       <div style="margin-bottom:8px;font-size:12px;font-weight:600">This contract is made by and between the Seller and the Buyer, whereby the Seller agrees to sell and the Buyer agrees to buy the under-mentioned goods on the terms and conditions stated below:</div>
       <table class="doc-table">
@@ -5344,20 +5369,20 @@ function renderSalesContractPreview(companyBlock, companyName) {
         </tr></thead>
         <tbody>${itemsHtml}</tbody>
         <tfoot><tr>
-          <td colspan="6" style="text-align:right">Total Amount (${currency}):</td>
+          <td colspan="6" style="text-align:right">Total Amount (${escapeHtml(currency)}):</td>
           <td class="num" style="font-size:13px">${fmtNum(total)}</td>
         </tr></tfoot>
       </table>
-      <div style="margin-top:6px;font-size:11px;font-style:italic;color:#555">Say Total ${currency} ${totalWords} Only.</div>
+      <div style="margin-top:6px;font-size:11px;font-style:italic;color:#555">Say Total ${escapeHtml(currency)} ${escapeHtml(totalWords)} Only.</div>
       <div class="doc-footer" style="margin-top:12px">
-        ${sc.quality ? `<div class="doc-footer-block"><div class="label">Quality & Inspection</div><div class="content">${(sc.quality||'').replace(/\n/g,'<br>')}</div></div>` : ''}
-        ${sc.claims ? `<div class="doc-footer-block"><div class="label">Claims</div><div class="content">${(sc.claims||'').replace(/\n/g,'<br>')}</div></div>` : ''}
+        ${sc.quality ? `<div class="doc-footer-block"><div class="label">Quality & Inspection</div><div class="content">${escapeHtmlBR(sc.quality)}</div></div>` : ''}
+        ${sc.claims ? `<div class="doc-footer-block"><div class="label">Claims</div><div class="content">${escapeHtmlBR(sc.claims)}</div></div>` : ''}
       </div>
       <div class="doc-footer" style="margin-top:0">
-        ${sc.force ? `<div class="doc-footer-block"><div class="label">Force Majeure</div><div class="content">${(sc.force||'').replace(/\n/g,'<br>')}</div></div>` : ''}
-        ${sc.arbitration ? `<div class="doc-footer-block"><div class="label">Arbitration</div><div class="content">${(sc.arbitration||'').replace(/\n/g,'<br>')}</div></div>` : ''}
+        ${sc.force ? `<div class="doc-footer-block"><div class="label">Force Majeure</div><div class="content">${escapeHtmlBR(sc.force)}</div></div>` : ''}
+        ${sc.arbitration ? `<div class="doc-footer-block"><div class="label">Arbitration</div><div class="content">${escapeHtmlBR(sc.arbitration)}</div></div>` : ''}
       </div>
-      ${sc.other ? `<div style="margin-top:8px;font-size:11px"><strong>Other Terms:</strong> ${(sc.other||'').replace(/\n/g,'<br>')}</div>` : ''}
+      ${sc.other ? `<div style="margin-top:8px;font-size:11px"><strong>Other Terms:</strong> ${escapeHtmlBR(sc.other)}</div>` : ''}
       <div class="doc-signature">
         <div class="doc-sig-block"><div class="line"></div><div class="label">The Seller</div></div>
         <div class="doc-sig-block"><div class="line"></div><div class="label">The Buyer</div></div>
@@ -5375,13 +5400,13 @@ function renderCommercialPreview(companyBlock, companyName) {
     const price = parseFloat(item.price) || 0;
     const amt = qty * price;
     total += amt;
-    const imgHtml = item.img ? `<img src="${item.img}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
+    const imgHtml = item.img ? `<img src="${escapeHtml(item.img)}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
     itemsHtml += `<tr>
       <td>${i+1}</td>
-      <td>${imgHtml}${item.desc || ''}</td>
-      <td>${item.hs || ''}</td>
+      <td>${imgHtml}${escapeHtml(item.desc)}${item.spec ? '<br><span style="color:#888;font-size:10px">'+escapeHtml(item.spec)+'</span>' : ''}</td>
+      <td class="center">${escapeHtml(item.spec)}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
-      <td class="center">${item.unit || ''}</td>
+      <td class="center">${escapeHtml(item.unit)}</td>
       <td class="num">${fmtNum(price)}</td>
       <td class="num">${fmtNum(amt)}</td>
     </tr>`;
@@ -5393,30 +5418,30 @@ function renderCommercialPreview(companyBlock, companyName) {
         <div class="doc-title-block">
           <div class="doc-title">Commercial Invoice</div>
           <div class="doc-meta">
-            <strong>No.:</strong> ${ci.no || ''}<br>
-            <strong>Date:</strong> ${ci.date || ''}<br>
-            ${ci.contract ? '<strong>Contract No.:</strong> '+ci.contract+'<br>' : ''}
-            ${ci.lc ? '<strong>L/C No.:</strong> '+ci.lc : ''}
+            <strong>No.:</strong> ${escapeHtml(ci.no)}<br>
+            <strong>Date:</strong> ${escapeHtml(ci.date)}<br>
+            ${ci.contract ? '<strong>Contract No.:</strong> '+escapeHtml(ci.contract)+'<br>' : ''}
+            ${ci.lc ? '<strong>L/C No.:</strong> '+escapeHtml(ci.lc) : ''}
           </div>
         </div>
       </div>
       <div class="doc-parties">
         <div class="doc-party-block">
           <div class="label">Shipper / Exporter</div>
-          <div class="content"><strong>${companyName}</strong><br>${App.data.company.address||''}</div>
+          <div class="content"><strong>${escapeHtml(companyName)}</strong><br>${escapeHtml(App.data.company.address||'')}</div>
         </div>
         <div class="doc-party-block">
           <div class="label">Consignee / Buyer</div>
-          <div class="content"><strong>${ci.buyerName || ''}</strong><br>${ci.buyerAddr || ''}${ci.buyerVat?'<br>VAT/EORI: '+ci.buyerVat:''}</div>
+          <div class="content"><strong>${escapeHtml(ci.buyerName)}</strong>${ci.buyerContact?'<br>Attn: '+escapeHtml(ci.buyerContact):''}<br>${escapeHtml(ci.buyerAddr)}${ci.buyerTel?'<br>Tel: '+escapeHtml(ci.buyerTel):''}${ci.buyerEmail?'<br>Email: '+escapeHtml(ci.buyerEmail):''}${ci.buyerVat?'<br>VAT/EORI: '+escapeHtml(ci.buyerVat):''}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;font-size:11px">
-        <div><strong>Trade Terms:</strong> ${ci.terms || ''}</div>
-        <div><strong>From:</strong> ${ci.from || ''} <strong>To:</strong> ${ci.to || ''}</div>
-        <div><strong>Country of Origin:</strong> ${ci.origin || ''}</div>
-        <div><strong>Transport:</strong> ${ci.transport || ''}</div>
-        <div><strong>Marks:</strong> ${ci.marks || ''}</div>
-        <div><strong>Packing:</strong> ${ci.packing || ''}</div>
+        <div><strong>Trade Terms:</strong> ${escapeHtml(ci.terms)}</div>
+        <div><strong>From:</strong> ${escapeHtml(ci.from)} <strong>To:</strong> ${escapeHtml(ci.to)}</div>
+        <div><strong>Country of Origin:</strong> ${escapeHtml(ci.origin)}</div>
+        <div><strong>Transport:</strong> ${escapeHtml(ci.transport)}</div>
+        <div><strong>Marks:</strong> ${escapeHtml(ci.marks)}</div>
+        <div><strong>Packing:</strong> ${escapeHtml(ci.packing)}</div>
       </div>
       <table class="doc-table">
         <thead><tr>
@@ -5430,12 +5455,12 @@ function renderCommercialPreview(companyBlock, companyName) {
         </tr></thead>
         <tbody>${itemsHtml}</tbody>
         <tfoot><tr>
-          <td colspan="6" style="text-align:right">Total (${ci.currency || 'USD'}):</td>
+          <td colspan="6" style="text-align:right">Total (${escapeHtml(ci.currency) || 'USD'}):</td>
           <td class="num" style="font-size:13px">${fmtNum(total)}</td>
         </tr></tfoot>
       </table>
-      ${ci.declaration ? `<div style="margin-top:16px;font-size:11px;font-style:italic;color:#555">${ci.declaration}</div>` : ''}
-      ${ci.remarks ? `<div style="margin-top:8px;font-size:11px"><strong>Remarks:</strong> ${ci.remarks.replace(/\n/g,'<br>')}</div>` : ''}
+      ${ci.declaration ? `<div style="margin-top:16px;font-size:11px;font-style:italic;color:#555">${escapeHtml(ci.declaration)}</div>` : ''}
+      ${ci.remarks ? `<div style="margin-top:8px;font-size:11px"><strong>Remarks:</strong> ${escapeHtmlBR(ci.remarks)}</div>` : ''}
       <div class="doc-signature">
         <div class="doc-sig-block"><div class="line"></div><div class="label">Authorized Signature</div></div>
         <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
@@ -5457,13 +5482,13 @@ function renderPackingPreview(companyBlock, companyName) {
     const h = parseFloat(item.h) || 0;
     const cbm = (l * w * h) / 1000000;
     totalQty += qty; totalNw += nw; totalGw += gw; totalCbm += cbm;
-    const imgHtml = item.img ? `<img src="${item.img}" style="width:36px;height:36px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
+    const imgHtml = item.img ? `<img src="${escapeHtml(item.img)}" style="width:36px;height:36px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
     itemsHtml += `<tr>
       <td>${i+1}</td>
-      <td>${item.cartonNo || ''}</td>
-      <td>${imgHtml}${item.desc || ''}</td>
+      <td>${escapeHtml(item.cartonNo)}</td>
+      <td>${imgHtml}${escapeHtml(item.desc)}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
-      <td class="center">${item.unit || ''}</td>
+      <td class="center">${escapeHtml(item.unit)}</td>
       <td class="num">${fmtNum(nw, 2)}</td>
       <td class="num">${fmtNum(gw, 2)}</td>
       <td class="num">${l || ''}×${w || ''}×${h || ''}</td>
@@ -5477,26 +5502,26 @@ function renderPackingPreview(companyBlock, companyName) {
         <div class="doc-title-block">
           <div class="doc-title">Packing List</div>
           <div class="doc-meta">
-            <strong>No.:</strong> ${pl.no || ''}<br>
-            <strong>Date:</strong> ${pl.date || ''}<br>
-            ${pl.invNo ? '<strong>Invoice No.:</strong> '+pl.invNo : ''}
+            <strong>No.:</strong> ${escapeHtml(pl.no)}<br>
+            <strong>Date:</strong> ${escapeHtml(pl.date)}<br>
+            ${pl.invNo ? '<strong>Invoice No.:</strong> '+escapeHtml(pl.invNo) : ''}
           </div>
         </div>
       </div>
       <div class="doc-parties">
         <div class="doc-party-block">
           <div class="label">Shipper</div>
-          <div class="content"><strong>${companyName}</strong><br>${App.data.company.address||''}</div>
+          <div class="content"><strong>${escapeHtml(companyName)}</strong><br>${escapeHtml(App.data.company.address||'')}</div>
         </div>
         <div class="doc-party-block">
           <div class="label">Consignee</div>
-          <div class="content"><strong>${pl.buyer || ''}</strong></div>
+          <div class="content"><strong>${escapeHtml(pl.buyer)}</strong></div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;font-size:11px">
-        <div><strong>Trade Terms:</strong> ${pl.terms || ''}</div>
-        <div><strong>From:</strong> ${pl.from || ''} <strong>To:</strong> ${pl.to || ''}</div>
-        <div><strong>Marks:</strong> ${pl.marks || ''}</div>
+        <div><strong>Trade Terms:</strong> ${escapeHtml(pl.terms)}</div>
+        <div><strong>From:</strong> ${escapeHtml(pl.from)} <strong>To:</strong> ${escapeHtml(pl.to)}</div>
+        <div><strong>Marks:</strong> ${escapeHtml(pl.marks)}</div>
       </div>
       <table class="doc-table">
         <thead><tr>
@@ -5538,20 +5563,20 @@ function renderPackingPreview(companyBlock, companyName) {
 function renderMarksPreview() {
   const mk = App.data.marks || {};
   let mainMarkContent = '';
-  if (mk.consignee) mainMarkContent += mk.consignee + '\n';
-  if (mk.port) mainMarkContent += mk.port + '\n';
-  if (mk.po) mainMarkContent += 'PO: ' + mk.po + '\n';
-  if (mk.cartonNo) mainMarkContent += 'No.: ' + mk.cartonNo + '\n';
-  if (mk.qty) mainMarkContent += 'QTY: ' + mk.qty + '\n';
-  if (mk.origin) mainMarkContent += mk.origin;
+  if (mk.consignee) mainMarkContent += escapeHtml(mk.consignee) + '\n';
+  if (mk.port) mainMarkContent += escapeHtml(mk.port) + '\n';
+  if (mk.po) mainMarkContent += 'PO: ' + escapeHtml(mk.po) + '\n';
+  if (mk.cartonNo) mainMarkContent += 'No.: ' + escapeHtml(mk.cartonNo) + '\n';
+  if (mk.qty) mainMarkContent += 'QTY: ' + escapeHtml(mk.qty) + '\n';
+  if (mk.origin) mainMarkContent += escapeHtml(mk.origin);
 
   let sideMarkContent = '';
-  if (mk.item) sideMarkContent += 'ITEM: ' + mk.item + '\n';
-  if (mk.spec) sideMarkContent += 'SPEC: ' + mk.spec + '\n';
-  if (mk.nw) sideMarkContent += 'N.W.: ' + mk.nw + '\n';
-  if (mk.gw) sideMarkContent += 'G.W.: ' + mk.gw + '\n';
-  if (mk.meas) sideMarkContent += 'MEAS: ' + mk.meas + '\n';
-  if (mk.color) sideMarkContent += 'COLOR: ' + mk.color;
+  if (mk.item) sideMarkContent += 'ITEM: ' + escapeHtml(mk.item) + '\n';
+  if (mk.spec) sideMarkContent += 'SPEC: ' + escapeHtml(mk.spec) + '\n';
+  if (mk.nw) sideMarkContent += 'N.W.: ' + escapeHtml(mk.nw) + '\n';
+  if (mk.gw) sideMarkContent += 'G.W.: ' + escapeHtml(mk.gw) + '\n';
+  if (mk.meas) sideMarkContent += 'MEAS: ' + escapeHtml(mk.meas) + '\n';
+  if (mk.color) sideMarkContent += 'COLOR: ' + escapeHtml(mk.color);
 
   let handlingIcons = '';
   if (mk.fragile !== false) handlingIcons += '<div style="display:inline-block;text-align:center;margin:0 8px"><div style="font-size:28px">🍷</div><div style="font-size:9px;margin-top:2px">FRAGILE</div></div>';
@@ -5579,7 +5604,7 @@ function renderSpecPreview(companyBlock, companyName) {
   let paramsHtml = '';
   (sp.params || []).forEach(p => {
     if (p.param || p.value) {
-      paramsHtml += `<tr><td style="font-weight:600;width:35%;background:#f8f9fd">${p.param || ''}</td><td>${p.value || ''} ${p.unit || ''}</td></tr>`;
+      paramsHtml += `<tr><td style="font-weight:600;width:35%;background:#f8f9fd">${escapeHtml(p.param)}</td><td>${escapeHtml(p.value)} ${escapeHtml(p.unit)}</td></tr>`;
     }
   });
 
@@ -5590,17 +5615,17 @@ function renderSpecPreview(companyBlock, companyName) {
         <div class="doc-title-block">
           <div class="doc-title">Product Specification</div>
           <div class="doc-meta">
-            ${sp.model ? '<strong>Model:</strong> ' + sp.model + '<br>' : ''}
-            ${sp.brand ? '<strong>Brand:</strong> ' + sp.brand + '<br>' : ''}
-            ${sp.hs ? '<strong>HS Code:</strong> ' + sp.hs : ''}
+            ${sp.model ? '<strong>Model:</strong> ' + escapeHtml(sp.model) + '<br>' : ''}
+            ${sp.brand ? '<strong>Brand:</strong> ' + escapeHtml(sp.brand) + '<br>' : ''}
+            ${sp.hs ? '<strong>HS Code:</strong> ' + escapeHtml(sp.hs) : ''}
           </div>
         </div>
       </div>
       <div style="text-align:center;margin:20px 0">
-        <div style="font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--accent-blue)">${sp.name || 'Product Name'}</div>
-        ${sp.origin ? '<div style="font-size:12px;color:var(--text-muted);margin-top:4px">Country of Origin: ' + sp.origin + '</div>' : ''}
+        <div style="font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--accent-blue)">${escapeHtml(sp.name) || 'Product Name'}</div>
+        ${sp.origin ? '<div style="font-size:12px;color:var(--text-muted);margin-top:4px">Country of Origin: ' + escapeHtml(sp.origin) + '</div>' : ''}
       </div>
-      ${sp.desc ? `<div style="font-size:12px;line-height:1.8;color:#444;margin-bottom:20px;padding:14px;background:#f8f9fd;border-radius:6px">${sp.desc.replace(/\n/g,'<br>')}</div>` : ''}
+      ${sp.desc ? `<div style="font-size:12px;line-height:1.8;color:#444;margin-bottom:20px;padding:14px;background:#f8f9fd;border-radius:6px">${escapeHtmlBR(sp.desc)}</div>` : ''}
       <table class="doc-table">
         <thead><tr><th colspan="2">Technical Parameters · 技术参数</th></tr></thead>
         <tbody>${paramsHtml || '<tr><td colspan="2" style="text-align:center;color:#999;padding:20px">No parameters added</td></tr>'}</tbody>
@@ -5608,21 +5633,21 @@ function renderSpecPreview(companyBlock, companyName) {
       <table class="doc-table" style="margin-top:16px">
         <thead><tr><th colspan="2">Packing Information · 包装信息</th></tr></thead>
         <tbody>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Packing Type</td><td>${sp.pkgType || '-'}</td></tr>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Qty per Carton</td><td>${sp.pkgQty || '-'}</td></tr>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Unit N.W.</td><td>${sp.nwUnit ? sp.nwUnit + ' kg' : '-'}</td></tr>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton N.W.</td><td>${sp.nwCarton ? sp.nwCarton + ' kg' : '-'}</td></tr>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton G.W.</td><td>${sp.gwCarton ? sp.gwCarton + ' kg' : '-'}</td></tr>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton Dimensions</td><td>${sp.cartonSize ? sp.cartonSize + ' cm' : '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Packing Type</td><td>${escapeHtml(sp.pkgType) || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Qty per Carton</td><td>${escapeHtml(sp.pkgQty) || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Unit N.W.</td><td>${sp.nwUnit ? escapeHtml(sp.nwUnit) + ' kg' : '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton N.W.</td><td>${sp.nwCarton ? escapeHtml(sp.nwCarton) + ' kg' : '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton G.W.</td><td>${sp.gwCarton ? escapeHtml(sp.gwCarton) + ' kg' : '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Carton Dimensions</td><td>${sp.cartonSize ? escapeHtml(sp.cartonSize) + ' cm' : '-'}</td></tr>
         </tbody>
       </table>
       <table class="doc-table" style="margin-top:16px">
         <thead><tr><th colspan="2">Other Information · 其他信息</th></tr></thead>
         <tbody>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Quality Standard</td><td>${sp.quality || '-'}</td></tr>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Shelf Life</td><td>${sp.shelf || '-'}</td></tr>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Storage</td><td>${sp.storage || '-'}</td></tr>
-          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">MOQ</td><td>${sp.moq || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Quality Standard</td><td>${escapeHtml(sp.quality) || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Shelf Life</td><td>${escapeHtml(sp.shelf) || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">Storage</td><td>${escapeHtml(sp.storage) || '-'}</td></tr>
+          <tr><td style="font-weight:600;width:35%;background:#f8f9fd">MOQ</td><td>${escapeHtml(sp.moq) || '-'}</td></tr>
         </tbody>
       </table>
       <div class="doc-signature">
@@ -5666,7 +5691,7 @@ function addPalletRow(data) {
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="' + (data ? (data.h || '') : '') + '"></td>\
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="' + (data ? (data.qty || '') : '') + '"></td>\
     <td class="td-input"><input type="number" placeholder="0.00" class="mono" style="text-align:right" value="' + (data ? (data.weight || '') : '') + '"></td>\
-    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest(\'tr\').remove();recalcPallet();debouncedSave()">✕</button></td>';
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="delRow(this, recalcPallet)">✕</button></td>';
   tr.querySelectorAll('input').forEach(function(inp) {
     inp.addEventListener('input', recalcPallet);
   });
@@ -5675,7 +5700,30 @@ function addPalletRow(data) {
 }
 
 function recalcPallet() {
-  // Placeholder for live updates if needed
+  // Live summary: count valid rows and show quick stats
+  var rows = document.querySelectorAll('#pt-tbody tr');
+  var validCount = 0;
+  var totalQty = 0;
+  var totalWeight = 0;
+  rows.forEach(function(tr) {
+    var inputs = tr.querySelectorAll('input');
+    if (inputs.length < 6) return;
+    var l = parseFloat(inputs[1].value) || 0;
+    var w = parseFloat(inputs[2].value) || 0;
+    var h = parseFloat(inputs[3].value) || 0;
+    var qty = parseInt(inputs[4].value) || 0;
+    var weight = parseFloat(inputs[5].value) || 0;
+    if (l > 0 && w > 0 && h > 0) {
+      validCount++;
+      totalQty += qty;
+      totalWeight += qty * weight;
+    }
+  });
+  // Update a lightweight live hint if the empty state is showing
+  var emptyEl = document.getElementById('pt-result-empty');
+  if (emptyEl && emptyEl.style.display !== 'none' && validCount > 0) {
+    emptyEl.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-muted)"><div style="font-size:36px;margin-bottom:12px">📦</div><div style="font-size:14px;margin-bottom:8px">' + validCount + ' 种有效纸箱已录入</div><div style="font-size:12px">点击「计算装托方案」查看详细排版</div></div>';
+  }
 }
 
 function clearPalletCalc() {
@@ -6413,7 +6461,7 @@ function importFromLibrary(docType) {
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center';
   const modal = document.createElement('div');
-  modal.style.cssText = 'background:#fff;border-radius:10px;padding:20px;width:560px;max-height:60vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)';
+  modal.style.cssText = 'background:#fff;border-radius:10px;padding:20px;width:560px;max-width:92vw;max-height:60vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)';
   modal.innerHTML = `<div style="font-size:16px;font-weight:600;margin-bottom:14px">从产品库导入 <span style="font-size:12px;color:#888;font-weight:400">(勾选要导入的产品)</span></div>
     <div id="lib-modal-list"></div>
     <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
@@ -6428,12 +6476,12 @@ function importFromLibrary(docType) {
     if (!p.name) return;
     const item = document.createElement('div');
     item.className = 'product-lib-item';
-    const thumbHtml = p.img ? `<img class="img-thumb" src="${p.img}" style="width:32px;height:32px">` : `<div style="width:32px;height:32px;border:1px dashed #ddd;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc">N/A</div>`;
+    const thumbHtml = p.img ? `<img class="img-thumb" src="${escapeHtml(p.img)}" style="width:32px;height:32px">` : `<div style="width:32px;height:32px;border:1px dashed #ddd;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#ccc">N/A</div>`;
     item.innerHTML = `
       <input type="checkbox" style="margin-right:8px">
       ${thumbHtml}
-      <div class="pl-name">${p.name}</div>
-      <div class="pl-info">${p.spec||''} · ${p.price||''}</div>
+      <div class="pl-name">${escapeHtml(p.name)}</div>
+      <div class="pl-info">${escapeHtml(p.spec)} · ${escapeHtml(p.price)}</div>
     `;
     listEl.appendChild(item);
   });
@@ -6476,21 +6524,21 @@ function addLibProduct(data) {
   const imgData = data ? (data.img || '') : '';
   let imgCellHtml;
   if (imgData) {
-    imgCellHtml = `<td class="img-cell"><img class="img-thumb" src="${imgData}" onclick="previewImage(this.src)" title="点击查看大图"></td>`;
+    imgCellHtml = `<td class="img-cell"><img class="img-thumb" src="${escapeHtml(imgData)}" onclick="previewImage(this.src)" title="点击查看大图"></td>`;
   } else {
     imgCellHtml = `<td class="img-cell"><div class="img-upload-btn" onclick="uploadProductImage(this)" title="上传图片">📷</div></td>`;
   }
   tr.innerHTML = `
     <td class="num-col">${idx}</td>
     ${imgCellHtml}
-    <td class="td-input"><input type="text" placeholder="Product name" value="${data?(data.name||''):''}"></td>
-    <td class="td-input"><input type="text" placeholder="Spec" value="${data?(data.spec||''):''}"></td>
+    <td class="td-input"><input type="text" placeholder="Product name" value="${data?escapeHtml(data.name):''}"></td>
+    <td class="td-input"><input type="text" placeholder="Spec" value="${data?escapeHtml(data.spec):''}"></td>
     <td class="td-input"><select><option value="">-</option><option ${data&&data.unit==='PCS'?'selected':''}>PCS</option><option ${data&&data.unit==='SET'?'selected':''}>SET</option><option ${data&&data.unit==='BOX'?'selected':''}>BOX</option><option ${data&&data.unit==='CTN'?'selected':''}>CTN</option><option ${data&&data.unit==='PAIR'?'selected':''}>PAIR</option><option ${data&&data.unit==='ROLL'?'selected':''}>ROLL</option><option ${data&&data.unit==='KG'?'selected':''}>KG</option></select></td>
-    <td class="td-input"><input type="text" placeholder="0.00" class="mono" style="text-align:right" value="${data?(data.price||''):''}"></td>
-    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.nw||''):''}"></td>
-    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?(data.gw||''):''}"></td>
-    <td class="td-input"><input type="text" placeholder="L×W×H" class="mono" style="text-align:right" value="${data?(data.l&&data.w&&data.h?data.l+'×'+data.w+'×'+data.h:''):''}"></td>
-    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="this.closest('tr').remove();debouncedSave()">✕</button></td>
+    <td class="td-input"><input type="text" placeholder="0.00" class="mono" style="text-align:right" value="${data?escapeHtml(data.price):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?escapeHtml(data.nw):''}"></td>
+    <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?escapeHtml(data.gw):''}"></td>
+    <td class="td-input" style="white-space:nowrap"><input type="number" placeholder="L" class="mono" style="width:45px;text-align:right" value="${data?escapeHtml(data.l):''}"><span style="color:#aaa">×</span><input type="number" placeholder="W" class="mono" style="width:45px;text-align:right" value="${data?escapeHtml(data.w):''}"><span style="color:#aaa">×</span><input type="number" placeholder="H" class="mono" style="width:45px;text-align:right" value="${data?escapeHtml(data.h):''}"></td>
+    <td class="no-print" style="text-align:center"><button class="btn btn-danger btn-sm btn-icon" onclick="delRow(this)">✕</button></td>
   `;
   tr._imgData = imgData;
   tr.querySelectorAll('input,select').forEach(inp => {
@@ -6903,7 +6951,10 @@ function autofillCompany() {
   const piBuyer = document.getElementById('pi-buyer-name').value;
   if (piBuyer) {
     if (!document.getElementById('ci-buyer-name').value) document.getElementById('ci-buyer-name').value = piBuyer;
+    if (!document.getElementById('ci-buyer-contact').value) document.getElementById('ci-buyer-contact').value = document.getElementById('pi-buyer-contact').value;
     if (!document.getElementById('ci-buyer-addr').value) document.getElementById('ci-buyer-addr').value = document.getElementById('pi-buyer-addr').value;
+    if (!document.getElementById('ci-buyer-tel').value) document.getElementById('ci-buyer-tel').value = document.getElementById('pi-buyer-tel').value;
+    if (!document.getElementById('ci-buyer-email').value) document.getElementById('ci-buyer-email').value = document.getElementById('pi-buyer-email').value;
     if (!document.getElementById('pl-buyer').value) document.getElementById('pl-buyer').value = piBuyer;
     if (!document.getElementById('sc-buyer-name').value) document.getElementById('sc-buyer-name').value = piBuyer;
     if (!document.getElementById('sc-buyer-addr').value) document.getElementById('sc-buyer-addr').value = document.getElementById('pi-buyer-addr').value;
@@ -6954,12 +7005,20 @@ function importData(event) {
   reader.onload = (e) => {
     try {
       const data = JSON.parse(e.target.result);
-      Object.assign(App.data, data);
+      if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new Error('Invalid data structure');
+      }
+      const validKeys = ['company','proforma','salesContract','commercial','packing','marks','spec','products','pallet','cartonCalc','weightCalc','settings','stamps','signatures'];
+      const sanitized = {};
+      validKeys.forEach(k => {
+        if (data[k] !== undefined) sanitized[k] = data[k];
+      });
+      Object.assign(App.data, sanitized);
       localStorage.setItem('tradepro_data', JSON.stringify(App.data));
       showToast('数据导入成功，即将刷新...');
       setTimeout(() => location.reload(), 800);
     } catch(err) {
-      alert('导入失败：文件格式错误');
+      alert('导入失败：文件格式错误或数据已损坏');
     }
   };
   reader.readAsText(file);
