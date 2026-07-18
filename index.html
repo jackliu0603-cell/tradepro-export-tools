@@ -2132,6 +2132,20 @@ input:focus + .history-toggle,
   tryNext();
 })();
 </script>
+
+<style>
+/* Combobox style for input[list] — looks like select but allows custom input */
+input[list] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px !important;
+}
+input[list]::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+</style>
+
 </head>
 <body>
 
@@ -2213,6 +2227,10 @@ input:focus + .history-toggle,
       <span class="nav-icon">🧮</span>
       <span>计算器</span>
     </div>
+    <div class="nav-item" onclick="showHSModal()" style="cursor:pointer" title="HS编码查询">
+      <span class="nav-icon">🏷️</span>
+      <span>HS编码</span>
+    </div>
     <div class="nav-section-label">数据中心</div>
     <div class="nav-item" data-page="library">
       <span class="nav-icon">🗂️</span>
@@ -2273,27 +2291,41 @@ input:focus + .history-toggle,
           <div class="form-group"><label class="form-label">发票日期</label><input type="date" class="form-input" id="pi-date"></div>
           <div class="form-group"><label class="form-label">有效期至</label><input type="date" class="form-input" id="pi-valid"></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <select class="form-select" id="pi-terms">
-              <option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option><option>DAP</option><option>DDP</option>
-            </select>
+            <input class="form-input" list="dl-pi-terms" id="pi-terms">
+            <datalist id="dl-pi-terms">
+      <option value="FOB">FOB</option>
+      <option value="CFR">CFR</option>
+      <option value="CIF">CIF</option>
+      <option value="EXW">EXW</option>
+      <option value="FCA">FCA</option>
+      <option value="DAP">DAP</option>
+      <option value="DDP">DDP</option>
+    </datalist>
           </div>
           <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="pi-from" placeholder="Shanghai"></div>
           <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="pi-to" placeholder="Hamburg"></div>
           <div class="form-group"><label class="form-label">付款方式</label>
-            <select class="form-select" id="pi-payment">
-              <option>T/T 30% deposit, 70% before shipment</option>
-              <option>T/T 100% in advance</option>
-              <option>L/C at sight</option>
-              <option>L/C 60 days</option>
-              <option>D/P at sight</option>
-              <option>D/A 60 days</option>
-            </select>
+            <input class="form-input" list="dl-pi-payment" id="pi-payment">
+            <datalist id="dl-pi-payment">
+      <option value="T/T 30% deposit, 70% before shipment">T/T 30% deposit, 70% before shipment</option>
+      <option value="T/T 100% in advance">T/T 100% in advance</option>
+      <option value="L/C at sight">L/C at sight</option>
+      <option value="L/C 60 days">L/C 60 days</option>
+      <option value="D/P at sight">D/P at sight</option>
+      <option value="D/A 60 days">D/A 60 days</option>
+    </datalist>
           </div>
           <div class="form-group"><label class="form-label">交货期</label><input class="form-input" id="pi-delivery" placeholder="Within 30 days after deposit"></div>
           <div class="form-group"><label class="form-label">货币</label>
-            <select class="form-select" id="pi-currency">
-              <option>USD</option><option>EUR</option><option>GBP</option><option>CNY</option><option>JPY</option><option>AUD</option>
-            </select>
+            <input class="form-input" list="dl-pi-currency" id="pi-currency">
+            <datalist id="dl-pi-currency">
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="GBP">GBP</option>
+      <option value="CNY">CNY</option>
+      <option value="JPY">JPY</option>
+      <option value="AUD">AUD</option>
+    </datalist>
           </div>
         </div>
       </div>
@@ -2394,27 +2426,41 @@ input:focus + .history-toggle,
           <div class="form-group"><label class="form-label">签订日期</label><input type="date" class="form-input" id="sc-date"></div>
           <div class="form-group"><label class="form-label">签订地点</label><input class="form-input" id="sc-place" placeholder="Shanghai, China"></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <select class="form-select" id="sc-terms">
-              <option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option><option>DAP</option><option>DDP</option>
-            </select>
+            <input class="form-input" list="dl-sc-terms" id="sc-terms">
+            <datalist id="dl-sc-terms">
+      <option value="FOB">FOB</option>
+      <option value="CFR">CFR</option>
+      <option value="CIF">CIF</option>
+      <option value="EXW">EXW</option>
+      <option value="FCA">FCA</option>
+      <option value="DAP">DAP</option>
+      <option value="DDP">DDP</option>
+    </datalist>
           </div>
           <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="sc-from" placeholder="Shanghai"></div>
           <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="sc-to" placeholder="Hamburg"></div>
           <div class="form-group"><label class="form-label">付款方式</label>
-            <select class="form-select" id="sc-payment">
-              <option>T/T 30% deposit, 70% before shipment</option>
-              <option>T/T 100% in advance</option>
-              <option>L/C at sight</option>
-              <option>L/C 60 days</option>
-              <option>D/P at sight</option>
-              <option>D/A 60 days</option>
-            </select>
+            <input class="form-input" list="dl-sc-payment" id="sc-payment">
+            <datalist id="dl-sc-payment">
+      <option value="T/T 30% deposit, 70% before shipment">T/T 30% deposit, 70% before shipment</option>
+      <option value="T/T 100% in advance">T/T 100% in advance</option>
+      <option value="L/C at sight">L/C at sight</option>
+      <option value="L/C 60 days">L/C 60 days</option>
+      <option value="D/P at sight">D/P at sight</option>
+      <option value="D/A 60 days">D/A 60 days</option>
+    </datalist>
           </div>
           <div class="form-group"><label class="form-label">交货期</label><input class="form-input" id="sc-delivery" placeholder="Within 30 days after deposit"></div>
           <div class="form-group"><label class="form-label">货币</label>
-            <select class="form-select" id="sc-currency">
-              <option>USD</option><option>EUR</option><option>GBP</option><option>CNY</option><option>JPY</option><option>AUD</option>
-            </select>
+            <input class="form-input" list="dl-sc-currency" id="sc-currency">
+            <datalist id="dl-sc-currency">
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="GBP">GBP</option>
+      <option value="CNY">CNY</option>
+      <option value="JPY">JPY</option>
+      <option value="AUD">AUD</option>
+    </datalist>
           </div>
         </div>
       </div>
@@ -2541,22 +2587,40 @@ input:focus + .history-toggle,
           <div class="form-group"><label class="form-label">合同号</label><input class="form-input mono" id="ci-contract" placeholder="SC-2026-001"></div>
           <div class="form-group"><label class="form-label">信用证号</label><input class="form-input mono" id="ci-lc" placeholder="L/C No."></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <select class="form-select" id="ci-terms">
-              <option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option><option>DAP</option><option>DDP</option>
-            </select>
+            <input class="form-input" list="dl-ci-terms" id="ci-terms">
+            <datalist id="dl-ci-terms">
+      <option value="FOB">FOB</option>
+      <option value="CFR">CFR</option>
+      <option value="CIF">CIF</option>
+      <option value="EXW">EXW</option>
+      <option value="FCA">FCA</option>
+      <option value="DAP">DAP</option>
+      <option value="DDP">DDP</option>
+    </datalist>
           </div>
           <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="ci-from"></div>
           <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="ci-to"></div>
           <div class="form-group"><label class="form-label">货币</label>
-            <select class="form-select" id="ci-currency">
-              <option>USD</option><option>EUR</option><option>GBP</option><option>CNY</option><option>JPY</option><option>AUD</option>
-            </select>
+            <input class="form-input" list="dl-ci-currency" id="ci-currency">
+            <datalist id="dl-ci-currency">
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="GBP">GBP</option>
+      <option value="CNY">CNY</option>
+      <option value="JPY">JPY</option>
+      <option value="AUD">AUD</option>
+    </datalist>
           </div>
           <div class="form-group"><label class="form-label">原产国</label><input class="form-input" id="ci-origin" placeholder="China"></div>
           <div class="form-group"><label class="form-label">运输方式</label>
-            <select class="form-select" id="ci-transport">
-              <option>By Sea</option><option>By Air</option><option>By Land</option><option>By Rail</option><option>Multimodal</option>
-            </select>
+            <input class="form-input" list="dl-ci-transport" id="ci-transport">
+            <datalist id="dl-ci-transport">
+      <option value="By Sea">By Sea</option>
+      <option value="By Air">By Air</option>
+      <option value="By Land">By Land</option>
+      <option value="By Rail">By Rail</option>
+      <option value="Multimodal">Multimodal</option>
+    </datalist>
           </div>
         </div>
       </div>
@@ -2663,7 +2727,16 @@ input:focus + .history-toggle,
           <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="pl-date"></div>
           <div class="form-group"><label class="form-label">发票号</label><input class="form-input mono" id="pl-inv-no" placeholder="Reference Invoice No."></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <select class="form-select" id="pl-terms"><option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option><option>DAP</option><option>DDP</option></select>
+            <input class="form-input" list="dl-pl-terms" id="pl-terms">
+            <datalist id="dl-pl-terms">
+      <option value="FOB">FOB</option>
+      <option value="CFR">CFR</option>
+      <option value="CIF">CIF</option>
+      <option value="EXW">EXW</option>
+      <option value="FCA">FCA</option>
+      <option value="DAP">DAP</option>
+      <option value="DDP">DDP</option>
+    </datalist>
           </div>
           <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="pl-from"></div>
           <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="pl-to"></div>
@@ -3512,9 +3585,14 @@ input:focus + .history-toggle,
             </div>
             <div class="form-group">
               <label class="form-label">币种</label>
-              <select class="form-select" id="ic-currency">
-                <option>USD</option><option>EUR</option><option>CNY</option><option>GBP</option><option>JPY</option>
-              </select>
+              <input class="form-input" list="dl-ic-currency" id="ic-currency">
+            <datalist id="dl-ic-currency">
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="CNY">CNY</option>
+      <option value="GBP">GBP</option>
+      <option value="JPY">JPY</option>
+    </datalist>
             </div>
           </div>
         </div>
@@ -4370,6 +4448,15 @@ const DOC_CONFIG = {
   }
 };
 
+// Global datalist for unit options in table rows
+var unitDlOptions = '<option value="PCS"><option value="SET"><option value="BOX"><option value="CTN"><option value="ROLL"><option value="PAIR"><option value="KG"><option value="METER"><option value="DOZEN"><option value="PACK"><option value="BAG"><option value="LOT"><option value="TON"><option value="LITER"><option value="M2"><option value="M3">';
+document.addEventListener('DOMContentLoaded', function() {
+  var dl = document.createElement('datalist');
+  dl.id = 'dl-row-unit';
+  dl.innerHTML = unitDlOptions;
+  document.body.appendChild(dl);
+});
+
 function addRow(docType, data) {
   const cfg = DOC_CONFIG[docType];
   if (!cfg) return;
@@ -4387,8 +4474,8 @@ function addRow(docType, data) {
         tr.innerHTML += `<td class="img-cell no-print"><div class="img-upload-btn" onclick="uploadProductImage(this)" title="上传图片">📷</div></td>`;
       }
     } else if (f.type === 'select') {
-      const opts = f.options.map(o => `<option value="${o}" ${data && data[f.name]===o?'selected':''}>${o}</option>`).join('');
-      tr.innerHTML += `<td class="td-input"><select style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''}><option value="">${f.placeholder}</option>${opts}</select></td>`;
+      const opts = f.options.map(o => `<option value="${o}">`).join('');
+      tr.innerHTML += `<td class="td-input"><input type="text" list="dl-row-unit" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}"></td>`;
     } else {
       tr.innerHTML += `<td class="td-input"><input type="text" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}"></td>`;
     }
@@ -6874,7 +6961,7 @@ function addLibProduct(data) {
     ${imgCellHtml}
     <td class="td-input"><input type="text" placeholder="Product name" value="${data?escapeHtml(data.name):''}"></td>
     <td class="td-input"><input type="text" placeholder="Spec" value="${data?escapeHtml(data.spec):''}"></td>
-    <td class="td-input"><select><option value="">-</option><option ${data&&data.unit==='PCS'?'selected':''}>PCS</option><option ${data&&data.unit==='SET'?'selected':''}>SET</option><option ${data&&data.unit==='BOX'?'selected':''}>BOX</option><option ${data&&data.unit==='CTN'?'selected':''}>CTN</option><option ${data&&data.unit==='PAIR'?'selected':''}>PAIR</option><option ${data&&data.unit==='ROLL'?'selected':''}>ROLL</option><option ${data&&data.unit==='KG'?'selected':''}>KG</option></select></td>
+    <td class="td-input"><input type="text" list="dl-row-unit" placeholder="-" value="${data?(data.unit||''):''}"></td>
     <td class="td-input"><input type="text" placeholder="0.00" class="mono" style="text-align:right" value="${data?escapeHtml(data.price):''}"></td>
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?escapeHtml(data.nw):''}"></td>
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?escapeHtml(data.gw):''}"></td>
@@ -8983,5 +9070,91 @@ document.addEventListener('keydown', function(e) {
   else if (key === 'Backspace') { calcInput('back'); e.preventDefault(); }
 });
 </script>
+
+<!-- HS Code Lookup Modal -->
+<div id="hs-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;max-width:560px;width:90%;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #e2e8f0">
+      <h3 style="margin:0;font-size:18px;font-weight:700">🏷️ HS 编码查询</h3>
+      <button onclick="closeHSModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;padding:4px 8px">✕</button>
+    </div>
+    <div style="padding:16px 20px;flex:1;overflow-y:auto">
+      <input type="text" id="hs-modal-search" placeholder="输入编码或商品名称（中英文均可）" oninput="searchHSModal()" style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:12px;box-sizing:border-box">
+      <div id="hs-modal-results" style="max-height:400px;overflow-y:auto"></div>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid #e2e8f0;text-align:right">
+      <button class="btn btn-outline btn-sm" onclick="closeHSModal()">关闭</button>
+    </div>
+  </div>
+</div>
+<script>
+function showHSModal() {
+  var modal = document.getElementById('hs-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    var input = document.getElementById('hs-modal-search');
+    if (input) { input.value = ''; input.focus(); }
+    searchHSModal();
+  }
+}
+function closeHSModal() {
+  var modal = document.getElementById('hs-modal');
+  if (modal) modal.style.display = 'none';
+}
+function searchHSModal() {
+  var query = (document.getElementById('hs-modal-search').value || '').trim().toLowerCase();
+  var container = document.getElementById('hs-modal-results');
+  if (!container) return;
+  if (!query) {
+    container.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:24px">输入编码或商品名称查询<br><span style="font-size:11px">支持中文、英文、编码模糊搜索</span></div>';
+    return;
+  }
+  var results = [];
+  if (typeof HS_DB !== 'undefined') {
+    HS_DB.forEach(function(item) {
+      if (item.code.indexOf(query) >= 0 ||
+          item.desc.toLowerCase().indexOf(query) >= 0 ||
+          item.cn.indexOf(query) >= 0) {
+        results.push(item);
+      }
+    });
+  }
+  if (results.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:13px;padding:24px">未找到匹配的HS编码</div>';
+    return;
+  }
+  var html = '';
+  results.slice(0, 100).forEach(function(item) {
+    html += '<div style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s" onclick="copyHSModal(\'' + item.code + '\')" onmouseenter="this.style.background=\'#f0f7ff\'" onmouseleave="this.style.background=\'#fff\'" title="点击复制编码">' +
+      '<div style="font-weight:700;color:#1d4ed8;font-size:15px;font-family:Courier New,monospace">' + escapeHtml(item.code) + '</div>' +
+      '<div style="font-size:12px;color:#475569;margin-top:3px">' + escapeHtml(item.desc) + '</div>' +
+      '<div style="font-size:11px;color:#94a3b8;margin-top:2px">' + escapeHtml(item.cn) + '</div>' +
+      '</div>';
+  });
+  if (results.length > 100) {
+    html += '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:8px">共 ' + results.length + ' 条结果，显示前 100 条，请细化搜索</div>';
+  }
+  container.innerHTML = html;
+}
+function copyHSModal(code) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(function() {
+      showToast('HS编码 ' + code + ' 已复制到剪贴板');
+    }).catch(function() { fallbackCopy(code); });
+  } else {
+    fallbackCopy(code);
+  }
+}
+// Close modal on overlay click
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('hs-modal');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closeHSModal();
+    });
+  }
+});
+</script>
+
 </body>
 </html>
