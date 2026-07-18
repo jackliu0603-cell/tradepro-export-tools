@@ -1810,6 +1810,10 @@ body {
       <span class="nav-icon">📋</span>
       <span>形式发票</span>
     </div>
+    <div class="nav-item" data-page="salescontract">
+      <span class="nav-icon">📝</span>
+      <span>销售合同</span>
+    </div>
     <div class="nav-item" data-page="commercial">
       <span class="nav-icon">📄</span>
       <span>商业发票</span>
@@ -1995,6 +1999,152 @@ body {
       <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
     </div>
     <div class="preview-area" id="proforma-preview-area"></div>
+  </div>
+</div>
+
+<!-- ===================== PAGE: SALES CONTRACT ===================== -->
+<div class="page" id="page-salescontract">
+  <div class="page-header">
+    <div>
+      <div class="page-title">销售合同</div>
+      <div class="page-subtitle">Sales Contract · 买卖双方正式签订的销售合同</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('salescontract')">👁️ 预览</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleStamp('salescontract')" id="salescontract-stamp-btn">印章: 关</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleSignature('salescontract')" id="salescontract-sig-btn">签字: 关</button>
+      <button class="btn btn-primary btn-sm" onclick="addRow('salescontract')">+ 添加行</button>
+    </div>
+  </div>
+
+  <div id="salescontract-edit">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>合同信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">合同号 <span class="req">*</span></label><input class="form-input mono" id="sc-no" placeholder="SC-2026-001"></div>
+          <div class="form-group"><label class="form-label">签订日期</label><input type="date" class="form-input" id="sc-date"></div>
+          <div class="form-group"><label class="form-label">签订地点</label><input class="form-input" id="sc-place" placeholder="Shanghai, China"></div>
+          <div class="form-group"><label class="form-label">贸易条款</label>
+            <select class="form-select" id="sc-terms">
+              <option>FOB</option><option>CFR</option><option>CIF</option><option>EXW</option><option>FCA</option><option>DAP</option><option>DDP</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="sc-from" placeholder="Shanghai"></div>
+          <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="sc-to" placeholder="Hamburg"></div>
+          <div class="form-group"><label class="form-label">付款方式</label>
+            <select class="form-select" id="sc-payment">
+              <option>T/T 30% deposit, 70% before shipment</option>
+              <option>T/T 100% in advance</option>
+              <option>L/C at sight</option>
+              <option>L/C 60 days</option>
+              <option>D/P at sight</option>
+              <option>D/A 60 days</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">交货期</label><input class="form-input" id="sc-delivery" placeholder="Within 30 days after deposit"></div>
+          <div class="form-group"><label class="form-label">货币</label>
+            <select class="form-select" id="sc-currency">
+              <option>USD</option><option>EUR</option><option>GBP</option><option>CNY</option><option>JPY</option><option>AUD</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>卖方信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">卖方名称</label><input class="form-input" id="sc-seller-name" placeholder="Auto-filled from company profile"></div>
+          <div class="form-group"><label class="form-label">联系人</label><input class="form-input" id="sc-seller-contact" placeholder="Contact person"></div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">地址</label><textarea class="form-textarea" id="sc-seller-addr" placeholder="Company address"></textarea></div>
+          <div class="form-group"><label class="form-label">电话</label><input class="form-input mono" id="sc-seller-tel" placeholder="+86 21 12345678"></div>
+          <div class="form-group"><label class="form-label">邮箱</label><input class="form-input mono" id="sc-seller-email" placeholder="sales@company.com"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>买方信息</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">买方名称</label><input class="form-input" id="sc-buyer-name" placeholder="ABC Trading Co., Ltd."></div>
+          <div class="form-group"><label class="form-label">联系人</label><input class="form-input" id="sc-buyer-contact" placeholder="John Smith"></div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">地址</label><textarea class="form-textarea" id="sc-buyer-addr" placeholder="No. 123 Main Street, Hamburg, Germany"></textarea></div>
+          <div class="form-group"><label class="form-label">电话</label><input class="form-input mono" id="sc-buyer-tel" placeholder="+49 40 1234567"></div>
+          <div class="form-group"><label class="form-label">邮箱</label><input class="form-input mono" id="sc-buyer-email" placeholder="john@abctrading.com"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="dot"></span>产品明细</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="copyFromDoc('proforma','salescontract')">📋 从形式发票复制</button>
+          <button class="btn btn-outline btn-sm" onclick="importFromLibrary('salescontract')">📁 从产品库导入</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="data-table-wrap" style="border:none">
+          <table class="data-table" id="sc-table">
+            <thead>
+              <tr>
+                <th style="width:30px">#</th>
+                <th style="width:50px" class="no-print">图片</th>
+                <th>品名 / Description</th>
+                <th style="width:120px">规格 / Spec</th>
+                <th style="width:80px">数量</th>
+                <th style="width:80px">单位</th>
+                <th style="width:100px">单价</th>
+                <th style="width:120px">金额</th>
+                <th style="width:70px" class="no-print">操作</th>
+              </tr>
+            </thead>
+            <tbody id="sc-tbody"></tbody>
+            <tfoot>
+              <tr>
+                <td colspan="7" style="text-align:right;font-weight:600">合计 Total:</td>
+                <td class="num" id="sc-total" style="font-weight:700;color:var(--accent-blue)">0.00</td>
+                <td class="no-print"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title"><span class="dot"></span>合同条款</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">品质与检验 / Quality & Inspection</label>
+            <textarea class="form-textarea" id="sc-quality" rows="2" placeholder="The seller guarantees that the goods comply with the specifications stated herein. The buyer shall inspect the goods within 7 days after arrival."></textarea>
+          </div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">索赔 / Claims</label>
+            <textarea class="form-textarea" id="sc-claims" rows="2" placeholder="Any claims regarding quality or quantity shall be filed by the buyer within 30 days after arrival of the goods at destination."></textarea>
+          </div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">不可抗力 / Force Majeure</label>
+            <textarea class="form-textarea" id="sc-force" rows="2" placeholder="Neither party shall be liable for failure to perform due to causes beyond its reasonable control, including but not limited to natural disasters, war, strikes, etc."></textarea>
+          </div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">仲裁 / Arbitration</label>
+            <textarea class="form-textarea" id="sc-arbitration" rows="2" placeholder="All disputes arising from this contract shall be settled through friendly negotiation. If no settlement is reached, the case shall be submitted to arbitration."></textarea>
+          </div>
+          <div class="form-group" style="grid-column:span 2"><label class="form-label">其他条款 / Other Terms</label>
+            <textarea class="form-textarea" id="sc-other" rows="2" placeholder="This contract is made in two originals, one for each party. This contract shall come into effect upon signature by both parties."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="salescontract-preview" style="display:none">
+    <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('salescontract')">← 返回编辑</button>
+      <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
+    </div>
+    <div class="preview-area" id="salescontract-preview-area"></div>
   </div>
 </div>
 
@@ -3134,6 +3284,7 @@ const App = {
     company: {},
     products: [],
     proforma: { items: [] },
+    salesContract: { items: [] },
     commercial: { items: [] },
     packing: { items: [] },
     marks: {},
@@ -3168,16 +3319,18 @@ function init() {
   updateContainerInfo();
   // Auto-set today's date
   const today = new Date().toISOString().split('T')[0];
-  ['pi-date','ci-date','pl-date'].forEach(id => {
+  ['pi-date','ci-date','pl-date','sc-date'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.value) el.value = today;
   });
   // Generate default invoice numbers
   if (!document.getElementById('pi-no').value) document.getElementById('pi-no').value = 'PI-' + today.replace(/-/g,'') + '-001';
+  if (!document.getElementById('sc-no').value) document.getElementById('sc-no').value = 'SC-' + today.replace(/-/g,'') + '-001';
   if (!document.getElementById('ci-no').value) document.getElementById('ci-no').value = 'CI-' + today.replace(/-/g,'') + '-001';
   if (!document.getElementById('pl-no').value) document.getElementById('pl-no').value = 'PL-' + today.replace(/-/g,'') + '-001';
   // Add initial rows
   if (App.data.proforma.items.length === 0) addRow('proforma');
+  if (App.data.salesContract.items.length === 0) addRow('salescontract');
   if (App.data.commercial.items.length === 0) addRow('commercial');
   if (App.data.packing.items.length === 0) addRow('packing');
   if (App.data.spec.params.length === 0) { addSpecRow(); addSpecRow(); addSpecRow(); }
@@ -3206,8 +3359,9 @@ function setupNavigation() {
 }
 
 const PAGE_TITLES = {
-  proforma:   ['形式发票', 'Proforma Invoice'],
-  commercial: ['商业发票', 'Commercial Invoice'],
+  proforma:         ['形式发票', 'Proforma Invoice'],
+  salescontract:    ['销售合同', 'Sales Contract'],
+  commercial:       ['商业发票', 'Commercial Invoice'],
   packing:    ['装箱单', 'Packing List'],
   marks:      ['唛头设计', 'Shipping Marks'],
   spec:       ['产品规格书', 'Product Specification'],
@@ -3253,10 +3407,10 @@ function switchPage(page) {
   }, 150);
 
   const printBtn = document.getElementById('printBtn');
-  printBtn.style.display = ['proforma','commercial','packing','marks','spec'].includes(page) ? '' : 'none';
+  printBtn.style.display = ['proforma','salescontract','commercial','packing','marks','spec'].includes(page) ? '' : 'none';
 
   // Close preview when switching
-  ['proforma','commercial','packing','marks','spec'].forEach(p => {
+  ['proforma','salescontract','commercial','packing','marks','spec'].forEach(p => {
     const pv = document.getElementById(p + '-preview');
     const ed = document.getElementById(p + '-edit');
     if (pv && pv.style.display !== 'none' && p !== page) {
@@ -3303,6 +3457,20 @@ function collectPageData(page) {
         buyerAddr: v('pi-buyer-addr'), buyerTel: v('pi-buyer-tel'), buyerEmail: v('pi-buyer-email'),
         remarks: v('pi-remarks'), bank: v('pi-bank'),
         items: collectTableRows('pi-tbody', ['img','desc','spec','qty','unit','price'])
+      };
+      break;
+    case 'salescontract':
+      App.data.salesContract = {
+        no: v('sc-no'), date: v('sc-date'), place: v('sc-place'), terms: v('sc-terms'),
+        from: v('sc-from'), to: v('sc-to'), payment: v('sc-payment'), delivery: v('sc-delivery'),
+        currency: v('sc-currency'),
+        sellerName: v('sc-seller-name'), sellerContact: v('sc-seller-contact'),
+        sellerAddr: v('sc-seller-addr'), sellerTel: v('sc-seller-tel'), sellerEmail: v('sc-seller-email'),
+        buyerName: v('sc-buyer-name'), buyerContact: v('sc-buyer-contact'),
+        buyerAddr: v('sc-buyer-addr'), buyerTel: v('sc-buyer-tel'), buyerEmail: v('sc-buyer-email'),
+        quality: v('sc-quality'), claims: v('sc-claims'), force: v('sc-force'),
+        arbitration: v('sc-arbitration'), other: v('sc-other'),
+        items: collectTableRows('sc-tbody', ['img','desc','spec','qty','unit','price'])
       };
       break;
     case 'commercial':
@@ -3427,6 +3595,18 @@ function restorePageData() {
   setVal('pi-buyer-addr', pi.buyerAddr); setVal('pi-buyer-tel', pi.buyerTel); setVal('pi-buyer-email', pi.buyerEmail);
   setVal('pi-remarks', pi.remarks); setVal('pi-bank', pi.bank);
 
+  // Sales Contract
+  const sc = App.data.salesContract || {};
+  setVal('sc-no', sc.no); setVal('sc-date', sc.date); setVal('sc-place', sc.place);
+  setVal('sc-terms', sc.terms); setVal('sc-from', sc.from); setVal('sc-to', sc.to);
+  setVal('sc-payment', sc.payment); setVal('sc-delivery', sc.delivery); setVal('sc-currency', sc.currency);
+  setVal('sc-seller-name', sc.sellerName); setVal('sc-seller-contact', sc.sellerContact);
+  setVal('sc-seller-addr', sc.sellerAddr); setVal('sc-seller-tel', sc.sellerTel); setVal('sc-seller-email', sc.sellerEmail);
+  setVal('sc-buyer-name', sc.buyerName); setVal('sc-buyer-contact', sc.buyerContact);
+  setVal('sc-buyer-addr', sc.buyerAddr); setVal('sc-buyer-tel', sc.buyerTel); setVal('sc-buyer-email', sc.buyerEmail);
+  setVal('sc-quality', sc.quality); setVal('sc-claims', sc.claims); setVal('sc-force', sc.force);
+  setVal('sc-arbitration', sc.arbitration); setVal('sc-other', sc.other);
+
   // Commercial
   const ci = App.data.commercial || {};
   setVal('ci-no', ci.no); setVal('ci-date', ci.date); setVal('ci-contract', ci.contract);
@@ -3495,6 +3675,10 @@ function initAllTables() {
   if (pi.items && pi.items.length) {
     pi.items.forEach(r => addRow('proforma', r));
   }
+  const sc = App.data.salesContract || {};
+  if (sc.items && sc.items.length) {
+    sc.items.forEach(r => addRow('salescontract', r));
+  }
   const ci = App.data.commercial || {};
   if (ci.items && ci.items.length) {
     ci.items.forEach(r => addRow('commercial', r));
@@ -3535,6 +3719,19 @@ const DOC_CONFIG = {
       { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
     ],
     totalFn: 'recalcProforma',
+    fieldMap: { desc:'desc', spec:'spec', qty:'qty', unit:'unit', price:'price' }
+  },
+  salescontract: {
+    tbody: 'sc-tbody',
+    fields: [
+      { name:'img', type:'image' },
+      { name:'desc', placeholder:'Product name', style:'' },
+      { name:'spec', placeholder:'Spec', style:'width:100%' },
+      { name:'qty', placeholder:'0', cls:'mono', style:'text-align:right' },
+      { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
+      { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
+    ],
+    totalFn: 'recalcSalesContract',
     fieldMap: { desc:'desc', spec:'spec', qty:'qty', unit:'unit', price:'price' }
   },
   commercial: {
@@ -3627,6 +3824,22 @@ function recalcProforma() {
   document.getElementById('pi-total').textContent = cur + ' ' + fmtNum(total);
 }
 
+function recalcSalesContract() {
+  const rows = document.querySelectorAll('#sc-tbody tr');
+  let total = 0;
+  rows.forEach(r => {
+    const inputs = r.querySelectorAll('input');
+    const qty = parseFloat(inputs[2]?.value) || 0;
+    const price = parseFloat(inputs[4]?.value) || 0;
+    const amt = qty * price;
+    total += amt;
+    const amtCell = r.querySelector('.amt-cell');
+    if (amtCell) amtCell.textContent = fmtNum(amt);
+  });
+  const cur = document.getElementById('sc-currency')?.value || 'USD';
+  document.getElementById('sc-total').textContent = cur + ' ' + fmtNum(total);
+}
+
 function recalcCommercial() {
   const rows = document.querySelectorAll('#ci-tbody tr');
   let total = 0;
@@ -3671,6 +3884,7 @@ function recalcPacking() {
 
 function recalcAll() {
   recalcProforma();
+  recalcSalesContract();
   recalcCommercial();
   recalcPacking();
   recalcWeight();
@@ -4550,11 +4764,13 @@ function printAndClear() {
 // Clear the form for the current document page and remove its saved data
 function resetCurrentDocForm() {
   const page = App.currentPage;
-  if (!['proforma','commercial','packing','marks','spec'].includes(page)) return;
+  if (!['proforma','salescontract','commercial','packing','marks','spec'].includes(page)) return;
 
   // Clear data in App.data
   if (page === 'proforma') {
     App.data.proforma = { items: [] };
+  } else if (page === 'salescontract') {
+    App.data.salesContract = { items: [] };
   } else if (page === 'commercial') {
     App.data.commercial = { items: [] };
   } else if (page === 'packing') {
@@ -4585,6 +4801,7 @@ function resetCurrentDocForm() {
 
   // Add fresh empty rows
   if (page === 'proforma') addRow('proforma');
+  else if (page === 'salescontract') addRow('salescontract');
   else if (page === 'commercial') addRow('commercial');
   else if (page === 'packing') addRow('packing');
   else if (page === 'spec') { addSpecRow(); addSpecRow(); addSpecRow(); }
@@ -4594,6 +4811,9 @@ function resetCurrentDocForm() {
   if (page === 'proforma') {
     document.getElementById('pi-date').value = today;
     document.getElementById('pi-no').value = 'PI-' + today.replace(/-/g,'') + '-001';
+  } else if (page === 'salescontract') {
+    document.getElementById('sc-date').value = today;
+    document.getElementById('sc-no').value = 'SC-' + today.replace(/-/g,'') + '-001';
   } else if (page === 'commercial') {
     document.getElementById('ci-date').value = today;
     document.getElementById('ci-no').value = 'CI-' + today.replace(/-/g,'') + '-001';
@@ -4635,6 +4855,7 @@ function renderPreview(docType) {
 
   switch(docType) {
     case 'proforma': renderProformaPreview(companyBlock, companyName); break;
+    case 'salescontract': renderSalesContractPreview(companyBlock, companyName); break;
     case 'commercial': renderCommercialPreview(companyBlock, companyName); break;
     case 'packing': renderPackingPreview(companyBlock, companyName); break;
     case 'marks': renderMarksPreview(); break;
@@ -4724,6 +4945,124 @@ function renderProformaPreview(companyBlock, companyName) {
         <div class="doc-sig-block"><div class="line"></div><div class="label">Company Stamp</div></div>
       </div>
       ${(() => { var ss = getStampSigHtml('proforma'); return ss.stampImg + ss.sigImg; })()}
+    </div>`;
+}
+
+function numberToWords(num) {
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function below100(n) {
+    if (n < 20) return ones[n];
+    return tens[Math.floor(n/10)] + (n%10 ? '-' + ones[n%10] : '');
+  }
+  function below1000(n) {
+    if (n < 100) return below100(n);
+    return ones[Math.floor(n/100)] + ' Hundred' + (n%100 ? ' ' + below100(n%100) : '');
+  }
+  if (num === 0) return 'Zero';
+  const intPart = Math.floor(num);
+  const decPart = Math.round((num - intPart) * 100);
+  let words = '';
+  if (intPart >= 1000000) words += below1000(Math.floor(intPart/1000000)) + ' Million ';
+  const thousands = Math.floor((intPart % 1000000) / 1000);
+  if (thousands > 0) words += below1000(thousands) + ' Thousand ';
+  const hundreds = intPart % 1000;
+  if (hundreds > 0) words += below1000(hundreds);
+  words = words.trim();
+  if (decPart > 0) words += ' and ' + below100(decPart) + ' Cents';
+  return words;
+}
+
+function renderSalesContractPreview(companyBlock, companyName) {
+  const sc = App.data.salesContract || {};
+  let itemsHtml = '';
+  let total = 0;
+  (sc.items || []).forEach((item, i) => {
+    const qty = parseFloat(item.qty) || 0;
+    const price = parseFloat(item.price) || 0;
+    const amt = qty * price;
+    total += amt;
+    const imgHtml = item.img ? `<img src="${item.img}" style="width:40px;height:40px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px">` : '';
+    itemsHtml += `<tr>
+      <td>${i+1}</td>
+      <td>${imgHtml}${item.desc || ''}${item.spec ? '<br><span style="color:#888;font-size:10px">'+item.spec+'</span>' : ''}</td>
+      <td class="center">${item.spec || ''}</td>
+      <td class="num">${fmtNum(qty, 0)}</td>
+      <td class="center">${item.unit || ''}</td>
+      <td class="num">${fmtNum(price)}</td>
+      <td class="num">${fmtNum(amt)}</td>
+    </tr>`;
+  });
+  const currency = sc.currency || 'USD';
+  const totalWords = numberToWords(total);
+  const sellerName = sc.sellerName || companyName;
+  const sellerAddr = sc.sellerAddr || (App.data.company.address || '');
+  const sellerTel = sc.sellerTel || (App.data.company.tel || '');
+  const sellerEmail = sc.sellerEmail || (App.data.company.email || '');
+
+  document.getElementById('salescontract-preview-area').innerHTML = `
+    <div class="doc-paper">
+      <div class="doc-header">
+        <div>${companyBlock}</div>
+        <div class="doc-title-block">
+          <div class="doc-title">Sales Contract</div>
+          <div class="doc-meta">
+            <strong>No.:</strong> ${sc.no || ''}<br>
+            <strong>Date:</strong> ${sc.date || ''}<br>
+            <strong>Place:</strong> ${sc.place || ''}
+          </div>
+        </div>
+      </div>
+      <div class="doc-parties">
+        <div class="doc-party-block">
+          <div class="label">The Seller / 卖方</div>
+          <div class="content"><strong>${sellerName}</strong><br>${sellerAddr}${sellerTel?'<br>Tel: '+sellerTel:''}${sellerEmail?'<br>Email: '+sellerEmail:''}${sc.sellerContact?'<br>Attn: '+sc.sellerContact:''}</div>
+        </div>
+        <div class="doc-party-block">
+          <div class="label">The Buyer / 买方</div>
+          <div class="content"><strong>${sc.buyerName || ''}</strong>${sc.buyerContact?'<br>Attn: '+sc.buyerContact:''}<br>${sc.buyerAddr || ''}${sc.buyerTel?'<br>Tel: '+sc.buyerTel:''}${sc.buyerEmail?'<br>Email: '+sc.buyerEmail:''}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:11px;padding:10px 14px;background:#f8f9fb;border-radius:6px;border:1px solid #e2e5ec">
+        <div><strong>Trade Terms:</strong> ${sc.terms || ''}</div>
+        <div><strong>Port of Loading:</strong> ${sc.from || ''}</div>
+        <div><strong>Port of Destination:</strong> ${sc.to || ''}</div>
+        <div><strong>Payment:</strong> ${sc.payment || ''}</div>
+        <div><strong>Delivery:</strong> ${sc.delivery || ''}</div>
+        <div><strong>Currency:</strong> ${currency}</div>
+      </div>
+      <div style="margin-bottom:8px;font-size:12px;font-weight:600">This contract is made by and between the Seller and the Buyer, whereby the Seller agrees to sell and the Buyer agrees to buy the under-mentioned goods on the terms and conditions stated below:</div>
+      <table class="doc-table">
+        <thead><tr>
+          <th style="width:25px">No.</th>
+          <th>Description</th>
+          <th>Spec</th>
+          <th class="num">Qty</th>
+          <th class="center">Unit</th>
+          <th class="num">Unit Price</th>
+          <th class="num">Amount</th>
+        </tr></thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot><tr>
+          <td colspan="6" style="text-align:right">Total Amount (${currency}):</td>
+          <td class="num" style="font-size:13px">${fmtNum(total)}</td>
+        </tr></tfoot>
+      </table>
+      <div style="margin-top:6px;font-size:11px;font-style:italic;color:#555">Say Total ${currency} ${totalWords} Only.</div>
+      <div class="doc-footer" style="margin-top:12px">
+        ${sc.quality ? `<div class="doc-footer-block"><div class="label">Quality & Inspection</div><div class="content">${(sc.quality||'').replace(/\n/g,'<br>')}</div></div>` : ''}
+        ${sc.claims ? `<div class="doc-footer-block"><div class="label">Claims</div><div class="content">${(sc.claims||'').replace(/\n/g,'<br>')}</div></div>` : ''}
+      </div>
+      <div class="doc-footer" style="margin-top:0">
+        ${sc.force ? `<div class="doc-footer-block"><div class="label">Force Majeure</div><div class="content">${(sc.force||'').replace(/\n/g,'<br>')}</div></div>` : ''}
+        ${sc.arbitration ? `<div class="doc-footer-block"><div class="label">Arbitration</div><div class="content">${(sc.arbitration||'').replace(/\n/g,'<br>')}</div></div>` : ''}
+      </div>
+      ${sc.other ? `<div style="margin-top:8px;font-size:11px"><strong>Other Terms:</strong> ${(sc.other||'').replace(/\n/g,'<br>')}</div>` : ''}
+      <div class="doc-signature">
+        <div class="doc-sig-block"><div class="line"></div><div class="label">The Seller</div></div>
+        <div class="doc-sig-block"><div class="line"></div><div class="label">The Buyer</div></div>
+      </div>
+      ${(() => { var ss = getStampSigHtml('salescontract'); return ss.stampImg + ss.sigImg; })()}
     </div>`;
 }
 
@@ -5754,6 +6093,7 @@ function copyFromDoc(srcType, dstType) {
       mapped.qty = item.qty || '';
       mapped.unit = item.unit || '';
       mapped.price = item.price || '';
+      if (dstType === 'salescontract' || dstType === 'proforma') mapped.spec = item.spec || '';
       if (dstType === 'commercial') mapped.hs = '';
     }
     addRow(dstType, mapped);
@@ -5812,6 +6152,8 @@ function importFromLibrary(docType) {
     selected.forEach(p => {
       const mapped = {};
       if (docType === 'proforma') {
+        mapped.img = p.img; mapped.desc = p.name; mapped.spec = p.spec; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
+      } else if (docType === 'salescontract') {
         mapped.img = p.img; mapped.desc = p.name; mapped.spec = p.spec; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
       } else if (docType === 'commercial') {
         mapped.img = p.img; mapped.desc = p.name; mapped.unit = p.unit || 'PCS'; mapped.price = p.price;
@@ -5985,10 +6327,11 @@ function updateSignaturePreview() {
 // Per-document stamp/signature toggle state + position/size config
 // Each doc stores: { stamp: bool, sig: bool, stampPos: {x,y,w,h}, sigPos: {x,y,w,h} }
 var DOC_STAMP_SIG = {
-  proforma:   { stamp: false, sig: false, stampPos: null, sigPos: null },
-  commercial: { stamp: false, sig: false, stampPos: null, sigPos: null },
-  packing:    { stamp: false, sig: false, stampPos: null, sigPos: null },
-  spec:       { stamp: false, sig: false, stampPos: null, sigPos: null }
+  proforma:       { stamp: false, sig: false, stampPos: null, sigPos: null },
+  salescontract:  { stamp: false, sig: false, stampPos: null, sigPos: null },
+  commercial:     { stamp: false, sig: false, stampPos: null, sigPos: null },
+  packing:        { stamp: false, sig: false, stampPos: null, sigPos: null },
+  spec:           { stamp: false, sig: false, stampPos: null, sigPos: null }
 };
 
 // Default positions (relative to .doc-paper, in px within the A4 preview)
@@ -6249,12 +6592,24 @@ function autofillCompany() {
   if (c.bank && !document.getElementById('pi-bank').value) {
     document.getElementById('pi-bank').value = c.bank;
   }
+  // Fill seller info from company profile into sales contract
+  if (c.en || c.cn) {
+    if (!document.getElementById('sc-seller-name').value) document.getElementById('sc-seller-name').value = c.en || c.cn || '';
+    if (!document.getElementById('sc-seller-addr').value) document.getElementById('sc-seller-addr').value = c.address || '';
+    if (!document.getElementById('sc-seller-tel').value) document.getElementById('sc-seller-tel').value = c.tel || '';
+    if (!document.getElementById('sc-seller-email').value) document.getElementById('sc-seller-email').value = c.email || '';
+  }
   // Fill buyer name from proforma to commercial/packing if empty
   const piBuyer = document.getElementById('pi-buyer-name').value;
   if (piBuyer) {
     if (!document.getElementById('ci-buyer-name').value) document.getElementById('ci-buyer-name').value = piBuyer;
     if (!document.getElementById('ci-buyer-addr').value) document.getElementById('ci-buyer-addr').value = document.getElementById('pi-buyer-addr').value;
     if (!document.getElementById('pl-buyer').value) document.getElementById('pl-buyer').value = piBuyer;
+    if (!document.getElementById('sc-buyer-name').value) document.getElementById('sc-buyer-name').value = piBuyer;
+    if (!document.getElementById('sc-buyer-addr').value) document.getElementById('sc-buyer-addr').value = document.getElementById('pi-buyer-addr').value;
+    if (!document.getElementById('sc-buyer-contact').value) document.getElementById('sc-buyer-contact').value = document.getElementById('pi-buyer-contact').value;
+    if (!document.getElementById('sc-buyer-tel').value) document.getElementById('sc-buyer-tel').value = document.getElementById('pi-buyer-tel').value;
+    if (!document.getElementById('sc-buyer-email').value) document.getElementById('sc-buyer-email').value = document.getElementById('pi-buyer-email').value;
   }
   // Sync trade terms and ports
   const piTerms = document.getElementById('pi-terms').value;
@@ -6263,14 +6618,17 @@ function autofillCompany() {
   if (piTerms) {
     if (!document.getElementById('ci-terms').value) document.getElementById('ci-terms').value = piTerms;
     if (!document.getElementById('pl-terms').value) document.getElementById('pl-terms').value = piTerms;
+    if (!document.getElementById('sc-terms').value) document.getElementById('sc-terms').value = piTerms;
   }
   if (piFrom) {
     if (!document.getElementById('ci-from').value) document.getElementById('ci-from').value = piFrom;
     if (!document.getElementById('pl-from').value) document.getElementById('pl-from').value = piFrom;
+    if (!document.getElementById('sc-from').value) document.getElementById('sc-from').value = piFrom;
   }
   if (piTo) {
     if (!document.getElementById('ci-to').value) document.getElementById('ci-to').value = piTo;
     if (!document.getElementById('pl-to').value) document.getElementById('pl-to').value = piTo;
+    if (!document.getElementById('sc-to').value) document.getElementById('sc-to').value = piTo;
   }
 }
 
