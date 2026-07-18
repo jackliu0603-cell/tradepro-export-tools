@@ -2125,6 +2125,212 @@ input:focus + .history-toggle,
   .login-title { font-size: 20px; }
   .login-input { font-size: 16px; }
 }
+
+/* ====== Comprehensive Mobile Optimization ====== */
+@media (max-width: 768px) {
+  /* — Viewport & safe areas — */
+  body { overflow: hidden; -webkit-text-size-adjust: 100%; }
+
+  /* — Topbar: compact, touch-friendly — */
+  .topbar { height: 48px; padding: 0 10px; }
+  .topbar-actions .btn { font-size: 11px; padding: 5px 8px; min-height: 32px; }
+  .topbar-actions { gap: 4px; }
+
+  /* — Sidebar drawer: wider for thumb reach — */
+  .sidebar { width: 280px; }
+  .sidebar-nav { padding: 10px 8px; }
+  .nav-item { padding: 12px 14px; font-size: 14px; min-height: 44px; }
+  .nav-section-label { padding: 12px 14px 6px; }
+
+  /* — Hamburger: larger touch target — */
+  .hamburger { width: 40px; height: 40px; }
+  .hamburger span { width: 24px; left: 8px; }
+  .hamburger span:nth-child(1) { top: 11px; }
+  .hamburger span:nth-child(2) { top: 18px; }
+  .hamburger span:nth-child(3) { top: 25px; }
+  .hamburger.open span:nth-child(1) { top: 18px; }
+  .hamburger.open span:nth-child(3) { top: 18px; }
+
+  /* — Content area: minimal padding — */
+  .content-area { padding: 10px; }
+
+  /* — Page header: compact — */
+  .page-header { margin-bottom: 12px; gap: 8px; }
+  .page-title { font-size: 18px; }
+  .page-subtitle { font-size: 11px; }
+  .page-header > div:last-child { gap: 4px; }
+  .page-header .btn { font-size: 11px; padding: 5px 8px; }
+
+  /* — Cards: compact — */
+  .card { margin-bottom: 10px; border-radius: 8px; }
+  .card-header { padding: 10px 12px; }
+  .card-title { font-size: 13px; }
+  .card-body { padding: 10px 12px; }
+
+  /* — Forms: single column, larger touch targets — */
+  .form-grid { grid-template-columns: 1fr; gap: 8px; }
+  .form-grid-2 { grid-template-columns: 1fr; gap: 8px; }
+  .form-label { font-size: 11px; }
+  .form-input, .form-select, .form-textarea {
+    font-size: 15px; /* ≥16px prevents iOS zoom, 15 is acceptable with viewport-fit */
+    padding: 9px 10px;
+    min-height: 40px;
+  }
+  .form-textarea { min-height: 50px; }
+
+  /* — Data tables: horizontal scroll with sticky first column — */
+  .data-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 6px; }
+  .data-table { min-width: 480px; font-size: 12px; }
+  .data-table th { padding: 8px 4px; font-size: 10px; white-space: nowrap; }
+  .data-table td { padding: 4px 4px; }
+  .data-table .td-input input, .data-table .td-input select {
+    font-size: 13px; padding: 5px 3px; min-height: 32px;
+  }
+  .data-table .col-w-icon { width: 36px; }
+  .data-table .num-col { font-size: 11px; }
+
+  /* — A4 preview: fit screen width — */
+  .doc-paper {
+    width: 100%;
+    min-height: auto;
+    padding: 12px 10px;
+    font-size: 10px;
+    border-radius: 4px;
+  }
+  .doc-header { flex-direction: column; gap: 8px; margin-bottom: 14px; padding-bottom: 10px; }
+  .doc-company { font-size: 15px; }
+  .doc-company-sub { font-size: 9px; }
+  .doc-title { font-size: 15px; }
+  .doc-meta { font-size: 9px; }
+  .doc-paper table { font-size: 9px; }
+  .doc-paper th { padding: 3px 4px; font-size: 8px; }
+  .doc-paper td { padding: 3px 4px; font-size: 9px; }
+  .doc-paper .doc-party-name { font-size: 10px; }
+  .doc-paper .doc-party-detail { font-size: 9px; }
+  .doc-sig-block .line { width: 100px; }
+  .doc-signature { flex-direction: column; gap: 12px; }
+  .doc-parties { grid-template-columns: 1fr; gap: 10px; }
+  .doc-footer { grid-template-columns: 1fr; gap: 10px; }
+
+  /* — Preview area: compact — */
+  .preview-area { padding: 6px; }
+  .preview-area .doc-paper { margin: 0; }
+
+  /* — Split view: stack vertically — */
+  .split-view { flex-direction: column; }
+  .split-edit-pane {
+    flex: none; max-height: 50vh; overflow-y: auto;
+    border-right: none; border-bottom: 2px solid var(--border, #e2e8f0);
+    padding-right: 0; padding-bottom: 8px; -webkit-overflow-scrolling: touch;
+  }
+  .split-preview-pane {
+    padding-left: 0; padding-top: 8px; max-height: none;
+  }
+
+  /* — Calculator panel: near full screen — */
+  .calc-fab { width: 48px; height: 48px; font-size: 22px; bottom: 16px; right: 16px; }
+  .calc-panel {
+    width: calc(100vw - 20px) !important; max-height: 88vh !important;
+    left: 10px !important; right: 10px !important; bottom: 72px !important;
+    border-radius: 12px;
+  }
+  .calc-body { max-height: calc(88vh - 120px) !important; padding: 10px; }
+  .calc-tab { padding: 8px 4px; font-size: 12px; }
+  .calc-panel-header { padding: 10px 12px; }
+  .calc-panel-title { font-size: 13px; }
+
+  /* — HS modal: full width — */
+  #hs-modal > div { max-width: 100% !important; width: 94% !important; max-height: 88vh !important; }
+  #hs-modal-search { font-size: 15px; padding: 10px; }
+  #hs-modal-results { max-height: 60vh !important; }
+
+  /* — Combobox dropdown: wider for touch — */
+  .cb-dropdown { max-height: 200px; }
+  .cb-dropdown .cb-item { padding: 10px 12px; font-size: 14px; min-height: 36px; }
+
+  /* — Summary boxes: 2 columns — */
+  .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .summary-box { padding: 8px 10px; }
+  .summary-value { font-size: 18px; }
+  .summary-unit { font-size: 10px; }
+
+  /* — Toggle row: wrap — */
+  .toggle-row { flex-wrap: wrap; gap: 6px; }
+  .toggle-row .toggle-item { font-size: 11px; padding: 5px 8px; }
+
+  /* — Buttons: touch-friendly — */
+  .btn { font-size: 12px; padding: 7px 12px; min-height: 36px; }
+  .btn-sm { font-size: 11px; padding: 5px 8px; min-height: 30px; }
+  .btn-icon { width: 36px; height: 36px; }
+
+  /* — 3D containers: shorter — */
+  #ct-3d-container, #pt-3d-container { height: 300px !important; }
+
+  /* — Incoterm tags: horizontal scroll — */
+  .incoterm-tags { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+  .incoterm-tag { flex-shrink: 0; min-width: 56px; padding: 8px 10px; font-size: 12px; }
+  .ic-price-summary { grid-template-columns: 1fr; }
+
+  /* — Import modal: fit screen — */
+  .modal-overlay { padding: 10px; }
+  .modal-content { max-width: 100% !important; width: 100% !important; max-height: 90vh; }
+  .modal-body { max-height: 60vh; overflow-y: auto; }
+
+  /* — Empty state — */
+  .empty-state { padding: 24px 12px; }
+  .empty-state .icon { font-size: 36px; }
+
+  /* — Marks preview: stack — */
+  .marks-preview { flex-direction: column; gap: 8px; }
+  .marks-box { min-width: auto; width: 100%; }
+
+  /* — History panel: full width — */
+  .history-panel { min-width: 200px; max-width: 280px; }
+
+  /* — Detail card tables: allow scroll — */
+  #pt-detail-card .data-table, #ct-detail-card .data-table { min-width: 560px; }
+}
+
+/* — Extra small phones (≤380px) — */
+@media (max-width: 380px) {
+  .page-title { font-size: 16px; }
+  .doc-company { font-size: 13px; }
+  .doc-title { font-size: 13px; }
+  .summary-value { font-size: 16px; }
+  .card-body { padding: 8px; }
+  .form-input, .form-select, .form-textarea { font-size: 14px; padding: 8px; }
+  .data-table { min-width: 420px; font-size: 11px; }
+  .calc-panel {
+    width: calc(100vw - 12px) !important;
+    left: 6px !important; right: 6px !important;
+  }
+  .summary-grid { grid-template-columns: 1fr; }
+  .topbar-actions .btn { font-size: 10px; padding: 4px 6px; }
+  #ct-3d-container, #pt-3d-container { height: 240px !important; }
+  .nav-item { padding: 10px 12px; font-size: 13px; }
+  .calc-tab { font-size: 11px; padding: 6px 2px; }
+}
+
+/* — Landscape phone: use horizontal space — */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  .split-view { flex-direction: row; }
+  .split-edit-pane { flex: 0 0 45%; max-height: none; border-bottom: none; border-right: 2px solid var(--border, #e2e8f0); }
+  .split-preview-pane { padding-left: 8px; padding-top: 0; }
+  .calc-panel { max-height: 95vh !important; }
+  .calc-body { max-height: calc(95vh - 100px) !important; }
+}
+
+/* — Prevent iOS rubber-band scrolling on body — */
+@media (max-width: 768px) {
+  body { position: fixed; width: 100%; height: 100%; overscroll-behavior: none; }
+  .content-area { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+}
+
+/* — Tap highlight color — */
+@media (max-width: 768px) {
+  * { -webkit-tap-highlight-color: rgba(201,162,39,0.15); }
+  input, select, textarea { -webkit-tap-highlight-color: transparent; }
+}
 </style>
 <script>
 // Async multi-CDN loader for Three.js (China-friendly first)
