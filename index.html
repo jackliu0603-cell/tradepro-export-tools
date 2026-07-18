@@ -1532,9 +1532,52 @@ input:focus + .history-toggle,
   }
 }
 
+/* ========== Split View ========== */
+.split-view {
+  display: flex !important;
+  gap: 0;
+  align-items: flex-start;
+}
+.split-edit-pane {
+  flex: 0 0 42%;
+  min-width: 320px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  padding-right: 16px;
+  border-right: 2px solid var(--border, #e2e8f0);
+}
+.split-preview-pane {
+  flex: 1;
+  min-width: 0;
+  padding-left: 16px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+/* Mobile: stack vertically */
+@media (max-width: 900px) {
+  .split-view {
+    flex-direction: column;
+  }
+  .split-edit-pane {
+    flex: none;
+    max-height: none;
+    border-right: none;
+    border-bottom: 2px solid var(--border, #e2e8f0);
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+  .split-preview-pane {
+    padding-left: 0;
+    padding-top: 16px;
+    max-height: none;
+  }
+}
+
 /* ========== Print ========== */
 @media print {
-  .sidebar, .topbar, .page-header, .no-print { display: none !important; }
+  .sidebar, .topbar, .page-header, .no-print, .split-edit-pane { display: none !important; }
+  .split-view { display: block !important; }
+  .split-preview-pane { flex: none !important; max-height: none !important; overflow: visible !important; padding: 0 !important; }
   .main { margin-left: 0; height: auto; overflow: visible; }
   .content-area { padding: 0; overflow: visible; height: auto; }
   .preview-area { background: #fff; padding: 0; overflow: visible; }
@@ -1987,7 +2030,8 @@ input:focus + .history-toggle,
       <div class="page-title">形式发票</div>
       <div class="page-subtitle">Proforma Invoice · 供买方申请外汇、许可证及进口审批</div>
     </div>
-    <div class="no-print" style="display:flex;gap:8px">
+    <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="syncFromProforma()" style="background:var(--accent-blue)">⚡ 一键同步到其他单据</button>
       <button class="btn btn-outline btn-sm" onclick="togglePreview('proforma')">👁️ 预览</button>
       <button class="btn btn-outline btn-sm" onclick="toggleStamp('proforma')" id="proforma-stamp-btn">印章: 关</button>
       <button class="btn btn-outline btn-sm" onclick="toggleSignature('proforma')" id="proforma-sig-btn">签字: 关</button>
@@ -2094,7 +2138,7 @@ input:focus + .history-toggle,
 
   <div id="proforma-preview" style="display:none">
     <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
-      <button class="btn btn-outline btn-sm" onclick="togglePreview('proforma')">← 返回编辑</button>
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('proforma')">✕ 关闭预览</button>
       <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
     </div>
     <div class="preview-area" id="proforma-preview-area"></div>
@@ -2240,7 +2284,7 @@ input:focus + .history-toggle,
 
   <div id="salescontract-preview" style="display:none">
     <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
-      <button class="btn btn-outline btn-sm" onclick="togglePreview('salescontract')">← 返回编辑</button>
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('salescontract')">✕ 关闭预览</button>
       <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
     </div>
     <div class="preview-area" id="salescontract-preview-area"></div>
@@ -2363,7 +2407,7 @@ input:focus + .history-toggle,
 
   <div id="commercial-preview" style="display:none">
     <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
-      <button class="btn btn-outline btn-sm" onclick="togglePreview('commercial')">← 返回编辑</button>
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('commercial')">✕ 关闭预览</button>
       <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
     </div>
     <div class="preview-area" id="commercial-preview-area"></div>
@@ -2466,7 +2510,7 @@ input:focus + .history-toggle,
 
   <div id="packing-preview" style="display:none">
     <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
-      <button class="btn btn-outline btn-sm" onclick="togglePreview('packing')">← 返回编辑</button>
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('packing')">✕ 关闭预览</button>
       <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
     </div>
     <div class="preview-area" id="packing-preview-area"></div>
@@ -2539,7 +2583,7 @@ input:focus + .history-toggle,
 
   <div id="marks-preview" style="display:none">
     <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
-      <button class="btn btn-outline btn-sm" onclick="togglePreview('marks')">← 返回编辑</button>
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('marks')">✕ 关闭预览</button>
       <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
     </div>
     <div class="preview-area">
@@ -2634,7 +2678,7 @@ input:focus + .history-toggle,
 
   <div id="spec-preview" style="display:none">
     <div style="margin-bottom:12px;display:flex;gap:8px;justify-content:flex-end" class="no-print">
-      <button class="btn btn-outline btn-sm" onclick="togglePreview('spec')">← 返回编辑</button>
+      <button class="btn btn-outline btn-sm" onclick="togglePreview('spec')">✕ 关闭预览</button>
       <button class="btn btn-gold btn-sm" onclick="printAndClear()">🖨️ 打印 / PDF</button>
     </div>
     <div class="preview-area" id="spec-preview-area"></div>
@@ -5155,16 +5199,76 @@ function togglePreview(docType) {
   const editEl = document.getElementById(docType + '-edit');
   const prevEl = document.getElementById(docType + '-preview');
   if (prevEl.style.display === 'none') {
+    // Enter split-view mode
     collectPageData(App.currentPage);
     renderPreview(docType);
-    editEl.style.display = 'none';
+
+    // Wrap edit and preview into a split-view flex container
+    var parent = editEl.parentNode;
+    var wrapper = document.getElementById(docType + '-split-wrap');
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.id = docType + '-split-wrap';
+      wrapper.className = 'split-view';
+      parent.insertBefore(wrapper, editEl);
+      wrapper.appendChild(editEl);
+      wrapper.appendChild(prevEl);
+    }
+    editEl.classList.add('split-edit-pane');
+    prevEl.classList.add('split-preview-pane');
+    editEl.style.display = '';
     prevEl.style.display = '';
+
+    // Update button label
+    var btn = document.querySelector('[onclick*="togglePreview(\'' + docType + '\')"]');
+    if (btn) btn.innerHTML = '✏️ 收起预览';
+
     // Bind seal drag/resize after DOM is updated
     setTimeout(function() { bindSealInteractions(docType); }, 50);
+
+    // Start live preview listener
+    startLivePreview(docType);
   } else {
-    editEl.style.display = '';
+    // Exit split-view mode — just hide preview, keep edit
+    editEl.classList.remove('split-edit-pane');
+    prevEl.classList.remove('split-preview-pane');
     prevEl.style.display = 'none';
+    editEl.style.display = '';
+
+    var btn = document.querySelector('[onclick*="togglePreview(\'' + docType + '\')"]');
+    if (btn) btn.innerHTML = '👁️ 预览';
+
+    stopLivePreview(docType);
   }
+}
+
+/* ---- Live Preview: debounced input listener ---- */
+var _livePreviewTimers = {};
+function startLivePreview(docType) {
+  stopLivePreview(docType); // ensure no duplicate
+  var editEl = document.getElementById(docType + '-edit');
+  if (!editEl) return;
+  var handler = function() {
+    if (_livePreviewTimers[docType]) clearTimeout(_livePreviewTimers[docType]);
+    _livePreviewTimers[docType] = setTimeout(function() {
+      collectPageData(App.currentPage);
+      renderPreview(docType);
+    }, 300);
+  };
+  editEl.addEventListener('input', handler);
+  editEl.addEventListener('change', handler);
+  _livePreviewTimers[docType + '_handler'] = handler;
+}
+function stopLivePreview(docType) {
+  var editEl = document.getElementById(docType + '-edit');
+  var handler = _livePreviewTimers[docType + '_handler'];
+  if (editEl && handler) {
+    editEl.removeEventListener('input', handler);
+    editEl.removeEventListener('change', handler);
+  }
+  if (_livePreviewTimers[docType]) { clearTimeout(_livePreviewTimers[docType]); }
+  delete _livePreviewTimers[docType + '_handler'];
+  delete _livePreviewTimers[docType];
 }
 
 function renderPreview(docType) {
@@ -6932,6 +7036,118 @@ function loadSettings() {
   setVal('set-bank', c.bank);
   updateStampPreview();
   updateSignaturePreview();
+}
+
+// ==================== SYNC FROM PROFORMA ====================
+function syncFromProforma() {
+  collectPageData('proforma');
+  const pi = App.data.proforma || {};
+  if (!pi.no && !pi.buyerName && (!pi.items || pi.items.length === 0)) {
+    showToast('形式发票为空，请先填写内容');
+    return;
+  }
+  let syncedFields = 0;
+  const syncLog = [];
+
+  // Helper: set value only if target is empty
+  function syncVal(id, val, label) {
+    if (!val) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!el.value) {
+      el.value = val;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      syncedFields++;
+      syncLog.push(label);
+    }
+  }
+
+  // 1. Sync to Sales Contract
+  syncVal('sc-no', pi.no, 'SC 合同号');
+  syncVal('sc-date', pi.date, 'SC 日期');
+  syncVal('sc-terms', pi.terms, 'SC 贸易条款');
+  syncVal('sc-from', pi.from, 'SC 起运港');
+  syncVal('sc-to', pi.to, 'SC 目的港');
+  syncVal('sc-payment', pi.payment, 'SC 付款方式');
+  syncVal('sc-delivery', pi.delivery, 'SC 交货期');
+  syncVal('sc-currency', pi.currency, 'SC 货币');
+  syncVal('sc-buyer-name', pi.buyerName, 'SC 买方名称');
+  syncVal('sc-buyer-contact', pi.buyerContact, 'SC 买方联系人');
+  syncVal('sc-buyer-addr', pi.buyerAddr, 'SC 买方地址');
+  syncVal('sc-buyer-tel', pi.buyerTel, 'SC 买方电话');
+  syncVal('sc-buyer-email', pi.buyerEmail, 'SC 买方邮箱');
+
+  // 2. Sync to Commercial Invoice
+  syncVal('ci-contract', pi.no, 'CI 合同号');
+  syncVal('ci-date', pi.date, 'CI 日期');
+  syncVal('ci-terms', pi.terms, 'CI 贸易条款');
+  syncVal('ci-from', pi.from, 'CI 起运港');
+  syncVal('ci-to', pi.to, 'CI 目的港');
+  syncVal('ci-currency', pi.currency, 'CI 货币');
+  syncVal('ci-buyer-name', pi.buyerName, 'CI 买方名称');
+  syncVal('ci-buyer-contact', pi.buyerContact, 'CI 买方联系人');
+  syncVal('ci-buyer-addr', pi.buyerAddr, 'CI 买方地址');
+  syncVal('ci-buyer-tel', pi.buyerTel, 'CI 买方电话');
+  syncVal('ci-buyer-email', pi.buyerEmail, 'CI 买方邮箱');
+
+  // 3. Sync to Packing List
+  syncVal('pl-inv-no', pi.no, 'PL 发票号');
+  syncVal('pl-date', pi.date, 'PL 日期');
+  syncVal('pl-terms', pi.terms, 'PL 贸易条款');
+  syncVal('pl-from', pi.from, 'PL 起运港');
+  syncVal('pl-to', pi.to, 'PL 目的港');
+  syncVal('pl-buyer', pi.buyerName, 'PL 收货人');
+
+  // 4. Sync to Marks
+  syncVal('mk-consignee', pi.buyerName, '唛头 收货人');
+  syncVal('mk-port', pi.to, '唛头 目的港');
+  if (pi.items && pi.items.length > 0) {
+    const firstItem = pi.items[0];
+    syncVal('mk-item', firstItem.desc, '唛头 品名');
+    syncVal('mk-spec', firstItem.spec, '唛头 规格');
+  }
+
+  // 5. Sync to Product Spec (from first PI item)
+  if (pi.items && pi.items.length > 0) {
+    const firstItem = pi.items[0];
+    syncVal('sp-name', firstItem.desc, '规格书 品名');
+    syncVal('sp-brand', App.data.company ? (App.data.company.en || App.data.company.cn || '') : '', '规格书 品牌');
+  }
+
+  // 6. Sync items to SC and CI tables if empty
+  if (pi.items && pi.items.length > 0) {
+    // SC items
+    const scTbody = document.getElementById('sc-tbody');
+    if (scTbody && scTbody.querySelectorAll('tr').length === 0) {
+      pi.items.forEach(item => addRow('salescontract', { desc: item.desc, spec: item.spec, qty: item.qty, unit: item.unit, price: item.price, img: item.img }));
+      syncedFields += pi.items.length;
+      syncLog.push('SC 产品明细(' + pi.items.length + '行)');
+    }
+    // CI items
+    const ciTbody = document.getElementById('ci-tbody');
+    if (ciTbody && ciTbody.querySelectorAll('tr').length === 0) {
+      pi.items.forEach(item => addRow('commercial', { desc: item.desc, qty: item.qty, unit: item.unit, price: item.price, img: item.img }));
+      syncedFields += pi.items.length;
+      syncLog.push('CI 产品明细(' + pi.items.length + '行)');
+    }
+    // PL items
+    const plTbody = document.getElementById('pl-tbody');
+    if (plTbody && plTbody.querySelectorAll('tr').length === 0) {
+      pi.items.forEach((item, i) => addRow('packing', { cartonNo: 'C-' + (i+1), desc: item.desc, qty: item.qty, unit: item.unit }));
+      syncedFields += pi.items.length;
+      syncLog.push('PL 产品明细(' + pi.items.length + '行)');
+    }
+  }
+
+  // Save all synced data
+  ['salescontract','commercial','packing','marks','spec'].forEach(p => collectPageData(p));
+  saveData();
+
+  if (syncedFields === 0) {
+    showToast('所有字段已有数据，无需同步');
+  } else {
+    showToast('已同步 ' + syncedFields + ' 个字段到其他单据');
+  }
 }
 
 function autofillCompany() {
