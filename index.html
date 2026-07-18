@@ -2161,21 +2161,247 @@ input[list] {
 input[list]::-webkit-calendar-picker-indicator {
   display: none !important;
 }
-/* Ensure datalist dropdown renders above other content */
-datalist { z-index: 99999; }
-/* Fix for form-group containers — don't clip datalist overflow */
+/* === Custom Combobox Dropdown (replaces native datalist rendering) === */
+/* Native datalist is clipped by parent overflow:hidden/auto containers.
+   We build a fixed-position dropdown panel that bypasses all clipping. */
+.cb-dropdown {
+  position: fixed;
+  z-index: 999999;
+  background: #fff;
+  border: 1px solid #c5c9d4;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  max-height: 240px;
+  overflow-y: auto;
+  min-width: 160px;
+  font-size: 13px;
+  -webkit-overflow-scrolling: touch;
+}
+.cb-dropdown .cb-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--text-primary, #1a1f36);
+  transition: background 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cb-dropdown .cb-item:hover,
+.cb-dropdown .cb-item.cb-active {
+  background: #f0f7ff;
+  color: #1d4ed8;
+}
+.cb-dropdown .cb-empty {
+  padding: 10px 12px;
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+}
+/* Keep form-group / card-body overflow visible for safety */
 .form-group { position: relative; z-index: auto; }
-/* Ensure form-grid doesn't create stacking context that clips datalist */
 .form-grid { position: relative; z-index: 0; }
-/* Ensure card-body doesn't clip */
 .card-body { overflow: visible !important; }
-/* Ensure content-area allows datalist to overflow */
 .content-area { overflow-y: auto; overflow-x: visible; }
-/* Ensure table cells with datalist inputs don't clip */
 .td-input { overflow: visible; }
-/* Raise z-index of form inputs with datalist on focus */
 input[list]:focus { position: relative; z-index: 10; }
 </style>
+
+<script>
+/* ====== Custom Combobox Engine ====== */
+/* Replaces native datalist rendering with a fixed-position dropdown
+   that cannot be clipped by any parent overflow container. */
+(function() {
+  var CB_ZINDEX = 999999;
+  var currentDropdown = null;
+  var currentInput = null;
+  var activeIndex = -1;
+
+  function getDatalistOptions(input) {
+    var listId = input.getAttribute('list');
+    if (!listId) return [];
+    var dl = document.getElementById(listId);
+    if (!dl) return [];
+    var opts = [];
+    dl.querySelectorAll('option').forEach(function(opt) {
+      opts.push(opt.value || opt.textContent);
+    });
+    return opts;
+  }
+
+  function positionDropdown(dropdown, input) {
+    var rect = input.getBoundingClientRect();
+    dropdown.style.left = rect.left + 'px';
+    dropdown.style.top = (rect.bottom + 2) + 'px';
+    dropdown.style.minWidth = Math.max(rect.width, 160) + 'px';
+    // If not enough space below, show above
+    var spaceBelow = window.innerHeight - rect.bottom;
+    if (spaceBelow < 250 && rect.top > 250) {
+      dropdown.style.top = (rect.top - 2) + 'px';
+      dropdown.style.maxHeight = Math.min(240, rect.top - 10) + 'px';
+      dropdown.style.borderRadius = '6px 6px 0 0';
+    } else {
+      dropdown.style.maxHeight = Math.min(240, spaceBelow - 10) + 'px';
+      dropdown.style.borderRadius = '6px';
+    }
+  }
+
+  function createDropdown(input) {
+    closeDropdown();
+    var options = getDatalistOptions(input);
+    var query = (input.value || '').trim().toLowerCase();
+
+    // Filter options
+    var filtered = options.filter(function(val) {
+      if (!query) return true;
+      return val.toLowerCase().indexOf(query) >= 0 || query.indexOf(val.toLowerCase()) >= 0;
+    });
+
+    // Don't show if only 0 or 1 exact match
+    if (filtered.length === 0) return;
+    if (filtered.length === 1 && filtered[0].toLowerCase() === query) return;
+
+    currentInput = input;
+    activeIndex = -1;
+
+    var dropdown = document.createElement('div');
+    dropdown.className = 'cb-dropdown';
+    dropdown.style.zIndex = CB_ZINDEX;
+
+    filtered.slice(0, 50).forEach(function(val, i) {
+      var item = document.createElement('div');
+      item.className = 'cb-item';
+      item.textContent = val;
+      item.dataset.value = val;
+      item.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        input.value = val;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        closeDropdown();
+      });
+      dropdown.appendChild(item);
+    });
+
+    if (filtered.length > 50) {
+      var more = document.createElement('div');
+      more.className = 'cb-empty';
+      more.textContent = '共 ' + filtered.length + ' 项，显示前 50 项';
+      dropdown.appendChild(more);
+    }
+
+    document.body.appendChild(dropdown);
+    positionDropdown(dropdown, input);
+    currentDropdown = dropdown;
+
+    // Reposition on scroll/resize
+    window.addEventListener('scroll', repositionDropdown, true);
+    window.addEventListener('resize', repositionDropdown);
+  }
+
+  function repositionDropdown() {
+    if (currentDropdown && currentInput) {
+      positionDropdown(currentDropdown, currentInput);
+    }
+  }
+
+  function closeDropdown() {
+    if (currentDropdown) {
+      currentDropdown.remove();
+      currentDropdown = null;
+      currentInput = null;
+      activeIndex = -1;
+      window.removeEventListener('scroll', repositionDropdown, true);
+      window.removeEventListener('resize', repositionDropdown);
+    }
+  }
+
+  function navigateDropdown(e) {
+    if (!currentDropdown) return;
+    var items = currentDropdown.querySelectorAll('.cb-item');
+    if (items.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, items.length - 1);
+      updateActive(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      updateActive(items);
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      if (activeIndex >= 0 && activeIndex < items.length) {
+        e.preventDefault();
+        currentInput.value = items[activeIndex].dataset.value;
+        currentInput.dispatchEvent(new Event('input', { bubbles: true }));
+        currentInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      closeDropdown();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closeDropdown();
+    }
+  }
+
+  function updateActive(items) {
+    items.forEach(function(item, i) {
+      if (i === activeIndex) {
+        item.classList.add('cb-active');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('cb-active');
+      }
+    });
+  }
+
+  // Initialize on DOM ready
+  function initCombobox() {
+    document.addEventListener('focus', function(e) {
+      var input = e.target;
+      if (input.tagName === 'INPUT' && input.hasAttribute('list') && input.getAttribute('type') !== 'date' && input.getAttribute('type') !== 'number') {
+        createDropdown(input);
+      }
+    }, true);
+
+    document.addEventListener('input', function(e) {
+      var input = e.target;
+      if (input.tagName === 'INPUT' && input.hasAttribute('list') && input.getAttribute('type') !== 'date' && input.getAttribute('type') !== 'number') {
+        createDropdown(input);
+      }
+    }, true);
+
+    document.addEventListener('keydown', function(e) {
+      if (currentDropdown) {
+        navigateDropdown(e);
+      }
+    }, true);
+
+    // Close dropdown when clicking outside
+    document.addEventListener('mousedown', function(e) {
+      if (currentDropdown && currentInput) {
+        if (e.target !== currentDropdown && !currentDropdown.contains(e.target) && e.target !== currentInput) {
+          closeDropdown();
+        }
+      }
+    }, true);
+
+    // Close on blur (delayed to allow mousedown on items)
+    document.addEventListener('blur', function(e) {
+      var input = e.target;
+      if (input.tagName === 'INPUT' && input.hasAttribute('list')) {
+        setTimeout(function() {
+          if (currentInput === input) closeDropdown();
+        }, 150);
+      }
+    }, true);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCombobox);
+  } else {
+    initCombobox();
+  }
+})();
+</script>
 
 </head>
 <body>
@@ -9614,35 +9840,170 @@ var HS_DB = [
   { code:'9706', desc:'Antiques of over 100 years old', cn:'古董' }
 ];
 
+// ====== HS Code Online Search (www.hsbianma.com) ======
+var hsSearchTimer = null;
+var hsSearchCache = {};
+
 function searchHS() {
-  var query = (document.getElementById('hsSearch').value || '').trim().toLowerCase();
+  var query = (document.getElementById('hsSearch') || {}).value;
+  if (query) query = query.trim();
   var container = document.getElementById('hsResults');
+  if (!container) return;
 
-  if (!query) { container.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:12px">输入编码或商品名称查询</div>'; return; }
+  if (!query) {
+    container.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:12px">输入编码或商品名称查询<br><span style="font-size:10px;color:#cbd5e1">数据来源：www.hsbianma.com</span></div>';
+    return;
+  }
 
+  // Show loading
+  container.innerHTML = '<div style="text-align:center;color:#3b82f6;font-size:12px;padding:16px">🔍 正在查询 www.hsbianma.com ...</div>';
+
+  // Debounce
+  clearTimeout(hsSearchTimer);
+  hsSearchTimer = setTimeout(function() {
+    searchHSOnline(query, container, false);
+  }, 400);
+}
+
+function searchHSOnline(query, container, isModal) {
+  var key = query.toLowerCase();
+
+  // Check cache
+  if (hsSearchCache[key]) {
+    renderHSResults(hsSearchCache[key], container, query, isModal);
+    return;
+  }
+
+  // Try online search via CORS proxy
+  var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.hsbianma.com/search?keywords=' + encodeURIComponent(query));
+
+  fetch(proxyUrl, { method: 'GET', signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined })
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      var results = parseHSBianmaHTML(html);
+      if (results.length > 0) {
+        hsSearchCache[key] = results;
+        renderHSResults(results, container, query, isModal);
+      } else {
+        // No online results, fall back to local DB
+        var localResults = searchHSLocal(query);
+        if (localResults.length > 0) {
+          hsSearchCache[key] = localResults;
+          renderHSResults(localResults, container, query, isModal);
+        } else {
+          container.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:12px;padding:12px">未找到匹配的HS编码<br><a href="https://www.hsbianma.com/search?keywords=' + encodeURIComponent(query) + '" target="_blank" style="color:#3b82f6;font-size:11px">点击在 hsbianma.com 查看完整结果 →</a></div>';
+        }
+      }
+    })
+    .catch(function(err) {
+      // Network error, fall back to local DB
+      var localResults = searchHSLocal(query);
+      if (localResults.length > 0) {
+        renderHSResults(localResults, container, query, isModal);
+      } else {
+        container.innerHTML = '<div style="text-align:center;color:#f59e0b;font-size:12px;padding:12px">⚠ 网络请求失败，无法连接 hsbianma.com<br><span style="font-size:11px;color:#94a3b8">请检查网络后重试，或</span><br><a href="https://www.hsbianma.com/search?keywords=' + encodeURIComponent(query) + '" target="_blank" style="color:#3b82f6;font-size:11px">点击直接访问 hsbianma.com →</a></div>';
+      }
+    });
+}
+
+function parseHSBianmaHTML(html) {
   var results = [];
-  HS_DB.forEach(function(item) {
-    if (item.code.indexOf(query) === 0 ||
-        item.code.indexOf(query) >= 0 ||
-        item.desc.toLowerCase().indexOf(query) >= 0 ||
-        item.cn.indexOf(query) >= 0) {
-      results.push(item);
+  var parser = new DOMParser();
+  var doc = parser.parseFromString(html, 'text/html');
+  var rows = doc.querySelectorAll('tr.result-grid');
+  rows.forEach(function(row) {
+    var tds = row.querySelectorAll('td');
+    if (tds.length >= 2) {
+      // Extract code: may be in <a> or plain text
+      var codeEl = tds[0].querySelector('a');
+      var codeText = codeEl ? codeEl.textContent.trim() : tds[0].textContent.trim();
+      // Remove [过期] marker
+      codeText = codeText.replace(/\[过期\]/g, '').trim();
+      var isExpired = tds[0].textContent.indexOf('过期') >= 0;
+
+      // Extract product name (strip font tags, get text)
+      var nameText = tds[1].textContent.trim().replace(/\s+/g, ' ');
+
+      // Extract unit
+      var unit = '';
+      if (tds[2]) unit = tds[2].textContent.trim();
+
+      // Extract tax rate
+      var taxRate = '';
+      if (tds[3]) taxRate = tds[3].textContent.trim();
+
+      // Extract link
+      var link = '';
+      if (codeEl) link = codeEl.getAttribute('href') || '';
+      if (link && !link.startsWith('http')) link = 'https://www.hsbianma.com' + link;
+
+      if (codeText) {
+        results.push({
+          code: codeText,
+          name: nameText,
+          unit: unit,
+          taxRate: taxRate,
+          expired: isExpired,
+          link: link
+        });
+      }
     }
   });
+  return results;
+}
 
+function searchHSLocal(query) {
+  var q = query.toLowerCase();
+  var results = [];
+  if (typeof HS_DB !== 'undefined') {
+    HS_DB.forEach(function(item) {
+      if (item.code.indexOf(q) >= 0 ||
+          (item.desc && item.desc.toLowerCase().indexOf(q) >= 0) ||
+          (item.cn && item.cn.indexOf(q) >= 0)) {
+        results.push({
+          code: item.code,
+          name: (item.cn || '') + ' ' + (item.desc || ''),
+          unit: '',
+          taxRate: '',
+          expired: false,
+          link: 'https://www.hsbianma.com/search?keywords=' + encodeURIComponent(item.code)
+        });
+      }
+    });
+  }
+  return results;
+}
+
+function renderHSResults(results, container, query, isModal) {
   if (results.length === 0) {
     container.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:12px;padding:12px">未找到匹配的HS编码</div>';
     return;
   }
 
   var html = '';
-  results.forEach(function(item) {
-    html += '<div style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="copyHSCODE(\'' + item.code + '\')" title="点击复制编码">' +
-      '<div style="font-weight:700;color:#1d4ed8;font-size:14px;font-family:Courier New,monospace">' + escapeHtml(item.code) + '</div>' +
-      '<div style="font-size:12px;color:#475569;margin-top:2px">' + escapeHtml(item.desc) + '</div>' +
-      '<div style="font-size:11px;color:#94a3b8;margin-top:2px">' + escapeHtml(item.cn) + '</div>' +
+  var maxShow = isModal ? 100 : 30;
+  results.slice(0, maxShow).forEach(function(item) {
+    var expiredStyle = item.expired ? 'opacity:0.5;' : '';
+    var expiredBadge = item.expired ? '<span style="font-size:9px;background:#fee2e2;color:#ef4444;padding:1px 4px;border-radius:3px;margin-left:4px">过期</span>' : '';
+    var copyFn = isModal ? 'copyHSModal' : 'copyHSCODE';
+    var extraInfo = '';
+    if (item.unit) extraInfo += '<span style="color:#64748b">单位:' + escapeHtml(item.unit) + '</span>';
+    if (item.taxRate) extraInfo += '<span style="color:#64748b;margin-left:8px">退税率:' + escapeHtml(item.taxRate) + '</span>';
+
+    html += '<div style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s;' + expiredStyle + '" onclick="' + copyFn + '(\'' + escapeHtml(item.code) + '\')" onmouseenter="this.style.background=\'#f0f7ff\'" onmouseleave="this.style.background=\'#fff\'" title="点击复制编码">' +
+      '<div style="font-weight:700;color:#1d4ed8;font-size:14px;font-family:Courier New,monospace">' + escapeHtml(item.code) + expiredBadge + '</div>' +
+      '<div style="font-size:12px;color:#475569;margin-top:2px">' + escapeHtml(item.name) + '</div>' +
+      (extraInfo ? '<div style="font-size:11px;color:#94a3b8;margin-top:2px">' + extraInfo + '</div>' : '') +
       '</div>';
   });
+
+  if (results.length > maxShow) {
+    html += '<div style="text-align:center;padding:8px"><a href="https://www.hsbianma.com/search?keywords=' + encodeURIComponent(query) + '" target="_blank" style="color:#3b82f6;font-size:11px">共 ' + results.length + ' 条结果，查看全部 →</a></div>';
+  }
+
+  // Add link to full search on hsbianma.com
+  html += '<div style="text-align:center;padding:4px"><a href="https://www.hsbianma.com/search?keywords=' + encodeURIComponent(query) + '" target="_blank" style="color:#94a3b8;font-size:10px">数据来源：www.hsbianma.com ↗</a></div>';
+
   container.innerHTML = html;
 }
 
@@ -9765,40 +10126,25 @@ function closeHSModal() {
   var modal = document.getElementById('hs-modal');
   if (modal) modal.style.display = 'none';
 }
+var hsModalSearchTimer = null;
 function searchHSModal() {
-  var query = (document.getElementById('hs-modal-search').value || '').trim().toLowerCase();
+  var query = (document.getElementById('hs-modal-search') || {}).value;
+  if (query) query = query.trim();
   var container = document.getElementById('hs-modal-results');
   if (!container) return;
   if (!query) {
-    container.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:24px">输入编码或商品名称查询<br><span style="font-size:11px">支持中文、英文、编码模糊搜索</span></div>';
+    container.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:13px;padding:24px">输入编码或商品名称查询<br><span style="font-size:11px;color:#cbd5e1">支持中文、英文、编码模糊搜索 · 数据来源 www.hsbianma.com</span></div>';
     return;
   }
-  var results = [];
-  if (typeof HS_DB !== 'undefined') {
-    HS_DB.forEach(function(item) {
-      if (item.code.indexOf(query) >= 0 ||
-          item.desc.toLowerCase().indexOf(query) >= 0 ||
-          item.cn.indexOf(query) >= 0) {
-        results.push(item);
-      }
-    });
-  }
-  if (results.length === 0) {
-    container.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:13px;padding:24px">未找到匹配的HS编码</div>';
-    return;
-  }
-  var html = '';
-  results.slice(0, 100).forEach(function(item) {
-    html += '<div style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s" onclick="copyHSModal(\'' + item.code + '\')" onmouseenter="this.style.background=\'#f0f7ff\'" onmouseleave="this.style.background=\'#fff\'" title="点击复制编码">' +
-      '<div style="font-weight:700;color:#1d4ed8;font-size:15px;font-family:Courier New,monospace">' + escapeHtml(item.code) + '</div>' +
-      '<div style="font-size:12px;color:#475569;margin-top:3px">' + escapeHtml(item.desc) + '</div>' +
-      '<div style="font-size:11px;color:#94a3b8;margin-top:2px">' + escapeHtml(item.cn) + '</div>' +
-      '</div>';
-  });
-  if (results.length > 100) {
-    html += '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:8px">共 ' + results.length + ' 条结果，显示前 100 条，请细化搜索</div>';
-  }
-  container.innerHTML = html;
+
+  // Show loading
+  container.innerHTML = '<div style="text-align:center;color:#3b82f6;font-size:13px;padding:24px">🔍 正在查询 www.hsbianma.com ...</div>';
+
+  // Debounce
+  clearTimeout(hsModalSearchTimer);
+  hsModalSearchTimer = setTimeout(function() {
+    searchHSOnline(query, container, true);
+  }, 400);
 }
 function copyHSModal(code) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
