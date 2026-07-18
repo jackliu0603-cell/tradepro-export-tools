@@ -2141,9 +2141,24 @@ input[list] {
   background-position: right 10px center;
   padding-right: 30px !important;
 }
+/* Hide the native calendar picker arrow (Chrome/Safari) */
 input[list]::-webkit-calendar-picker-indicator {
   display: none !important;
 }
+/* Ensure datalist dropdown renders above other content */
+datalist { z-index: 99999; }
+/* Fix for form-group containers — don't clip datalist overflow */
+.form-group { position: relative; z-index: auto; }
+/* Ensure form-grid doesn't create stacking context that clips datalist */
+.form-grid { position: relative; z-index: 0; }
+/* Ensure card-body doesn't clip */
+.card-body { overflow: visible !important; }
+/* Ensure content-area allows datalist to overflow */
+.content-area { overflow-y: auto; overflow-x: visible; }
+/* Ensure table cells with datalist inputs don't clip */
+.td-input { overflow: visible; }
+/* Raise z-index of form inputs with datalist on focus */
+input[list]:focus { position: relative; z-index: 10; }
 </style>
 
 </head>
@@ -2222,7 +2237,6 @@ input[list]::-webkit-calendar-picker-indicator {
       <span class="nav-icon">🌐</span>
       <span>术语计价</span>
     </div>
-    <div class="nav-section-label">工具</div>
     <div class="nav-item" onclick="toggleCalcPanel()" style="cursor:pointer">
       <span class="nav-icon">🧮</span>
       <span>计算器</span>
@@ -8296,6 +8310,10 @@ function animateSummaryValues(container) {
       </div>
       <div id="hsResults" style="max-height:180px;overflow-y:auto;margin-top:8px"></div>
     </div>
+  </div>
+</div>
+
+<script>
 var calcState = { display: '0', prev: null, op: null, waiting: false, memory: 0, expression: '' };
 
 function toggleCalcPanel() {
