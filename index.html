@@ -4094,6 +4094,7 @@ const DOC_CONFIG = {
       { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
       { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
     ],
+    hasAmount: true,
     totalFn: 'recalcProforma',
     fieldMap: { desc:'desc', spec:'spec', qty:'qty', unit:'unit', price:'price' }
   },
@@ -4107,6 +4108,7 @@ const DOC_CONFIG = {
       { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
       { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
     ],
+    hasAmount: true,
     totalFn: 'recalcSalesContract',
     fieldMap: { desc:'desc', spec:'spec', qty:'qty', unit:'unit', price:'price' }
   },
@@ -4120,6 +4122,7 @@ const DOC_CONFIG = {
       { name:'unit', placeholder:'PCS', type:'select', options:['PCS','SET','BOX','CTN','ROLL','PAIR','KG','METER'] },
       { name:'price', placeholder:'0.00', cls:'mono', style:'text-align:right' }
     ],
+    hasAmount: true,
     totalFn: 'recalcCommercial',
     fieldMap: { desc:'desc', hs:'hs', qty:'qty', unit:'unit', price:'price' }
   },
@@ -4165,6 +4168,13 @@ function addRow(docType, data) {
       tr.innerHTML += `<td class="td-input"><input type="text" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}"></td>`;
     }
   });
+  // Amount cell (for docs that have an amount column: PI, SC, CI)
+  if (cfg.hasAmount) {
+    const qtyVal = data ? (parseFloat(data.qty) || 0) : 0;
+    const priceVal = data ? (parseFloat(data.price) || 0) : 0;
+    const amtVal = qtyVal * priceVal;
+    tr.innerHTML += `<td class="amt-cell num">${fmtNum(amtVal)}</td>`;
+  }
   // Action buttons: save to library + delete
   tr.innerHTML += `<td class="no-print" style="text-align:center;white-space:nowrap">
     <button class="save-lib-btn" onclick="saveRowToLibrary(this,'${docType}')" title="保存到产品库">📥 存库</button>
@@ -4189,10 +4199,9 @@ function recalcProforma() {
   rows.forEach(r => {
     const inputs = r.querySelectorAll('input');
     const qty = parseFloat(inputs[2]?.value) || 0;
-    const price = parseFloat(inputs[4]?.value) || 0;
+    const price = parseFloat(inputs[3]?.value) || 0;
     const amt = qty * price;
     total += amt;
-    // Update amount cell if exists
     const amtCell = r.querySelector('.amt-cell');
     if (amtCell) amtCell.textContent = fmtNum(amt);
   });
@@ -4206,7 +4215,7 @@ function recalcSalesContract() {
   rows.forEach(r => {
     const inputs = r.querySelectorAll('input');
     const qty = parseFloat(inputs[2]?.value) || 0;
-    const price = parseFloat(inputs[4]?.value) || 0;
+    const price = parseFloat(inputs[3]?.value) || 0;
     const amt = qty * price;
     total += amt;
     const amtCell = r.querySelector('.amt-cell');
@@ -4222,8 +4231,11 @@ function recalcCommercial() {
   rows.forEach(r => {
     const inputs = r.querySelectorAll('input');
     const qty = parseFloat(inputs[2]?.value) || 0;
-    const price = parseFloat(inputs[4]?.value) || 0;
-    total += qty * price;
+    const price = parseFloat(inputs[3]?.value) || 0;
+    const amt = qty * price;
+    total += amt;
+    const amtCell = r.querySelector('.amt-cell');
+    if (amtCell) amtCell.textContent = fmtNum(amt);
   });
   const cur = document.getElementById('ci-currency')?.value || 'USD';
   document.getElementById('ci-total').textContent = cur + ' ' + fmtNum(total);
