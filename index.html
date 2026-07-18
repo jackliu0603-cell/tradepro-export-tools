@@ -1573,8 +1573,228 @@ input:focus + .history-toggle,
   }
 }
 
+/* ========== Floating Calculator ========== */
+.calc-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.4);
+  z-index: 9998;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calc-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(59,130,246,0.5);
+}
+.calc-panel {
+  position: fixed;
+  bottom: 90px;
+  right: 24px;
+  width: 340px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  z-index: 9999;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+}
+.calc-panel.open { display: flex; }
+.calc-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #1e293b;
+  color: #fff;
+  cursor: move;
+  user-select: none;
+}
+.calc-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.calc-panel-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+.calc-tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+}
+.calc-tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.calc-tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+.calc-tab:hover { background: #f8fafc; }
+.calc-body {
+  padding: 16px;
+  max-height: 460px;
+  overflow-y: auto;
+}
+.calc-tab-content { display: none; }
+.calc-tab-content.active { display: block; }
+
+/* —通用计算器— */
+.calc-display {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 24px;
+  text-align: right;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  background: #f8fafc;
+  font-family: 'Courier New', monospace;
+  box-sizing: border-box;
+  outline: none;
+  color: #0f172a;
+}
+.calc-sub-display {
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: right;
+  margin-bottom: 8px;
+  min-height: 18px;
+  font-family: 'Courier New', monospace;
+}
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.calc-btn {
+  padding: 14px 0;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s;
+  background: #f1f5f9;
+  color: #1e293b;
+}
+.calc-btn:hover { background: #e2e8f0; }
+.calc-btn:active { transform: scale(0.95); }
+.calc-btn.op { background: #dbeafe; color: #1d4ed8; }
+.calc-btn.op:hover { background: #bfdbfe; }
+.calc-btn.eq { background: #3b82f6; color: #fff; }
+.calc-btn.eq:hover { background: #2563eb; }
+.calc-btn.fn { background: #fef3c7; color: #92400e; }
+.calc-btn.fn:hover { background: #fde68a; }
+.calc-btn.span2 { grid-column: span 2; }
+.calc-btn.danger { background: #fee2e2; color: #dc2626; }
+.calc-btn.danger:hover { background: #fecaca; }
+
+/* —外贸专用— */
+.calc-fx-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.calc-fx-row select, .calc-fx-row input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #f8fafc;
+  outline: none;
+}
+.calc-fx-row input:focus, .calc-fx-row select:focus { border-color: #3b82f6; }
+.calc-fx-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.calc-fx-result {
+  padding: 12px 16px;
+  background: #eff6ff;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1d4ed8;
+  text-align: center;
+  margin: 8px 0 16px;
+}
+.calc-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin: 16px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.calc-cbm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.calc-cbm-grid input {
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  background: #f8fafc;
+  outline: none;
+}
+.calc-cbm-grid input:focus { border-color: #3b82f6; }
+.calc-cbm-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.calc-unit-price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.calc-unit-price-grid input {
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #f8fafc;
+  outline: none;
+}
+.calc-unit-price-grid input:focus { border-color: #3b82f6; }
+
 /* ========== Print ========== */
 @media print {
+  .calc-fab, .calc-panel { display: none !important; }
   .sidebar, .topbar, .page-header, .no-print, .split-edit-pane { display: none !important; }
   .split-view { display: block !important; }
   .split-preview-pane { flex: none !important; max-height: none !important; overflow: visible !important; padding: 0 !important; }
@@ -1987,6 +2207,11 @@ input:focus + .history-toggle,
     <div class="nav-item" data-page="incoterm">
       <span class="nav-icon">🌐</span>
       <span>术语计价</span>
+    </div>
+    <div class="nav-section-label">工具</div>
+    <div class="nav-item" onclick="toggleCalcPanel()" style="cursor:pointer">
+      <span class="nav-icon">🧮</span>
+      <span>计算器</span>
     </div>
     <div class="nav-section-label">数据中心</div>
     <div class="nav-item" data-page="library">
@@ -7877,6 +8102,886 @@ function animateSummaryValues(container) {
   }
   // Otherwise login overlay stays visible
 })();
+</script>
+
+<!-- ========== Floating Calculator ========== -->
+<button class="calc-fab no-print" onclick="toggleCalcPanel()" title="计算器">🧮</button>
+<div class="calc-panel no-print" id="calcPanel">
+  <div class="calc-panel-header" id="calcDragHandle">
+    <span class="calc-panel-title">🧮 计算器</span>
+    <button class="calc-panel-close" onclick="toggleCalcPanel()">✕</button>
+  </div>
+  <div class="calc-tabs">
+    <div class="calc-tab active" onclick="switchCalcTab('general',this)">通用计算</div>
+    <div class="calc-tab" onclick="switchCalcTab('trade',this)">外贸专用</div>
+  </div>
+  <div class="calc-body">
+    <!-- Tab 1: General Calculator -->
+    <div class="calc-tab-content active" id="calcTab-general">
+      <div class="calc-sub-display" id="calcSubDisplay"></div>
+      <input class="calc-display" id="calcDisplay" readonly value="0">
+      <div class="calc-grid">
+        <button class="calc-btn fn" onclick="calcInput('MC')">MC</button>
+        <button class="calc-btn fn" onclick="calcInput('MR')">MR</button>
+        <button class="calc-btn fn" onclick="calcInput('M+')">M+</button>
+        <button class="calc-btn fn" onclick="calcInput('M-')">M-</button>
+        <button class="calc-btn danger span2" onclick="calcInput('C')">C</button>
+        <button class="calc-btn fn" onclick="calcInput('back')">⌫</button>
+        <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+        <button class="calc-btn" onclick="calcInput('7')">7</button>
+        <button class="calc-btn" onclick="calcInput('8')">8</button>
+        <button class="calc-btn" onclick="calcInput('9')">9</button>
+        <button class="calc-btn op" onclick="calcInput('*')">×</button>
+        <button class="calc-btn" onclick="calcInput('4')">4</button>
+        <button class="calc-btn" onclick="calcInput('5')">5</button>
+        <button class="calc-btn" onclick="calcInput('6')">6</button>
+        <button class="calc-btn op" onclick="calcInput('-')">−</button>
+        <button class="calc-btn" onclick="calcInput('1')">1</button>
+        <button class="calc-btn" onclick="calcInput('2')">2</button>
+        <button class="calc-btn" onclick="calcInput('3')">3</button>
+        <button class="calc-btn op" onclick="calcInput('+')">+</button>
+        <button class="calc-btn span2" onclick="calcInput('0')">0</button>
+        <button class="calc-btn" onclick="calcInput('.')">.</button>
+        <button class="calc-btn eq" onclick="calcInput('=')">=</button>
+      </div>
+    </div>
+    <!-- Tab 2: Trade Calculator -->
+    <div class="calc-tab-content" id="calcTab-trade">
+      <!-- CBM Volume Calculator -->
+      <div class="calc-section-title">📦 CBM 体积计算</div>
+      <div class="calc-cbm-label">长 × 宽 × 高 (cm) × 箱数</div>
+      <div class="calc-cbm-grid">
+        <input type="number" id="cbmL" placeholder="长" oninput="calcCBM()">
+        <input type="number" id="cbmW" placeholder="宽" oninput="calcCBM()">
+        <input type="number" id="cbmH" placeholder="高" oninput="calcCBM()">
+      </div>
+      <input type="number" id="cbmQty" placeholder="箱数" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;background:#f8fafc;outline:none;margin-bottom:8px" oninput="calcCBM()">
+      <div class="calc-fx-result" id="cbmResult">0.000 CBM</div>
+
+      <!-- Unit Price × Qty = Amount -->
+      <div class="calc-section-title">💰 金额计算</div>
+      <div class="calc-unit-price-grid">
+        <input type="number" id="amtQty" placeholder="数量" oninput="calcAmount()">
+        <input type="number" id="amtPrice" placeholder="单价" oninput="calcAmount()">
+      </div>
+      <div class="calc-fx-result" id="amtResult">0.00</div>
+
+      <!-- FOB → CIF Estimate -->
+      <div class="calc-section-title">🚢 FOB → CIF 估算</div>
+      <div class="calc-fx-label">FOB 单价 (USD)</div>
+      <input type="number" id="fobPrice" placeholder="FOB Price" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;background:#f8fafc;outline:none;margin-bottom:8px" oninput="calcCIF()">
+      <div class="calc-fx-label">运费 + 保险 (per unit)</div>
+      <div class="calc-unit-price-grid">
+        <input type="number" id="freightPer" placeholder="运费/unit" oninput="calcCIF()">
+        <input type="number" id="insurancePer" placeholder="保险/unit" oninput="calcCIF()">
+      </div>
+      <div class="calc-fx-result" id="cifResult">CIF: 0.00</div>
+
+      <!-- Currency Convert -->
+      <div class="calc-section-title">💱 货币换算</div>
+      <div class="calc-fx-row">
+        <input type="number" id="fxAmount" placeholder="金额" oninput="calcFX()" value="1">
+        <select id="fxFrom" onchange="calcFX()">
+          <option value="1">USD</option>
+          <option value="7.25">CNY</option>
+          <option value="0.92">EUR</option>
+          <option value="0.79">GBP</option>
+          <option value="155">JPY</option>
+        </select>
+      </div>
+      <div class="calc-fx-label" style="text-align:center">→</div>
+      <div class="calc-fx-row">
+        <select id="fxTo" onchange="calcFX()">
+          <option value="7.25">CNY</option>
+          <option value="1">USD</option>
+          <option value="0.92">EUR</option>
+          <option value="0.79">GBP</option>
+          <option value="155">JPY</option>
+        </select>
+        <input type="text" id="fxResult" readonly placeholder="结果" style="background:#eff6ff;font-weight:600;color:#1d4ed8">
+      </div>
+
+      <!-- HS Code Lookup -->
+      <div class="calc-section-title">🏷️ HS 编码查询</div>
+      <div class="calc-fx-row">
+        <input type="text" id="hsSearch" placeholder="输入编码或商品名称" oninput="searchHS()" style="flex:1">
+        <button class="calc-btn op" style="padding:8px 12px;font-size:13px;border-radius:8px" onclick="searchHS()">查询</button>
+      </div>
+      <div id="hsResults" style="max-height:180px;overflow-y:auto;margin-top:8px"></div>
+    </div>
+var calcState = { display: '0', prev: null, op: null, waiting: false, memory: 0, expression: '' };
+
+function toggleCalcPanel() {
+  var panel = document.getElementById('calcPanel');
+  panel.classList.toggle('open');
+}
+
+function switchCalcTab(tab, el) {
+  document.querySelectorAll('.calc-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.calc-tab-content').forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('calcTab-' + tab).classList.add('active');
+}
+
+function calcInput(key) {
+  var d = document.getElementById('calcDisplay');
+  var sub = document.getElementById('calcSubDisplay');
+
+  if (key >= '0' && key <= '9') {
+    if (calcState.display === '0' || calcState.waiting) {
+      calcState.display = key;
+      calcState.waiting = false;
+    } else {
+      calcState.display += key;
+    }
+  } else if (key === '.') {
+    if (calcState.waiting) { calcState.display = '0.'; calcState.waiting = false; }
+    else if (calcState.display.indexOf('.') === -1) { calcState.display += '.'; }
+  } else if (key === 'C') {
+    calcState.display = '0'; calcState.prev = null; calcState.op = null; calcState.waiting = false; calcState.expression = '';
+    sub.textContent = '';
+  } else if (key === 'back') {
+    if (calcState.display.length > 1) calcState.display = calcState.display.slice(0, -1);
+    else calcState.display = '0';
+  } else if (['+','-','*','/'].indexOf(key) >= 0) {
+    if (calcState.prev !== null && !calcState.waiting) {
+      calcState.display = String(calcCompute(calcState.prev, parseFloat(calcState.display), calcState.op));
+    }
+    calcState.prev = parseFloat(calcState.display);
+    calcState.op = key;
+    calcState.waiting = true;
+    var opSym = {'+':'+','-':'−','*':'×','/':'÷'}[key];
+    calcState.expression = calcState.display + ' ' + opSym;
+    sub.textContent = calcState.expression;
+  } else if (key === '=') {
+    if (calcState.prev !== null && calcState.op) {
+      var result = calcCompute(calcState.prev, parseFloat(calcState.display), calcState.op);
+      sub.textContent = calcState.expression + ' ' + calcState.display + ' =';
+      calcState.display = String(result);
+      calcState.prev = null; calcState.op = null; calcState.waiting = true;
+    }
+  } else if (key === 'MC') { calcState.memory = 0; sub.textContent = 'Memory cleared'; setTimeout(function(){ if(sub.textContent==='Memory cleared') sub.textContent=''; }, 1000); }
+  else if (key === 'MR') { calcState.display = String(calcState.memory); calcState.waiting = true; }
+  else if (key === 'M+') { calcState.memory += parseFloat(calcState.display) || 0; sub.textContent = 'M=' + calcState.memory; }
+  else if (key === 'M-') { calcState.memory -= parseFloat(calcState.display) || 0; sub.textContent = 'M=' + calcState.memory; }
+
+  // Format display
+  var displayVal = calcState.display;
+  if (displayVal !== 'Error' && !isNaN(parseFloat(displayVal))) {
+    var parts = displayVal.split('.');
+    parts[0] = parseFloat(parts[0]).toLocaleString('en-US');
+    displayVal = parts.join('.');
+  }
+  d.value = displayVal;
+}
+
+function calcCompute(a, b, op) {
+  switch(op) {
+    case '+': return a + b;
+    case '-': return a - b;
+    case '*': return a * b;
+    case '/': return b === 0 ? 'Error' : a / b;
+    default: return b;
+  }
+}
+
+// — CBM Calculator —
+function calcCBM() {
+  var l = parseFloat(document.getElementById('cbmL').value) || 0;
+  var w = parseFloat(document.getElementById('cbmW').value) || 0;
+  var h = parseFloat(document.getElementById('cbmH').value) || 0;
+  var qty = parseFloat(document.getElementById('cbmQty').value) || 1;
+  var cbm = (l * w * h * qty) / 1000000;
+  document.getElementById('cbmResult').textContent = cbm.toFixed(3) + ' CBM';
+}
+
+// — Amount Calculator —
+function calcAmount() {
+  var qty = parseFloat(document.getElementById('amtQty').value) || 0;
+  var price = parseFloat(document.getElementById('amtPrice').value) || 0;
+  document.getElementById('amtResult').textContent = (qty * price).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// — FOB → CIF —
+function calcCIF() {
+  var fob = parseFloat(document.getElementById('fobPrice').value) || 0;
+  var freight = parseFloat(document.getElementById('freightPer').value) || 0;
+  var insurance = parseFloat(document.getElementById('insurancePer').value) || 0;
+  var cif = fob + freight + insurance;
+  document.getElementById('cifResult').textContent = 'CIF: ' + cif.toFixed(2);
+}
+
+// — Currency Convert —
+function calcFX() {
+  var amt = parseFloat(document.getElementById('fxAmount').value) || 0;
+  var fromRate = parseFloat(document.getElementById('fxFrom').value);
+  var toRate = parseFloat(document.getElementById('fxTo').value);
+  // Convert to USD first, then to target
+  var usd = amt / fromRate;
+  var result = usd * toRate;
+  document.getElementById('fxResult').value = result.toFixed(2);
+}
+
+// Init FX on load
+calcFX();
+
+// ==================== HS CODE DATABASE ====================
+var HS_DB = [
+  // — Section I: Animal Products —
+  { code:'0101', desc:'Live horses, asses, mules and hinnies', cn:'活马、驴、骡' },
+  { code:'0102', desc:'Live bovine animals', cn:'活牛' },
+  { code:'0103', desc:'Live swine', cn:'活猪' },
+  { code:'0104', desc:'Live sheep and goats', cn:'活绵羊和山羊' },
+  { code:'0201', desc:'Meat of bovine animals, fresh', cn:'鲜、冷牛肉' },
+  { code:'0203', desc:'Meat of swine, fresh/chilled/frozen', cn:'猪肉' },
+  { code:'0207', desc:'Meat and edible offal of poultry', cn:'家禽肉及杂碎' },
+  { code:'0301', desc:'Live fish', cn:'活鱼' },
+  { code:'0302', desc:'Fish, fresh or chilled', cn:'鲜、冷鱼' },
+  { code:'0303', desc:'Fish, frozen', cn:'冻鱼' },
+  { code:'0306', desc:'Crustaceans, live/fresh/frozen', cn:'甲壳动物' },
+  { code:'0307', desc:'Molluscs, live/fresh/frozen', cn:'软体动物' },
+  { code:'0401', desc:'Milk and cream, not concentrated', cn:'未浓缩乳及奶油' },
+  { code:'0402', desc:'Milk and cream, concentrated/sweetened', cn:'浓缩乳及奶油' },
+  { code:'0407', desc:'Birds eggs, in shell, fresh', cn:'带壳鲜禽蛋' },
+  // — Section II: Vegetable Products —
+  { code:'0701', desc:'Potatoes, fresh or chilled', cn:'鲜或冷藏马铃薯' },
+  { code:'0703', desc:'Onions, shallots, garlic, leeks', cn:'葱蒜类蔬菜' },
+  { code:'0801', desc:'Coconuts, Brazil nuts, cashew nuts', cn:'椰子、巴西果、腰果' },
+  { code:'0803', desc:'Bananas, including plantains', cn:'香蕉' },
+  { code:'0804', desc:'Dates, figs, pineapples, avocados', cn:'椰枣、无花果、菠萝、鳄梨' },
+  { code:'0805', desc:'Citrus fruit, fresh or dried', cn:'柑橘类水果' },
+  { code:'0806', desc:'Grapes, fresh or dried', cn:'葡萄' },
+  { code:'0808', desc:'Apples and pears', cn:'苹果和梨' },
+  { code:'0901', desc:'Coffee, whether or not roasted', cn:'咖啡' },
+  { code:'0902', desc:'Tea, whether or not flavoured', cn:'茶' },
+  { code:'0903', desc:'Mate', cn:'马黛茶' },
+  { code:'0904', desc:'Pepper; dried or crushed', cn:'胡椒' },
+  { code:'0905', desc:'Vanilla', cn:'香草' },
+  { code:'0906', desc:'Cinnamon and cinnamon-tree flowers', cn:'肉桂' },
+  { code:'0907', desc:'Cloves', cn:'丁香' },
+  { code:'0908', desc:'Nutmeg, mace, cardamoms', cn:'肉豆蔻、小豆蔻' },
+  { code:'0909', desc:'Seeds of anise, caraway, fennel', cn:'茴香、芫荽等种子' },
+  { code:'1001', desc:'Wheat and meslin', cn:'小麦' },
+  { code:'1005', desc:'Maize (corn)', cn:'玉米' },
+  { code:'1006', desc:'Rice', cn:'大米' },
+  { code:'1101', desc:'Wheat or meslin flour', cn:'小麦粉' },
+  { code:'1102', desc:'Cereal flours other than wheat', cn:'其他谷物粉' },
+  { code:'1201', desc:'Soya beans', cn:'大豆' },
+  { code:'1202', desc:'Groundnuts (peanuts)', cn:'花生' },
+  { code:'1205', desc:'Rape or colza seeds', cn:'油菜籽' },
+  { code:'1206', desc:'Sunflower seeds', cn:'葵花籽' },
+  { code:'1207', desc:'Other oil seeds and oleaginous fruit', cn:'其他含油子仁' },
+  { code:'1507', desc:'Soya-bean oil', cn:'豆油' },
+  { code:'1508', desc:'Ground-nut oil', cn:'花生油' },
+  { code:'1509', desc:'Olive oil', cn:'橄榄油' },
+  { code:'1511', desc:'Palm oil', cn:'棕榈油' },
+  { code:'1512', desc:'Sunflower-seed/safflower/cotton-seed oil', cn:'葵花籽油、棉籽油' },
+  // — Section III: Animal/Vegetable Fats —
+  { code:'1521', desc:'Vegetable waxes', cn:'植物蜡' },
+  // — Section IV: Prepared Food —
+  { code:'1701', desc:'Cane or beet sugar', cn:'蔗糖、甜菜糖' },
+  { code:'1702', desc:'Other sugars; glucose syrup', cn:'其他糖、糖浆' },
+  { code:'1801', desc:'Cocoa beans, whole or broken', cn:'可可豆' },
+  { code:'1802', desc:'Cocoa shells, husks, skins', cn:'可可壳、皮' },
+  { code:'1803', desc:'Cocoa paste', cn:'可可膏' },
+  { code:'1804', desc:'Cocoa butter, fat and oil', cn:'可可脂' },
+  { code:'1805', desc:'Cocoa powder, no added sugar', cn:'可可粉' },
+  { code:'1806', desc:'Chocolate and other cocoa preparations', cn:'巧克力' },
+  { code:'1901', desc:'Malt extract; food preparations of flour', cn:'麦精、面粉食品' },
+  { code:'1902', desc:'Pasta, whether or not cooked', cn:'面条、意面' },
+  { code:'1905', desc:'Bread, pastry, cakes, biscuits', cn:'面包、糕点、饼干' },
+  { code:'2005', desc:'Other vegetables prepared or preserved', cn:'其他蔬菜罐头' },
+  { code:'2008', desc:'Fruit/nuts prepared or preserved', cn:'水果坚果制品' },
+  { code:'2009', desc:'Fruit juices, unfermented', cn:'果汁' },
+  { code:'2101', desc:'Coffee extracts, essences, concentrates', cn:'咖啡精' },
+  { code:'2105', desc:'Ice cream and other edible ice', cn:'冰淇淋' },
+  // — Section V: Mineral Products —
+  { code:'2501', desc:'Salt; sulphur; earths and stones', cn:'盐、硫磺、泥土石' },
+  { code:'2504', desc:'Natural graphite', cn:'天然石墨' },
+  { code:'2508', desc:'Other clays, andalusite, kyanite', cn:'其他粘土' },
+  { code:'2515', desc:'Marble, travertine, alabaster', cn:'大理石' },
+  { code:'2516', desc:'Granite, porphyry, basalt, sandstone', cn:'花岗岩、砂岩' },
+  { code:'2523', desc:'Portland cement, aluminous cement', cn:'水泥' },
+  { code:'2601', desc:'Iron ores and concentrates', cn:'铁矿石' },
+  { code:'2602', desc:'Manganese ores and concentrates', cn:'锰矿石' },
+  { code:'2603', desc:'Copper ores and concentrates', cn:'铜矿石' },
+  { code:'2606', desc:'Aluminium ores and concentrates', cn:'铝矿石' },
+  { code:'2701', desc:'Coal; briquettes', cn:'煤' },
+  { code:'2709', desc:'Petroleum oils, crude', cn:'原油' },
+  { code:'2710', desc:'Petroleum oils, refined', cn:'成品油' },
+  { code:'2711', desc:'Petroleum gases and other gaseous hydrocarbons', cn:'石油气' },
+  // — Section VI: Chemicals —
+  { code:'2801', desc:'Chlorine; fluorine, bromine, iodine', cn:'氯、氟、溴、碘' },
+  { code:'2818', desc:'Artificial corundum; aluminium oxide', cn:'人造刚玉、氧化铝' },
+  { code:'2825', desc:'Hydrazine; hydroxylamine; inorganic bases', cn:'肼、无机碱' },
+  { code:'2836', desc:'Carbonates; peroxocarbonates', cn:'碳酸盐' },
+  { code:'2901', desc:'Acyclic hydrocarbons', cn:'无环烃' },
+  { code:'2902', desc:'Cyclic hydrocarbons', cn:'环烃' },
+  { code:'2917', desc:'Polycarboxylic acids', cn:'多元羧酸' },
+  { code:'2933', desc:'Heterocyclic compounds with nitrogen', cn:'含氮杂环化合物' },
+  { code:'2941', desc:'Antibiotics', cn:'抗生素' },
+  { code:'3004', desc:'Pharmaceutical products, packaged', cn:'药品' },
+  { code:'3005', desc:'Wadding, gauze, bandages', cn:'棉、纱布、绷带' },
+  { code:'3006', desc:'Pharmaceutical goods specified', cn:'医药制品' },
+  { code:'3204', desc:'Synthetic organic colouring matter', cn:'合成有机染料' },
+  { code:'3208', desc:'Paints and varnishes, based on polymers', cn:'油漆、清漆' },
+  { code:'3214', desc:'Putty, mastics, non-refractory surfacing prep', cn:'油灰、填缝剂' },
+  { code:'3303', desc:'Perfumes and toilet waters', cn:'香水' },
+  { code:'3304', desc:'Beauty/make-up/skin-care preparations', cn:'化妆品' },
+  { code:'3305', desc:'Preparations for use on the hair', cn:'护发品' },
+  { code:'3401', desc:'Soap; organic surfactants for toilet use', cn:'肥皂' },
+  { code:'3402', desc:'Organic surface-active agents', cn:'有机表面活性剂' },
+  { code:'3808', desc:'Insecticides, rodenticides, fungicides', cn:'杀虫剂、杀菌剂' },
+  { code:'3824', desc:'Prepared binders for foundry moulds', cn:'铸模粘合剂' },
+  // — Section VII: Plastics & Rubber —
+  { code:'3901', desc:'Polymers of ethylene', cn:'聚乙烯' },
+  { code:'3902', desc:'Polymers of propylene', cn:'聚丙烯' },
+  { code:'3903', desc:'Polymers of styrene', cn:'聚苯乙烯' },
+  { code:'3904', desc:'Polymers of vinyl chloride', cn:'聚氯乙烯' },
+  { code:'3905', desc:'Polymers of vinyl acetate', cn:'聚醋酸乙烯' },
+  { code:'3906', desc:'Acrylic polymers', cn:'丙烯酸聚合物' },
+  { code:'3907', desc:'Polyethers, epoxides, polyesters', cn:'聚醚、环氧树脂、聚酯' },
+  { code:'3908', desc:'Polyamides', cn:'聚酰胺' },
+  { code:'3917', desc:'Tubes, pipes and hoses of plastics', cn:'塑料管' },
+  { code:'3920', desc:'Plates, sheets and film of plastics', cn:'塑料板、片、膜' },
+  { code:'3923', desc:'Articles for the conveyance/packing of goods', cn:'塑料包装制品' },
+  { code:'3924', desc:'Tableware, kitchenware, household articles', cn:'塑料餐具、厨具' },
+  { code:'3925', desc:'Building articles of plastics', cn:'建筑用塑料制品' },
+  { code:'3926', desc:'Other articles of plastics', cn:'其他塑料制品' },
+  { code:'4001', desc:'Natural rubber, balata, gutta-percha', cn:'天然橡胶' },
+  { code:'4002', desc:'Synthetic rubber and factice', cn:'合成橡胶' },
+  { code:'4011', desc:'New pneumatic tyres of rubber', cn:'橡胶轮胎' },
+  { code:'4012', desc:'Retreaded or used tyres of rubber', cn:'翻新或旧轮胎' },
+  // — Section VIII: Raw Hides, Leather —
+  { code:'4101', desc:'Raw hides and skins of bovine/equine', cn:'生牛皮、马皮' },
+  { code:'4104', desc:'Tanned or crust hides and skins', cn:'鞣制皮革' },
+  { code:'4107', desc:'Leather further prepared after tanning', cn:'成品皮革' },
+  { code:'4202', desc:'Trunks, suitcases, handbags, wallets', cn:'箱包' },
+  { code:'4203', desc:'Articles of apparel, leather', cn:'皮革服装' },
+  // — Section IX: Wood —
+  { code:'4401', desc:'Fuel wood; wood waste/chips', cn:'薪柴、木屑' },
+  { code:'4403', desc:'Wood in the rough, stripped of bark', cn:'原木' },
+  { code:'4407', desc:'Wood sawn or chipped lengthwise', cn:'锯材' },
+  { code:'4408', desc:'Veneer sheets and sheets for plywood', cn:'单板、胶合板用板' },
+  { code:'4410', desc:'Particle board, oriented strand board', cn:'刨花板' },
+  { code:'4411', desc:'Fibreboard of wood or other ligneous', cn:'纤维板' },
+  { code:'4412', desc:'Plywood, veneered panels', cn:'胶合板' },
+  { code:'4418', desc:'Builders joinery and carpentry of wood', cn:'建筑用木制品' },
+  { code:'4421', desc:'Other articles of wood', cn:'其他木制品' },
+  // — Section X: Pulp & Paper —
+  { code:'4701', desc:'Mechanical wood pulp', cn:'机械木浆' },
+  { code:'4703', desc:'Chemical wood pulp, soda/sulphate', cn:'化学木浆' },
+  { code:'4802', desc:'Uncoated paper for writing/printing', cn:'书写印刷用纸' },
+  { code:'4804', desc:'Uncoated kraft paper and paperboard', cn:'牛皮纸' },
+  { code:'4810', desc:'Paper and paperboard, coated, for printing', cn:'涂布印刷纸' },
+  { code:'4811', desc:'Paper and paperboard, coated, other', cn:'其他涂布纸' },
+  { code:'4818', desc:'Toilet paper, tissues, towels, napkins', cn:'卫生纸、纸巾' },
+  { code:'4819', desc:'Cartons, boxes, cases, of paper', cn:'纸箱、纸盒' },
+  { code:'4820', desc:'Registers, notebooks, exercise books', cn:'纸本、笔记本' },
+  // — Section XI: Textiles —
+  { code:'5001', desc:'Silk worm cocoons and raw silk', cn:'蚕茧、生丝' },
+  { code:'5002', desc:'Raw silk (not thrown)', cn:'生丝' },
+  { code:'5003', desc:'Silk waste', cn:'废丝' },
+  { code:'5007', desc:'Woven fabrics of silk', cn:'丝绸织物' },
+  { code:'5101', desc:'Wool, not carded or combed', cn:'未梳羊毛' },
+  { code:'5102', desc:'Fine/coarse animal hair, not carded', cn:'动物细毛/粗毛' },
+  { code:'5103', desc:'Waste of wool or animal hair', cn:'羊毛废料' },
+  { code:'5201', desc:'Cotton, not carded or combed', cn:'未梳棉花' },
+  { code:'5203', desc:'Cotton, carded or combed', cn:'已梳棉花' },
+  { code:'5204', desc:'Cotton sewing thread', cn:'棉缝纫线' },
+  { code:'5205', desc:'Cotton yarn, not for retail sale', cn:'棉纱线' },
+  { code:'5208', desc:'Woven cotton fabrics, <85% cotton, <200g/m²', cn:'棉布(轻)' },
+  { code:'5209', desc:'Woven cotton fabrics, >=85% cotton, >=200g/m²', cn:'棉布(重)' },
+  { code:'5309', desc:'Woven fabrics of flax', cn:'亚麻织物' },
+  { code:'5401', desc:'Sewing thread of man-made filaments', cn:'化纤缝纫线' },
+  { code:'5402', desc:'Synthetic filament yarn', cn:'合成纤维长丝纱线' },
+  { code:'5403', desc:'Artificial filament yarn', cn:'人造纤维长丝纱线' },
+  { code:'5404', desc:'Synthetic monofilament', cn:'合成纤维单丝' },
+  { code:'5407', desc:'Woven fabrics of synthetic filament yarn', cn:'合成纤维织物' },
+  { code:'5408', desc:'Woven fabrics of artificial filament yarn', cn:'人造纤维织物' },
+  { code:'5501', desc:'Synthetic staple fibres, not carded', cn:'合成短纤' },
+  { code:'5502', desc:'Artificial staple fibres, not carded', cn:'人造短纤' },
+  { code:'5503', desc:'Synthetic staple fibres, not carded/combed', cn:'合成短纤(未梳)' },
+  { code:'5504', desc:'Artificial staple fibres, not carded/combed', cn:'人造短纤(未梳)' },
+  { code:'5508', desc:'Sewing thread of man-made staple fibres', cn:'化纤短纤缝纫线' },
+  { code:'5509', desc:'Yarn of synthetic staple fibres', cn:'合成短纤纱线' },
+  { code:'5510', desc:'Yarn of artificial staple fibres', cn:'人造短纤纱线' },
+  { code:'5511', desc:'Yarn of man-made staple fibres', cn:'化纤短纤纱线' },
+  { code:'5512', desc:'Woven fabrics of synthetic staple fibres', cn:'合成短纤织物' },
+  { code:'5513', desc:'Woven fabrics of synthetic staple fibres, <85%, <170g/m²', cn:'合纤混纺轻织物' },
+  { code:'5514', desc:'Woven fabrics of synthetic staple fibres, <85%, >=170g/m²', cn:'合纤混纺重织物' },
+  { code:'5515', desc:'Other woven fabrics of synthetic staple fibres', cn:'其他合纤短纤织物' },
+  { code:'5516', desc:'Woven fabrics of artificial staple fibres', cn:'人造短纤织物' },
+  { code:'5801', desc:'Woven pile fabrics and terry fabrics', cn:'纬起绒织物、毛巾织物' },
+  { code:'6001', desc:'Knitted or crocheted pile fabrics', cn:'针织起绒织物' },
+  { code:'6002', desc:'Other knitted or crocheted fabrics', cn:'其他针织物' },
+  { code:'6006', desc:'Other knitted or crocheted fabrics', cn:'其他针织面料' },
+  { code:'6101', desc:'Mens/boys overcoats, knitted', cn:'男式针织大衣' },
+  { code:'6102', desc:'Womens/girls overcoats, knitted', cn:'女式针织大衣' },
+  { code:'6103', desc:'Mens/boys suits, knitted', cn:'男式针织西服' },
+  { code:'6104', desc:'Womens/girls suits, knitted', cn:'女式针织西服' },
+  { code:'6105', desc:'Mens/boys shirts, knitted', cn:'男式针织衬衫' },
+  { code:'6106', desc:'Womens/girls blouses, knitted', cn:'女式针织衬衫' },
+  { code:'6107', desc:'Mens/boys underpants, knitted', cn:'男式针织内裤' },
+  { code:'6108', desc:'Womens/girls underpants, knitted', cn:'女式针织内裤' },
+  { code:'6109', desc:'T-shirts, singlets and other vests, knitted', cn:'针织T恤' },
+  { code:'6110', desc:'Sweaters, pullovers, cardigans, knitted', cn:'针织毛衣' },
+  { code:'6112', desc:'Track suits, ski suits, swimwear, knitted', cn:'针织运动服' },
+  { code:'6114', desc:'Other garments, knitted', cn:'其他针织服装' },
+  { code:'6201', desc:'Mens/boys overcoats, not knitted', cn:'男式梭织大衣' },
+  { code:'6202', desc:'Womens/girls overcoats, not knitted', cn:'女式梭织大衣' },
+  { code:'6203', desc:'Mens/boys suits, not knitted', cn:'男式梭织西服' },
+  { code:'6204', desc:'Womens/girls suits, not knitted', cn:'女式梭织西服' },
+  { code:'6205', desc:'Mens/boys shirts, not knitted', cn:'男式梭织衬衫' },
+  { code:'6206', desc:'Womens/girls blouses, not knitted', cn:'女式梭织衬衫' },
+  { code:'6207', desc:'Mens/boys underpants, not knitted', cn:'男式梭织内衣' },
+  { code:'6208', desc:'Womens/girls undergarments, not knitted', cn:'女式梭织内衣' },
+  { code:'6209', desc:'Babies garments and accessories', cn:'婴儿服装' },
+  { code:'6210', desc:'Garments of felt or nonwovens', cn:'无纺布服装' },
+  { code:'6211', desc:'Track suits, ski suits, swimwear, not knitted', cn:'其他梭织服装' },
+  { code:'6212', desc:'Brassieres, girdles, corsets', cn:'胸衣、束腰' },
+  { code:'6217', desc:'Other made up clothing accessories', cn:'其他服装配件' },
+  { code:'6301', desc:'Blankets and travelling rugs', cn:'毯子' },
+  { code:'6302', desc:'Bed linen, table linen, toilet linen', cn:'床上用品' },
+  { code:'6303', desc:'Curtains and interior blinds', cn:'窗帘' },
+  { code:'6304', desc:'Other furnishing articles', cn:'其他装饰用品' },
+  { code:'6305', desc:'Sacks and bags, of textile materials', cn:'纺织包装袋' },
+  { code:'6306', desc:'Tarpaulins, sails, awnings, tents', cn:'篷布、帐篷' },
+  { code:'6307', desc:'Other made up articles', cn:'其他纺织制品' },
+  { code:'6401', desc:'Waterproof footwear with rubber/plastic soles', cn:'防水鞋靴' },
+  { code:'6402', desc:'Other footwear with rubber/plastic soles/uppers', cn:'橡胶/塑料鞋' },
+  { code:'6403', desc:'Footwear with leather uppers', cn:'皮鞋' },
+  { code:'6404', desc:'Footwear with textile uppers', cn:'纺织面鞋' },
+  // — Section XII: Footwear —
+  { code:'6406', desc:'Parts of footwear', cn:'鞋类零件' },
+  // — Section XIII: Stone, Plaster, Cement, Glass —
+  { code:'6810', desc:'Articles of cement, concrete', cn:'水泥制品' },
+  { code:'6811', desc:'Articles of asbestos-cement', cn:'石棉水泥制品' },
+  { code:'6812', desc:'Friction material, articles of asbestos', cn:'摩擦材料' },
+  { code:'6901', desc:'Bricks, blocks, tiles of refractory', cn:'耐火砖' },
+  { code:'6907', desc:'Unglazed ceramic tiles', cn:'无釉陶瓷砖' },
+  { code:'6908', desc:'Glazed ceramic tiles', cn:'有釉陶瓷砖' },
+  { code:'6910', desc:'Ceramic sinks, wash basins, pedestals', cn:'陶瓷卫生器具' },
+  { code:'6911', desc:'Tableware, kitchenware of porcelain/china', cn:'瓷器餐具' },
+  { code:'6912', desc:'Ceramic tableware, other than porcelain', cn:'陶器餐具' },
+  { code:'7001', desc:'Cast glass and rolled glass', cn:'铸玻璃、压延玻璃' },
+  { code:'7003', desc:'Hollow glassware, for lamps', cn:'灯泡玻璃壳' },
+  { code:'7004', desc:'Drawn glass and blown glass, in sheets', cn:'拉制玻璃板' },
+  { code:'7005', desc:'Float glass and surface ground glass', cn:'浮法玻璃' },
+  { code:'7007', desc:'Safety glass', cn:'安全玻璃' },
+  { code:'7010', desc:'Carboys, bottles, jars, of glass', cn:'玻璃瓶罐' },
+  { code:'7013', desc:'Glassware for table, kitchen, toilet', cn:'玻璃器皿' },
+  { code:'7018', desc:'Glass beads, imitation pearls', cn:'玻璃珠、仿珍珠' },
+  { code:'7019', desc:'Glass fibres and articles thereof', cn:'玻璃纤维及其制品' },
+  // — Section XIV: Pearls, Precious Stones —
+  { code:'7101', desc:'Pearls, natural or cultured', cn:'珍珠' },
+  { code:'7102', desc:'Diamonds, whether or not worked', cn:'钻石' },
+  { code:'7103', desc:'Precious/semi-precious stones', cn:'宝石、半宝石' },
+  { code:'7113', desc:'Articles of jewellery', cn:'珠宝首饰' },
+  // — Section XV: Base Metals —
+  { code:'7201', desc:'Pig iron and spiegeleisen', cn:'生铁' },
+  { code:'7202', desc:'Ferro-alloys', cn:'铁合金' },
+  { code:'7204', desc:'Ferrous waste and scrap', cn:'废钢铁' },
+  { code:'7207', desc:'Semi-finished products of iron or steel', cn:'钢坯' },
+  { code:'7208', desc:'Hot-rolled steel, width >=600mm', cn:'热轧钢板(宽)' },
+  { code:'7209', desc:'Cold-rolled steel, width >=600mm', cn:'冷轧钢板(宽)' },
+  { code:'7210', desc:'Coated steel, width >=600mm', cn:'涂镀钢板(宽)' },
+  { code:'7213', desc:'Wire rod of iron or steel', cn:'线材' },
+  { code:'7214', desc:'Bars and rods of iron or steel', cn:'棒材' },
+  { code:'7216', desc:'Angles, shapes and sections of steel', cn:'型钢' },
+  { code:'7217', desc:'Wire of iron or steel', cn:'钢丝' },
+  { code:'7218', desc:'Stainless steel in ingots/semi-finished', cn:'不锈钢锭' },
+  { code:'7219', desc:'Stainless steel flat products, width >=600mm', cn:'不锈钢板(宽)' },
+  { code:'7220', desc:'Stainless steel flat products, width <600mm', cn:'不锈钢板(窄)' },
+  { code:'7223', desc:'Wire of stainless steel', cn:'不锈钢丝' },
+  { code:'7224', desc:'Other alloy steel in ingots/semi-finished', cn:'合金钢坯' },
+  { code:'7225', desc:'Other alloy steel flat products, width >=600mm', cn:'合金钢板(宽)' },
+  { code:'7226', desc:'Other alloy steel flat products, width <600mm', cn:'合金钢板(窄)' },
+  { code:'7301', desc:'Sheet piling of iron or steel', cn:'钢板桩' },
+  { code:'7302', desc:'Railway construction materials of iron/steel', cn:'铁路器材' },
+  { code:'7303', desc:' Tubes, pipes of cast iron', cn:'铸铁管' },
+  { code:'7304', desc:'Tubes, pipes of steel, seamless', cn:'无缝钢管' },
+  { code:'7305', desc:'Other tubes and pipes of steel, welded', cn:'焊管(大口径)' },
+  { code:'7306', desc:'Other tubes and pipes of steel', cn:'其他钢管' },
+  { code:'7307', desc:'Tube/pipe fittings of iron or steel', cn:'钢铁管件' },
+  { code:'7308', desc:'Structures of iron or steel', cn:'钢结构' },
+  { code:'7309', desc:'Reservoirs, tanks, vats of iron/steel', cn:'钢罐' },
+  { code:'7310', desc:'Casks, drums, boxes of iron/steel', cn:'钢桶、钢箱' },
+  { code:'7318', desc:'Screws, bolts, nuts of iron/steel', cn:'紧固件' },
+  { code:'7319', desc:'Sewing needles, knitting needles', cn:'针' },
+  { code:'7326', desc:'Other articles of iron or steel', cn:'其他钢铁制品' },
+  { code:'7401', desc:'Copper mattes; copper cement', cn:'铜锍' },
+  { code:'7403', desc:'Refined copper and copper alloys', cn:'精炼铜' },
+  { code:'7407', desc:'Copper bars, rods and profiles', cn:'铜条、杆' },
+  { code:'7408', desc:'Copper wire', cn:'铜丝' },
+  { code:'7409', desc:'Copper plates, sheets and strip', cn:'铜板' },
+  { code:'7410', desc:'Copper foil', cn:'铜箔' },
+  { code:'7411', desc:'Copper tubes and pipes', cn:'铜管' },
+  { code:'7412', desc:'Copper tube/pipe fittings', cn:'铜管件' },
+  { code:'7418', desc:'Table, kitchen, household articles of copper', cn:'铜制餐具' },
+  { code:'7501', desc:'Nickel mattes; nickel oxide sinters', cn:'镍锍' },
+  { code:'7502', desc:'Unwrought nickel', cn:'未锻轧镍' },
+  { code:'7507', desc:'Nickel bars, rods, profiles, tubes', cn:'镍条、镍管' },
+  { code:'7601', desc:'Unwrought aluminium', cn:'未锻轧铝' },
+  { code:'7603', desc:'Aluminium powders and flakes', cn:'铝粉' },
+  { code:'7604', desc:'Aluminium bars, rods and profiles', cn:'铝型材' },
+  { code:'7605', desc:'Aluminium wire', cn:'铝丝' },
+  { code:'7606', desc:'Aluminium plates, sheets and strip', cn:'铝板' },
+  { code:'7607', desc:'Aluminium foil', cn:'铝箔' },
+  { code:'7608', desc:'Aluminium tubes and pipes', cn:'铝管' },
+  { code:'7610', desc:'Aluminium structures and parts', cn:'铝结构' },
+  { code:'7616', desc:'Other articles of aluminium', cn:'其他铝制品' },
+  // — Section XVI: Machinery —
+  { code:'8401', desc:'Nuclear reactors; fuel elements', cn:'核反应堆' },
+  { code:'8402', desc:'Steam boilers', cn:'蒸汽锅炉' },
+  { code:'8403', desc:'Central heating boilers', cn:'供暖锅炉' },
+  { code:'8404', desc:'Auxiliary plant for boilers', cn:'锅炉辅助设备' },
+  { code:'8405', desc:'Producer gas/water gas generators', cn:'煤气发生炉' },
+  { code:'8406', desc:'Steam turbines', cn:'汽轮机' },
+  { code:'8407', desc:'Spark-ignition reciprocating piston engines', cn:'点燃式发动机' },
+  { code:'8408', desc:'Compression-ignition diesel engines', cn:'压燃式柴油机' },
+  { code:'8409', desc:'Parts for engines of 8407/8408', cn:'发动机零件' },
+  { code:'8410', desc:'Hydraulic turbines and water wheels', cn:'水轮机' },
+  { code:'8411', desc:'Turbojets, turbopropellers and gas turbines', cn:'燃气轮机' },
+  { code:'8412', desc:'Other engines and motors', cn:'其他发动机' },
+  { code:'8413', desc:'Pumps for liquids', cn:'液体泵' },
+  { code:'8414', desc:'Air/vacuum pumps, compressors', cn:'空气泵、压缩机' },
+  { code:'8415', desc:'Air conditioning machines', cn:'空调' },
+  { code:'8416', desc:'Furnace burners', cn:'燃烧器' },
+  { code:'8417', desc:'Industrial/lab furnaces and ovens', cn:'工业炉' },
+  { code:'8418', desc:'Refrigerators, freezers', cn:'冰箱、冷柜' },
+  { code:'8419', desc:'Machinery for temperature treatment', cn:'温度处理设备' },
+  { code:'8420', desc:'Calendering machines', cn:'压延机' },
+  { code:'8421', desc:'Centrifuges; filtering/purifying machinery', cn:'离心机、过滤机' },
+  { code:'8422', desc:'Dish washing machines; packing machinery', cn:'洗碗机、包装机' },
+  { code:'8423', desc:'Weighing machinery', cn:'称重设备' },
+  { code:'8424', desc:'Mechanical appliances for spraying', cn:'喷洒设备' },
+  { code:'8425', desc:'Pulley tackle and hoists', cn:'起重滑车' },
+  { code:'8426', desc:'Derricks; cranes', cn:'起重机' },
+  { code:'8427', desc:'Fork-lift trucks; works trucks', cn:'叉车' },
+  { code:'8428', desc:'Lifts, skip hoists, escalators', cn:'升降机、自动扶梯' },
+  { code:'8429', desc:'Self-propelled bulldozers, graders, excavators', cn:'推土机、挖掘机' },
+  { code:'8430', desc:'Other moving/grading/excavating machinery', cn:'其他土方机械' },
+  { code:'8431', desc:'Parts of derricks, cranes, excavators', cn:'工程机械零件' },
+  { code:'8432', desc:'Agricultural, horticultural, forestry machinery', cn:'农业机械' },
+  { code:'8433', desc:'Harvesting/threshing machinery', cn:'收割机' },
+  { code:'8434', desc:'Milking machines', cn:'挤奶机' },
+  { code:'8435', desc:'Presses, crushers for wine/fruit juice', cn:'榨汁机' },
+  { code:'8436', desc:'Other agricultural, horticultural, poultry machinery', cn:'其他农机' },
+  { code:'8437', desc:'Machines for cleaning/sorting grain', cn:'粮食分选机' },
+  { code:'8438', desc:'Machinery for food/drink industries', cn:'食品饮料机械' },
+  { code:'8439', desc:'Machinery for pulp/paper making', cn:'造纸机械' },
+  { code:'8440', desc:'Bookbinding machinery', cn:'装订机械' },
+  { code:'8441', desc:'Machinery for making paper containers', cn:'纸制品机械' },
+  { code:'8442', desc:'Machinery for type-setting/type-founding', cn:'排版机械' },
+  { code:'8443', desc:'Printing machinery', cn:'印刷机械' },
+  { code:'8444', desc:'Machinery for textile industry', cn:'纺织机械' },
+  { code:'8445', desc:'Machines for preparing textile fibres', cn:'纺纱前处理机械' },
+  { code:'8446', desc:'Weaving machines (looms)', cn:'织机' },
+  { code:'8447', desc:'Knitting machines', cn:'针织机' },
+  { code:'8448', desc:'Parts/accessories for textile machinery', cn:'纺织机械配件' },
+  { code:'8449', desc:'Machinery for manufacture of rope/cable', cn:'制绳机械' },
+  { code:'8450', desc:'Household/laundry washing machines', cn:'洗衣机' },
+  { code:'8451', desc:'Machinery for drying/finishing textiles', cn:'纺织整理机械' },
+  { code:'8452', desc:'Sewing machines', cn:'缝纫机' },
+  { code:'8453', desc:'Machinery for leather/hide working', cn:'皮革加工机械' },
+  { code:'8454', desc:'Converters, ladles, ingot moulds', cn:'冶金浇注设备' },
+  { code:'8455', desc:'Metal rolling mills', cn:'轧机' },
+  { code:'8456', desc:'Machine tools for working materials', cn:'机床' },
+  { code:'8457', desc:'Machining centres, unit construction machines', cn:'加工中心' },
+  { code:'8458', desc:'Lathes for removing metal', cn:'车床' },
+  { code:'8459', desc:'Drilling/milling/boring machines', cn:'钻床、铣床' },
+  { code:'8460', desc:'Grinding, honing, lapping machines', cn:'磨床' },
+  { code:'8461', desc:'Planing, shaping, slotting machines', cn:'刨床' },
+  { code:'8462', desc:'Metal forging, bending, shearing machines', cn:'锻压机械' },
+  { code:'8463', desc:'Metal wire drawing machines', cn:'拉拔机' },
+  { code:'8464', desc:'Machine tools for stone/ceramic', cn:'石材加工机床' },
+  { code:'8465', desc:'Machine tools for wood/cork', cn:'木工机床' },
+  { code:'8466', desc:'Parts/accessories for machine tools', cn:'机床配件' },
+  { code:'8467', desc:'Hand tools, pneumatic/hydraulic', cn:'手持动力工具' },
+  { code:'8468', desc:'Welding machines', cn:'电焊机' },
+  { code:'8469', desc:'Typewriters and word processors', cn:'打字机' },
+  { code:'8470', desc:'Calculating machines', cn:'计算机器' },
+  { code:'8471', desc:'Automatic data processing machines', cn:'计算机' },
+  { code:'8472', desc:'Other office machines', cn:'其他办公设备' },
+  { code:'8473', desc:'Parts/accessories for office machines', cn:'办公设备配件' },
+  { code:'8474', desc:'Machinery for sorting/screening/crushing', cn:'筛分破碎机械' },
+  { code:'8475', desc:'Machinery for glass working', cn:'玻璃加工机械' },
+  { code:'8476', desc:'Automatic beverage vending machines', cn:'自动售货机' },
+  { code:'8477', desc:'Machinery for rubber/plastics', cn:'橡胶塑料机械' },
+  { code:'8478', desc:'Machinery for tobacco preparation', cn:'烟草机械' },
+  { code:'8479', desc:'Machines with individual functions', cn:'其他独立功能机械' },
+  { code:'8480', desc:'Moulds for metal casting', cn:'模具' },
+  { code:'8481', desc:'Valves and similar articles', cn:'阀门' },
+  { code:'8482', desc:'Ball/roller bearings', cn:'轴承' },
+  { code:'8483', desc:'Transmission shafts, cranks, gears', cn:'传动件' },
+  { code:'8484', desc:'Gaskets and joints', cn:'密封垫' },
+  { code:'8485', desc:'Machinery parts, not electrical', cn:'机械零件' },
+  // — Section XVI: Electrical —
+  { code:'8501', desc:'Electric motors and generators', cn:'电动机、发电机' },
+  { code:'8502', desc:'Electric generating sets', cn:'发电机组' },
+  { code:'8503', desc:'Parts for electric motors/generators', cn:'电机零件' },
+  { code:'8504', desc:'Electrical transformers, converters', cn:'变压器' },
+  { code:'8505', desc:'Electromagnets; permanent magnets', cn:'电磁铁' },
+  { code:'8506', desc:'Primary cells and batteries', cn:'原电池' },
+  { code:'8507', desc:'Electric storage batteries', cn:'蓄电池' },
+  { code:'8508', desc:'Vacuum cleaners', cn:'吸尘器' },
+  { code:'8509', desc:'Electromechanical domestic appliances', cn:'家用电动器具' },
+  { code:'8510', desc:'Shavers, hair clippers', cn:'剃须刀' },
+  { code:'8511', desc:'Ignition equipment for engines', cn:'点火设备' },
+  { code:'8512', desc:'Lighting equipment for vehicles', cn:'车辆灯具' },
+  { code:'8513', desc:'Portable lighting equipment', cn:'便携灯具' },
+  { code:'8514', desc:'Industrial/lab furnaces, electric', cn:'电炉' },
+  { code:'8515', desc:'Electric soldering/welding machines', cn:'电焊设备' },
+  { code:'8516', desc:'Electric heating devices', cn:'电热器具' },
+  { code:'8517', desc:'Telephone sets; telecom equipment', cn:'通信设备' },
+  { code:'8518', desc:'Microphones, loudspeakers, amplifiers', cn:'音响设备' },
+  { code:'8519', desc:'Sound recording/reproducing apparatus', cn:'录音机' },
+  { code:'8520', desc:'Magnetic tape recorders', cn:'磁带录音机' },
+  { code:'8521', desc:'Video recording/reproducing apparatus', cn:'录像机' },
+  { code:'8522', desc:'Parts for sound/video equipment', cn:'影音设备零件' },
+  { code:'8523', desc:'Discs, tapes, solid-state storage', cn:'存储介质' },
+  { code:'8524', desc:'Television cameras, digital cameras', cn:'电视摄像机' },
+  { code:'8525', desc:'Transmission apparatus for radio/TV', cn:'广播电视发射设备' },
+  { code:'8526', desc:'Radar apparatus, radio navigational aid', cn:'雷达设备' },
+  { code:'8527', desc:'Reception apparatus for radio', cn:'收音机' },
+  { code:'8528', desc:'Monitors and projectors; TV receivers', cn:'显示器、电视机' },
+  { code:'8529', desc:'Parts for TV/radio equipment', cn:'电视广播设备零件' },
+  { code:'8530', desc:'Railway signalling equipment', cn:'铁路信号设备' },
+  { code:'8531', desc:'Electric sound/visual signalling', cn:'信号设备' },
+  { code:'8532', desc:'Electrical capacitors', cn:'电容器' },
+  { code:'8533', desc:'Electrical resistors', cn:'电阻器' },
+  { code:'8534', desc:'Printed circuits', cn:'印刷电路板' },
+  { code:'8535', desc:'Electrical apparatus for switching circuits', cn:'高压开关' },
+  { code:'8536', desc:'Electrical apparatus for <1000V switching', cn:'低压电器' },
+  { code:'8537', desc:'Electrical control panels', cn:'控制柜' },
+  { code:'8538', desc:'Parts for electrical apparatus', cn:'电器零件' },
+  { code:'8539', desc:'Electric lamps and bulbs', cn:'灯泡' },
+  { code:'8540', desc:'Thermionic/cold cathode tubes', cn:'电子管' },
+  { code:'8541', desc:'Diodes, transistors, semiconductors', cn:'半导体器件' },
+  { code:'8542', desc:'Electronic integrated circuits', cn:'集成电路' },
+  { code:'8543', desc:'Other electrical machines', cn:'其他电气设备' },
+  { code:'8544', desc:'Insulated wire, cables', cn:'电线电缆' },
+  // — Section XVII: Vehicles —
+  { code:'8701', desc:'Tractors', cn:'拖拉机' },
+  { code:'8702', desc:'Motor vehicles for transport of >=10 persons', cn:'客车' },
+  { code:'8703', desc:'Motor cars and vehicles for transport', cn:'轿车' },
+  { code:'8704', desc:'Motor vehicles for transport of goods', cn:'货车' },
+  { code:'8705', desc:'Special purpose motor vehicles', cn:'特种车辆' },
+  { code:'8706', desc:'Chassis for motor vehicles', cn:'汽车底盘' },
+  { code:'8707', desc:'Bodies for motor vehicles', cn:'汽车车身' },
+  { code:'8708', desc:'Parts/accessories for motor vehicles', cn:'汽车零部件' },
+  { code:'8709', desc:'Works trucks, self-propelled', cn:'工业车辆' },
+  { code:'8711', desc:'Motorcycles and cycles with motors', cn:'摩托车' },
+  { code:'8712', desc:'Bicycles and other cycles', cn:'自行车' },
+  { code:'8713', desc:'Carriages for disabled persons', cn:'残疾人车' },
+  { code:'8714', desc:'Parts/accessories for motorcycles/bicycles', cn:'摩托车自行车配件' },
+  { code:'8716', desc:'Trailers and semi-trailers', cn:'挂车' },
+  // — Section XVIII: Instruments —
+  { code:'8801', desc:'Balloons and dirigibles; gliders', cn:'气球、滑翔机' },
+  { code:'8802', desc:'Aircraft and spacecraft', cn:'航空器' },
+  { code:'8803', desc:'Parts for aircraft/spacecraft', cn:'航空器零件' },
+  { code:'8804', desc:'Parachutes and rotochutes', cn:'降落伞' },
+  { code:'8805', desc:'Aircraft launching gear', cn:'飞机弹射器' },
+  { code:'8901', desc:'Cruise ships, ferries, cargo ships', cn:'船舶' },
+  { code:'8902', desc:'Fishing vessels', cn:'渔船' },
+  { code:'8903', desc:'Yachts and other vessels for pleasure', cn:'游艇' },
+  { code:'8904', desc:'Tugs and pusher craft', cn:'拖船' },
+  { code:'8905', desc:'Light-vessels, dredgers', cn:'灯船、挖泥船' },
+  { code:'8906', desc:'Other vessels', cn:'其他船舶' },
+  { code:'8907', desc:'Floating structures', cn:'浮式结构' },
+  { code:'9001', desc:'Lenses, prisms, mirrors', cn:'光学元件' },
+  { code:'9002', desc:'Optical elements, mounted', cn:'光学组件' },
+  { code:'9003', desc:'Frames and mountings for spectacles', cn:'眼镜架' },
+  { code:'9004', desc:'Spectacles, goggles', cn:'眼镜' },
+  { code:'9005', desc:'Binoculars, monoculars, telescopes', cn:'望远镜' },
+  { code:'9006', desc:'Photographic cameras', cn:'照相机' },
+  { code:'9007', desc:'Cinematographic cameras', cn:'电影摄影机' },
+  { code:'9008', desc:'Image projectors', cn:'投影仪' },
+  { code:'9010', desc:'Apparatus for photo labs', cn:'照相设备' },
+  { code:'9011', desc:'Compound optical microscopes', cn:'显微镜' },
+  { code:'9012', desc:'Non-optical microscopes; diffraction apparatus', cn:'电子显微镜' },
+  { code:'9014', desc:'Direction finding compasses', cn:'罗盘' },
+  { code:'9015', desc:'Topographical/hydrographic instruments', cn:'测绘仪器' },
+  { code:'9016', desc:'Balances of sensitivity >=5cg', cn:'精密天平' },
+  { code:'9017', desc:'Drawing/instruments for math calculation', cn:'绘图仪器' },
+  { code:'9018', desc:'Medical, surgical, dental instruments', cn:'医疗器械' },
+  { code:'9019', desc:'Mechanotherapy appliances', cn:'按摩设备' },
+  { code:'9020', desc:'Breathing apparatus', cn:'呼吸设备' },
+  { code:'9021', desc:'Orthopaedic appliances; artificial organs', cn:'矫形器具' },
+  { code:'9022', desc:'Apparatus using X-rays', cn:'X光设备' },
+  { code:'9023', desc:'Instruments for physical/chemical analysis', cn:'理化分析仪器' },
+  { code:'9024', desc:'Hydraulic/pneumatic testing machines', cn:'材料试验机' },
+  { code:'9025', desc:'Thermometers, pyrometers, hygrometers', cn:'温度计、湿度计' },
+  { code:'9026', desc:'Instruments for measuring flow/pressure', cn:'流量压力仪表' },
+  { code:'9027', desc:'Instruments for physical/chemical analysis', cn:'理化分析仪器' },
+  { code:'9028', desc:'Meters for liquid/gas/electricity', cn:'计量仪表' },
+  { code:'9029', desc:'Revolution counters, speedometers', cn:'转速计、里程计' },
+  { code:'9030', desc:'Instruments for measuring electricity', cn:'电工仪表' },
+  { code:'9031', desc:'Measuring/checking instruments', cn:'测量检验仪器' },
+  { code:'9032', desc:'Automatic regulating instruments', cn:'自动调节仪' },
+  { code:'9033', desc:'Parts/accessories for instruments', cn:'仪器配件' },
+  // — Section XIX: Arms —
+  { code:'9301', desc:'Military weapons', cn:'军用武器' },
+  { code:'9302', desc:'Revolvers and pistols', cn:'手枪' },
+  { code:'9303', desc:'Sporting/shotguns/rifles', cn:'运动枪猎枪' },
+  // — Section XX: Miscellaneous —
+  { code:'9401', desc:'Seats and parts thereof', cn:'座椅' },
+  { code:'9402', desc:'Medical, surgical, dental furniture', cn:'医疗家具' },
+  { code:'9403', desc:'Other furniture and parts', cn:'其他家具' },
+  { code:'9404', desc:'Mattresses, bedding, cushions', cn:'床垫寝具' },
+  { code:'9405', desc:'Lamps and lighting fittings', cn:'灯具' },
+  { code:'9406', desc:'Prefabricated buildings', cn:'活动房屋' },
+  { code:'9501', desc:'Wheeled toys designed to be ridden', cn:'儿童骑乘玩具' },
+  { code:'9502', desc:'Dolls', cn:'玩偶' },
+  { code:'9503', desc:'Tricycles, scooters, toy puzzles', cn:'三轮车、玩具' },
+  { code:'9504', desc:'Video games, board games', cn:'电子游戏、棋类' },
+  { code:'9505', desc:'Festive, carnival, entertainment articles', cn:'节日用品' },
+  { code:'9506', desc:'Articles and equipment for sport', cn:'体育用品' },
+  { code:'9507', desc:'Fishing rods, tackle', cn:'钓鱼用品' },
+  { code:'9601', desc:'Worked ivory, bone, tortoise-shell', cn:'象牙骨制品' },
+  { code:'9602', desc:'Worked vegetable/mineral carving material', cn:'植物矿物雕刻品' },
+  { code:'9603', desc:'Brooms, brushes, mops', cn:'扫帚刷子' },
+  { code:'9604', desc:'Hand sieves and riddles', cn:'筛子' },
+  { code:'9606', desc:'Buttons, button moulds', cn:'纽扣' },
+  { code:'9607', desc:'Zip fasteners', cn:'拉链' },
+  { code:'9608', desc:'Ball point pens, fountain pens', cn:'钢笔圆珠笔' },
+  { code:'9610', desc:'Slates and boards, writing/drawing', cn:'石板写字板' },
+  { code:'9611', desc:'Date, seal stamps', cn:'印章' },
+  { code:'9612', desc:'Typewriter/printer ribbons', cn:'色带' },
+  { code:'9613', desc:'Cigarette lighters', cn:'打火机' },
+  { code:'9614', desc:'Tobacco pipes', cn:'烟斗' },
+  { code:'9616', desc:'Scent sprays, powder puffs', cn:'香水喷雾器' },
+  { code:'9617', desc:'Vacuum flasks', cn:'保温瓶' },
+  { code:'9618', desc:'Tailors dummies, lay figures', cn:'人体模型' },
+  // — Section XXI: Art —
+  { code:'9701', desc:'Paintings and drawings', cn:'绘画' },
+  { code:'9702', desc:'Original engravings, prints, lithographs', cn:'版画' },
+  { code:'9703', desc:'Original sculptures and statuary', cn:'雕塑' },
+  { code:'9704', desc:'Postage stamps, first-day covers', cn:'邮票' },
+  { code:'9705', desc:'Collections of zoological/botanical interest', cn:'收藏品' },
+  { code:'9706', desc:'Antiques of over 100 years old', cn:'古董' }
+];
+
+function searchHS() {
+  var query = (document.getElementById('hsSearch').value || '').trim().toLowerCase();
+  var container = document.getElementById('hsResults');
+
+  if (!query) { container.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:12px">输入编码或商品名称查询</div>'; return; }
+
+  var results = [];
+  HS_DB.forEach(function(item) {
+    if (item.code.indexOf(query) === 0 ||
+        item.code.indexOf(query) >= 0 ||
+        item.desc.toLowerCase().indexOf(query) >= 0 ||
+        item.cn.indexOf(query) >= 0) {
+      results.push(item);
+    }
+  });
+
+  if (results.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:#ef4444;font-size:12px;padding:12px">未找到匹配的HS编码</div>';
+    return;
+  }
+
+  var html = '';
+  results.forEach(function(item) {
+    html += '<div style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer" onclick="copyHSCODE(\'' + item.code + '\')" title="点击复制编码">' +
+      '<div style="font-weight:700;color:#1d4ed8;font-size:14px;font-family:Courier New,monospace">' + escapeHtml(item.code) + '</div>' +
+      '<div style="font-size:12px;color:#475569;margin-top:2px">' + escapeHtml(item.desc) + '</div>' +
+      '<div style="font-size:11px;color:#94a3b8;margin-top:2px">' + escapeHtml(item.cn) + '</div>' +
+      '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function copyHSCODE(code) {
+  // Try clipboard API, fallback to temp input
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(function() {
+      showToast('HS编码 ' + code + ' 已复制');
+    }).catch(function() { fallbackCopy(code); });
+  } else {
+    fallbackCopy(code);
+  }
+}
+
+function fallbackCopy(text) {
+  var input = document.createElement('input');
+  input.value = text;
+  document.body.appendChild(input);
+  input.select();
+  try { document.execCommand('copy'); showToast('HS编码 ' + text + ' 已复制'); }
+  catch(e) { showToast('复制失败，请手动复制: ' + text); }
+  document.body.removeChild(input);
+}
+
+// Init HS results display
+searchHS();
+
+// — Drag functionality —
+(function() {
+  var panel = document.getElementById('calcPanel');
+  var handle = document.getElementById('calcDragHandle');
+  var isDragging = false, startX, startY, startLeft, startTop;
+
+  handle.addEventListener('mousedown', function(e) {
+    isDragging = true;
+    var rect = panel.getBoundingClientRect();
+    startX = e.clientX; startY = e.clientY;
+    startLeft = rect.left; startTop = rect.top;
+    panel.style.right = 'auto'; panel.style.bottom = 'auto';
+    panel.style.left = startLeft + 'px'; panel.style.top = startTop + 'px';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    var newLeft = startLeft + (e.clientX - startX);
+    var newTop = startTop + (e.clientY - startY);
+    // Keep within viewport
+    newLeft = Math.max(0, Math.min(window.innerWidth - panel.offsetWidth, newLeft));
+    newTop = Math.max(0, Math.min(window.innerHeight - 40, newTop));
+    panel.style.left = newLeft + 'px';
+    panel.style.top = newTop + 'px';
+  });
+  document.addEventListener('mouseup', function() { isDragging = false; });
+
+  // Touch support
+  handle.addEventListener('touchstart', function(e) {
+    isDragging = true;
+    var rect = panel.getBoundingClientRect();
+    var touch = e.touches[0];
+    startX = touch.clientX; startY = touch.clientY;
+    startLeft = rect.left; startTop = rect.top;
+    panel.style.right = 'auto'; panel.style.bottom = 'auto';
+    panel.style.left = startLeft + 'px'; panel.style.top = startTop + 'px';
+  });
+  document.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    var touch = e.touches[0];
+    var newLeft = startLeft + (touch.clientX - startX);
+    var newTop = startTop + (touch.clientY - startY);
+    newLeft = Math.max(0, Math.min(window.innerWidth - panel.offsetWidth, newLeft));
+    newTop = Math.max(0, Math.min(window.innerHeight - 40, newTop));
+    panel.style.left = newLeft + 'px';
+    panel.style.top = newTop + 'px';
+  });
+  document.addEventListener('touchend', function() { isDragging = false; });
+})();
+
+// Keyboard support for calculator
+document.addEventListener('keydown', function(e) {
+  var panel = document.getElementById('calcPanel');
+  if (!panel.classList.contains('open')) return;
+  // Don't intercept if user is typing in an input/textarea
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  var key = e.key;
+  if (key >= '0' && key <= '9') { calcInput(key); e.preventDefault(); }
+  else if (key === '.' || key === '+' || key === '-' || key === '*' || key === '/') { calcInput(key); e.preventDefault(); }
+  else if (key === 'Enter' || key === '=') { calcInput('='); e.preventDefault(); }
+  else if (key === 'Escape') { calcInput('C'); e.preventDefault(); }
+  else if (key === 'Backspace') { calcInput('back'); e.preventDefault(); }
+});
 </script>
 </body>
 </html>
