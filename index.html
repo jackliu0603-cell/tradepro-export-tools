@@ -490,6 +490,104 @@ body {
 .form-textarea { resize: vertical; min-height: 60px; }
 .form-input.mono, .form-textarea.mono { font-family: var(--font-mono); }
 
+/* ========== History Dropdown (datalist) ========== */
+.form-input[history]:not(:placeholder-shown)::-webkit-calendar-picker-indicator,
+.form-textarea[history] {
+  /* keep native look; datalist arrow handled separately */
+}
+input[history]::-webkit-datalist-arrow { display: none; }
+
+/* History quick-fill button — appears on focus at the right side */
+.history-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 2;
+  line-height: 1;
+}
+.form-group:hover .history-toggle,
+input:focus + .history-toggle,
+.history-toggle:focus-within { opacity: 0.7; }
+.history-toggle:hover { opacity: 1; color: var(--gold); }
+
+/* Custom history dropdown panel */
+.history-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid var(--border-dark);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  z-index: 50;
+  display: none;
+}
+.history-panel.show { display: block; }
+.history-panel .history-item {
+  padding: 7px 12px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.history-panel .history-item:last-child { border-bottom: none; }
+.history-panel .history-item:hover {
+  background: var(--sidebar-hover);
+  color: var(--gold);
+}
+.history-panel .history-item .hist-val {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.history-panel .history-item .hist-del {
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+.history-panel .history-item:hover .hist-del { opacity: 0.6; }
+.history-panel .history-item .hist-del:hover { opacity: 1; color: var(--danger); }
+.history-panel .history-empty {
+  padding: 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.history-panel .history-clear-all {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  font-size: 11px;
+  color: var(--danger);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.history-panel .history-clear-all:hover { background: #fff5f5; }
+
 /* ========== Table ========== */
 .data-table-wrap {
   overflow-x: auto;
@@ -3343,6 +3441,8 @@ function init() {
   autofillCompany();
   // Auto-save on input change
   document.addEventListener('input', () => debouncedSave());
+  // Initialize history dropdowns for all text inputs
+  initHistoryFields();
   // Show user role badge
   renderUserBadge();
 }
@@ -3437,13 +3537,213 @@ function switchPage(page) {
 let saveTimer;
 function debouncedSave() {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveCurrentPage, 800);
+  saveTimer = setTimeout(function() {
+    saveCurrentPage();
+    saveHistoryFromActiveField();
+  }, 800);
 }
 
 function saveCurrentPage() {
   const page = App.currentPage;
   collectPageData(page);
   localStorage.setItem('tradepro_data', JSON.stringify(App.data));
+}
+
+// ==================== HISTORY DROPDOWN ====================
+var HISTORY_KEY = 'tradepro_history';
+var HISTORY_MAX = 20;
+
+function getHistoryData() {
+  try {
+    var raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+
+function saveHistoryData(data) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(data));
+}
+
+function addToHistory(fieldId, value) {
+  if (!fieldId || !value || !value.trim()) return;
+  value = value.trim();
+  var data = getHistoryData();
+  if (!data[fieldId]) data[fieldId] = [];
+  // Remove duplicate if exists
+  var idx = data[fieldId].indexOf(value);
+  if (idx > -1) data[fieldId].splice(idx, 1);
+  // Add to front
+  data[fieldId].unshift(value);
+  // Trim to max
+  if (data[fieldId].length > HISTORY_MAX) data[fieldId] = data[fieldId].slice(0, HISTORY_MAX);
+  saveHistoryData(data);
+}
+
+function saveHistoryFromActiveField() {
+  var el = document.activeElement;
+  if (!el) return;
+  if (!el.classList || (!el.classList.contains('form-input') && !el.classList.contains('form-textarea'))) return;
+  if (el.type === 'date' || el.type === 'number' || el.readOnly) return;
+  if (!el.id) return;
+  addToHistory(el.id, el.value);
+}
+
+function initHistoryFields() {
+  var selector = '.form-input:not([type=date]):not([type=number]):not([readonly]), .form-textarea';
+  document.querySelectorAll(selector).forEach(function(input) {
+    if (!input.id) return;
+    if (input.getAttribute('history-init')) return; // already init'd
+    input.setAttribute('history-init', '1');
+
+    // Wrap in relative container if not already
+    var wrapper = input.closest('.form-group');
+    if (!wrapper) return;
+    if (wrapper.style.position !== 'relative') {
+      wrapper.style.position = 'relative';
+    }
+
+    // Create history toggle button
+    var toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'history-toggle';
+    toggleBtn.innerHTML = '▾';
+    toggleBtn.title = '查看历史输入';
+    toggleBtn.tabIndex = -1;
+
+    // Position button: for form-group (flex column), place at right of input
+    toggleBtn.style.position = 'absolute';
+    toggleBtn.style.right = '6px';
+    toggleBtn.style.top = '';
+    toggleBtn.style.bottom = '7px';
+    toggleBtn.style.transform = '';
+
+    // Create dropdown panel
+    var panel = document.createElement('div');
+    panel.className = 'history-panel';
+
+    // Insert button and panel after input
+    input.parentNode.insertBefore(toggleBtn, input.nextSibling);
+    toggleBtn.parentNode.insertBefore(panel, toggleBtn.nextSibling);
+
+    // Show/hide panel
+    function togglePanel(show) {
+      if (show === undefined) show = !panel.classList.contains('show');
+      if (show) {
+        // Close all other panels first
+        document.querySelectorAll('.history-panel.show').forEach(function(p) {
+          if (p !== panel) p.classList.remove('show');
+        });
+        renderHistoryPanel(panel, input);
+        panel.classList.add('show');
+      } else {
+        panel.classList.remove('show');
+      }
+    }
+
+    toggleBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      togglePanel();
+    });
+
+    // Also show on focus (with slight delay to avoid flicker)
+    var focusTimer;
+    input.addEventListener('focus', function() {
+      clearTimeout(focusTimer);
+      focusTimer = setTimeout(function() {
+        // Only auto-show if there is history
+        var data = getHistoryData();
+        if (data[input.id] && data[input.id].length > 0) {
+          renderHistoryPanel(panel, input);
+          panel.classList.add('show');
+        }
+      }, 200);
+    });
+
+    input.addEventListener('blur', function() {
+      clearTimeout(focusTimer);
+      // Save to history on blur
+      addToHistory(input.id, input.value);
+      // Delay hide to allow click on panel item
+      setTimeout(function() {
+        panel.classList.remove('show');
+      }, 150);
+    });
+
+    // Handle keydown: ArrowDown to open
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown' && !panel.classList.contains('show')) {
+        e.preventDefault();
+        togglePanel(true);
+      }
+      if (e.key === 'Escape') {
+        panel.classList.remove('show');
+      }
+    });
+
+    // Click outside to close
+    document.addEventListener('click', function(e) {
+      if (!wrapper.contains(e.target)) {
+        panel.classList.remove('show');
+      }
+    });
+  });
+}
+
+function renderHistoryPanel(panel, input) {
+  var data = getHistoryData();
+  var items = data[input.id] || [];
+  var html = '';
+  if (items.length === 0) {
+    html = '<div class="history-empty">暂无历史记录</div>';
+  } else {
+    items.forEach(function(val, i) {
+      var escaped = val.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      html += '<div class="history-item" data-value="' + escaped + '">'
+        + '<span class="hist-val">' + escaped + '</span>'
+        + '<span class="hist-del" data-idx="' + i + '" title="删除">✕</span>'
+        + '</div>';
+    });
+    html += '<button class="history-clear-all" data-field="' + input.id + '">清除全部历史</button>';
+  }
+  panel.innerHTML = html;
+
+  // Bind click on items
+  panel.querySelectorAll('.history-item').forEach(function(item) {
+    item.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      if (e.target.classList.contains('hist-del')) {
+        // Delete this item
+        var idx = parseInt(e.target.dataset.idx);
+        var d = getHistoryData();
+        if (d[input.id]) {
+          d[input.id].splice(idx, 1);
+          saveHistoryData(d);
+        }
+        renderHistoryPanel(panel, input);
+        input.focus();
+      } else {
+        // Fill input with this value
+        input.value = item.dataset.value;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        panel.classList.remove('show');
+        input.focus();
+      }
+    });
+  });
+
+  // Bind clear all
+  var clearBtn = panel.querySelector('.history-clear-all');
+  if (clearBtn) {
+    clearBtn.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      var d = getHistoryData();
+      delete d[input.id];
+      saveHistoryData(d);
+      renderHistoryPanel(panel, input);
+      input.focus();
+    });
+  }
 }
 
 function collectPageData(page) {
