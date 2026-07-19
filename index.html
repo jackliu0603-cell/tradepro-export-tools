@@ -1656,11 +1656,18 @@ input:focus + .history-toggle,
 }
 .calc-tab:hover { background: #f8fafc; }
 .calc-body {
-  padding: 16px;
+  padding: 14px;
   max-height: calc(85vh - 110px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* Visible scrollbar so users know there's more content */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
 }
+.calc-body::-webkit-scrollbar { width: 6px; }
+.calc-body::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+.calc-body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.calc-body::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 .calc-tab-content { display: none; }
 .calc-tab-content.active { display: block; }
 
@@ -1720,53 +1727,53 @@ input:focus + .history-toggle,
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 .calc-fx-row select, .calc-fx-row input {
   flex: 1;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   background: #f8fafc;
   outline: none;
 }
 .calc-fx-row input:focus, .calc-fx-row select:focus { border-color: #3b82f6; }
 .calc-fx-label {
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
   font-weight: 500;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 .calc-fx-result {
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: #eff6ff;
   border-radius: 8px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #1d4ed8;
   text-align: center;
-  margin: 8px 0 16px;
+  margin: 6px 0 10px;
 }
 .calc-section-title {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #475569;
-  margin: 16px 0 8px;
-  padding-bottom: 6px;
+  margin: 10px 0 6px;
+  padding-bottom: 4px;
   border-bottom: 1px solid #e2e8f0;
 }
 .calc-cbm-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .calc-cbm-grid input {
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   text-align: center;
   background: #f8fafc;
   outline: none;
@@ -1776,19 +1783,19 @@ input:focus + .history-toggle,
   font-size: 11px;
   color: #94a3b8;
   text-align: center;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .calc-unit-price-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .calc-unit-price-grid input {
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   background: #f8fafc;
   outline: none;
 }
@@ -1804,7 +1811,8 @@ input:focus + .history-toggle,
     bottom: 80px !important;
   }
   .calc-body {
-    max-height: calc(90vh - 110px) !important;
+    max-height: calc(90vh - 130px) !important;
+    padding: 12px;
   }
 }
 
@@ -2245,8 +2253,8 @@ input:focus + .history-toggle,
   #hs-modal-results { max-height: 60vh !important; }
 
   /* — Combobox dropdown: wider for touch — */
-  .cb-dropdown { max-height: 200px; }
-  .cb-dropdown .cb-item { padding: 10px 12px; font-size: 14px; min-height: 36px; }
+  .cb-dropdown { max-height: 280px; }
+  .cb-dropdown .cb-item { padding: 12px 14px; font-size: 15px; min-height: 44px; }
 
   /* — Summary boxes: 2 columns — */
   .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -2371,26 +2379,27 @@ input[list]::-webkit-calendar-picker-indicator {
 /* Native datalist is clipped by parent overflow:hidden/auto containers.
    We build a fixed-position dropdown panel that bypasses all clipping. */
 .cb-dropdown {
-  position: fixed;
-  z-index: 999999;
+  position: fixed !important;
+  z-index: 2147483647 !important;
   background: #fff;
   border: 1px solid #c5c9d4;
-  border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  max-height: 240px;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+  max-height: 320px;
   overflow-y: auto;
-  min-width: 160px;
+  overflow-x: hidden;
+  min-width: 200px;
   font-size: 13px;
   -webkit-overflow-scrolling: touch;
 }
 .cb-dropdown .cb-item {
-  padding: 8px 12px;
+  padding: 10px 14px;
   cursor: pointer;
   color: var(--text-primary, #1a1f36);
   transition: background 0.1s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
 }
 .cb-dropdown .cb-item:hover,
 .cb-dropdown .cb-item.cb-active {
@@ -2413,11 +2422,11 @@ input[list]:focus { position: relative; z-index: 10; }
 </style>
 
 <script>
-/* ====== Custom Combobox Engine ====== */
-/* Replaces native datalist rendering with a fixed-position dropdown
-   that cannot be clipped by any parent overflow container. */
+/* ====== Custom Combobox Engine (v2) ====== */
+/* Portal pattern: dropdown appended to document.body with position:fixed.
+   Cannot be clipped by any parent overflow container. */
 (function() {
-  var CB_ZINDEX = 999999;
+  var CB_ZINDEX = 2147483647; /* max 32-bit int — always on top */
   var currentDropdown = null;
   var currentInput = null;
   var activeIndex = -1;
@@ -2428,52 +2437,76 @@ input[list]:focus { position: relative; z-index: 10; }
     var dl = document.getElementById(listId);
     if (!dl) return [];
     var opts = [];
+    var seen = {};
     dl.querySelectorAll('option').forEach(function(opt) {
-      opts.push(opt.value || opt.textContent);
+      var val = (opt.value || opt.textContent || '').trim();
+      if (val && !seen[val.toLowerCase()]) {
+        seen[val.toLowerCase()] = true;
+        opts.push(val);
+      }
     });
     return opts;
   }
 
   function positionDropdown(dropdown, input) {
     var rect = input.getBoundingClientRect();
+    var dropdownWidth = Math.max(rect.width, 200);
     dropdown.style.left = rect.left + 'px';
-    dropdown.style.top = (rect.bottom + 2) + 'px';
-    dropdown.style.minWidth = Math.max(rect.width, 160) + 'px';
-    // If not enough space below, show above
+    dropdown.style.top = (rect.bottom + 4) + 'px';
+    dropdown.style.width = dropdownWidth + 'px';
+    dropdown.style.minWidth = Math.max(rect.width, 200) + 'px';
+    /* If not enough space below, show above */
     var spaceBelow = window.innerHeight - rect.bottom;
-    if (spaceBelow < 250 && rect.top > 250) {
-      dropdown.style.top = (rect.top - 2) + 'px';
-      dropdown.style.maxHeight = Math.min(240, rect.top - 10) + 'px';
-      dropdown.style.borderRadius = '6px 6px 0 0';
+    var spaceAbove = rect.top;
+    if (spaceBelow < 280 && spaceAbove > 280) {
+      /* Show above */
+      dropdown.style.top = (rect.top - 4) + 'px';
+      dropdown.style.maxHeight = Math.min(320, spaceAbove - 10) + 'px';
+      dropdown.style.borderRadius = '8px 8px 8px 8px';
+      dropdown.style.transformOrigin = 'bottom';
     } else {
-      dropdown.style.maxHeight = Math.min(240, spaceBelow - 10) + 'px';
-      dropdown.style.borderRadius = '6px';
+      dropdown.style.maxHeight = Math.min(320, Math.max(spaceBelow - 10, 120)) + 'px';
+      dropdown.style.borderRadius = '8px';
+    }
+    /* Ensure dropdown doesn't overflow right edge */
+    var dropdownRect = dropdown.getBoundingClientRect();
+    if (dropdownRect.right > window.innerWidth - 8) {
+      var newLeft = window.innerWidth - dropdownRect.width - 8;
+      dropdown.style.left = Math.max(8, newLeft) + 'px';
     }
   }
 
-  function createDropdown(input) {
+  function createDropdown(input, forceShowAll) {
     closeDropdown();
     var options = getDatalistOptions(input);
+    if (options.length === 0) return;
+
     var query = (input.value || '').trim().toLowerCase();
 
-    // Filter options
-    var filtered = options.filter(function(val) {
-      if (!query) return true;
-      return val.toLowerCase().indexOf(query) >= 0 || query.indexOf(val.toLowerCase()) >= 0;
-    });
+    /* Filter options — but on focus (forceShowAll), show everything */
+    var filtered;
+    if (forceShowAll || !query) {
+      filtered = options.slice();
+    } else {
+      filtered = options.filter(function(val) {
+        var v = val.toLowerCase();
+        return v.indexOf(query) >= 0 || query.indexOf(v) >= 0;
+      });
+    }
 
-    // Don't show if only 0 or 1 exact match
+    /* Don't show if only 1 exact match (already selected) */
+    if (!forceShowAll && filtered.length === 1 && filtered[0].toLowerCase() === query) return;
     if (filtered.length === 0) return;
-    if (filtered.length === 1 && filtered[0].toLowerCase() === query) return;
 
     currentInput = input;
     activeIndex = -1;
 
     var dropdown = document.createElement('div');
     dropdown.className = 'cb-dropdown';
-    dropdown.style.zIndex = CB_ZINDEX;
+    dropdown.style.zIndex = String(CB_ZINDEX);
 
-    filtered.slice(0, 50).forEach(function(val, i) {
+    var items = [];
+    filtered.slice(0, 80).forEach(function(val, i) {
       var item = document.createElement('div');
       item.className = 'cb-item';
       item.textContent = val;
@@ -2486,20 +2519,21 @@ input[list]:focus { position: relative; z-index: 10; }
         closeDropdown();
       });
       dropdown.appendChild(item);
+      items.push(item);
     });
 
-    if (filtered.length > 50) {
+    if (filtered.length > 80) {
       var more = document.createElement('div');
       more.className = 'cb-empty';
-      more.textContent = '共 ' + filtered.length + ' 项，显示前 50 项';
+      more.textContent = '共 ' + filtered.length + ' 项，显示前 80 项';
       dropdown.appendChild(more);
     }
 
     document.body.appendChild(dropdown);
-    positionDropdown(dropdown, input);
     currentDropdown = dropdown;
+    positionDropdown(dropdown, input);
 
-    // Reposition on scroll/resize
+    /* Reposition on scroll/resize */
     window.addEventListener('scroll', repositionDropdown, true);
     window.addEventListener('resize', repositionDropdown);
   }
@@ -2559,19 +2593,24 @@ input[list]:focus { position: relative; z-index: 10; }
     });
   }
 
-  // Initialize on DOM ready
+  /* Initialize on DOM ready */
   function initCombobox() {
+    /* On focus: show ALL options (like native datalist) */
     document.addEventListener('focus', function(e) {
       var input = e.target;
       if (input.tagName === 'INPUT' && input.hasAttribute('list') && input.getAttribute('type') !== 'date' && input.getAttribute('type') !== 'number') {
-        createDropdown(input);
+        /* Delay slightly to ensure value is settled */
+        setTimeout(function() {
+          createDropdown(input, true);
+        }, 50);
       }
     }, true);
 
+    /* On input: filter options */
     document.addEventListener('input', function(e) {
       var input = e.target;
       if (input.tagName === 'INPUT' && input.hasAttribute('list') && input.getAttribute('type') !== 'date' && input.getAttribute('type') !== 'number') {
-        createDropdown(input);
+        createDropdown(input, false);
       }
     }, true);
 
@@ -2581,7 +2620,7 @@ input[list]:focus { position: relative; z-index: 10; }
       }
     }, true);
 
-    // Close dropdown when clicking outside
+    /* Close dropdown when clicking outside */
     document.addEventListener('mousedown', function(e) {
       if (currentDropdown && currentInput) {
         if (e.target !== currentDropdown && !currentDropdown.contains(e.target) && e.target !== currentInput) {
@@ -2590,13 +2629,13 @@ input[list]:focus { position: relative; z-index: 10; }
       }
     }, true);
 
-    // Close on blur (delayed to allow mousedown on items)
+    /* Close on blur (delayed to allow mousedown on items) */
     document.addEventListener('blur', function(e) {
       var input = e.target;
       if (input.tagName === 'INPUT' && input.hasAttribute('list')) {
         setTimeout(function() {
           if (currentInput === input) closeDropdown();
-        }, 150);
+        }, 200);
       }
     }, true);
   }
@@ -8704,7 +8743,7 @@ function animateSummaryValues(container) {
         <input type="number" id="cbmW" placeholder="宽" oninput="calcCBM()">
         <input type="number" id="cbmH" placeholder="高" oninput="calcCBM()">
       </div>
-      <input type="number" id="cbmQty" placeholder="箱数" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;background:#f8fafc;outline:none;margin-bottom:8px" oninput="calcCBM()">
+      <input type="number" id="cbmQty" placeholder="箱数" style="width:100%;padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#f8fafc;outline:none;margin-bottom:6px" oninput="calcCBM()">
       <div class="calc-fx-result" id="cbmResult">0.000 CBM</div>
 
       <!-- Unit Price × Qty = Amount -->
@@ -8718,7 +8757,7 @@ function animateSummaryValues(container) {
       <!-- FOB → CIF Estimate -->
       <div class="calc-section-title">🚢 FOB → CIF 估算</div>
       <div class="calc-fx-label">FOB 单价 (USD)</div>
-      <input type="number" id="fobPrice" placeholder="FOB Price" style="width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;background:#f8fafc;outline:none;margin-bottom:8px" oninput="calcCIF()">
+      <input type="number" id="fobPrice" placeholder="FOB Price" style="width:100%;padding:7px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;background:#f8fafc;outline:none;margin-bottom:6px" oninput="calcCIF()">
       <div class="calc-fx-label">运费 + 保险 (per unit)</div>
       <div class="calc-unit-price-grid">
         <input type="number" id="freightPer" placeholder="运费/unit" oninput="calcCIF()">
@@ -8753,10 +8792,10 @@ function animateSummaryValues(container) {
       <!-- HS Code Lookup -->
       <div class="calc-section-title">🏷️ HS 编码查询</div>
       <div class="calc-fx-row">
-        <input type="text" id="hsSearch" placeholder="输入编码或商品名称" oninput="searchHS()" style="flex:1">
-        <button class="calc-btn op" style="padding:8px 12px;font-size:13px;border-radius:8px" onclick="searchHS()">查询</button>
+        <input type="text" id="hsSearch" placeholder="输入编码或商品名称" oninput="searchHS()" style="flex:1;padding:7px 10px;font-size:13px">
+        <button class="calc-btn op" style="padding:7px 12px;font-size:13px;border-radius:8px" onclick="searchHS()">查询</button>
       </div>
-      <div id="hsResults" style="max-height:180px;overflow-y:auto;margin-top:8px"></div>
+      <div id="hsResults" style="max-height:300px;overflow-y:auto;margin-top:6px;-webkit-overflow-scrolling:touch"></div>
     </div>
   </div>
 </div>
@@ -10120,27 +10159,38 @@ function parseHSBianmaHTML(html) {
   rows.forEach(function(row) {
     var tds = row.querySelectorAll('td');
     if (tds.length >= 2) {
-      // Extract code: may be in <a> or plain text
+      /* Extract code: may be in <a> or plain text */
       var codeEl = tds[0].querySelector('a');
       var codeText = codeEl ? codeEl.textContent.trim() : tds[0].textContent.trim();
-      // Remove [过期] marker
-      codeText = codeText.replace(/\[过期\]/g, '').trim();
+      /* Remove [过期] marker from code text */
+      codeText = codeText.replace(/\[过期\]/g, '').replace(/\s+/g, ' ').trim();
       var isExpired = tds[0].textContent.indexOf('过期') >= 0;
 
-      // Extract product name (strip font tags, get text)
+      /* Extract product name (strip font tags, get text) */
       var nameText = tds[1].textContent.trim().replace(/\s+/g, ' ');
 
-      // Extract unit
+      /* Extract unit (tds[2]) */
       var unit = '';
       if (tds[2]) unit = tds[2].textContent.trim();
 
-      // Extract tax rate
+      /* Extract tax rate / export rebate (tds[3]) */
       var taxRate = '';
       if (tds[3]) taxRate = tds[3].textContent.trim();
 
-      // Extract link
+      /* Extract supervision conditions / 监管条件 (tds[4]) */
+      var supervision = '';
+      if (tds[4]) supervision = tds[4].textContent.trim();
+
+      /* Extract inspection / 检验检疫 (tds[5]) */
+      var inspection = '';
+      if (tds[5]) inspection = tds[5].textContent.trim();
+
+      /* Extract detail link (tds[6] — "更多信息" column) */
       var link = '';
-      if (codeEl) link = codeEl.getAttribute('href') || '';
+      var detailLinkEl = null;
+      if (tds[6]) detailLinkEl = tds[6].querySelector('a');
+      if (!detailLinkEl && codeEl) detailLinkEl = codeEl;
+      if (detailLinkEl) link = detailLinkEl.getAttribute('href') || '';
       if (link && !link.startsWith('http')) link = 'https://www.hsbianma.com' + link;
 
       if (codeText) {
@@ -10149,6 +10199,8 @@ function parseHSBianmaHTML(html) {
           name: nameText,
           unit: unit,
           taxRate: taxRate,
+          supervision: supervision,
+          inspection: inspection,
           expired: isExpired,
           link: link
         });
@@ -10171,6 +10223,8 @@ function searchHSLocal(query) {
           name: (item.cn || '') + ' ' + (item.desc || ''),
           unit: '',
           taxRate: '',
+          supervision: '',
+          inspection: '',
           expired: false,
           link: 'https://www.hsbianma.com/search?keywords=' + encodeURIComponent(item.code)
         });
@@ -10187,19 +10241,30 @@ function renderHSResults(results, container, query, isModal) {
   }
 
   var html = '';
-  var maxShow = isModal ? 100 : 30;
+  var maxShow = isModal ? 100 : 50;
   results.slice(0, maxShow).forEach(function(item) {
     var expiredStyle = item.expired ? 'opacity:0.5;' : '';
     var expiredBadge = item.expired ? '<span style="font-size:9px;background:#fee2e2;color:#ef4444;padding:1px 4px;border-radius:3px;margin-left:4px">过期</span>' : '';
     var copyFn = isModal ? 'copyHSModal' : 'copyHSCODE';
-    var extraInfo = '';
-    if (item.unit) extraInfo += '<span style="color:#64748b">单位:' + escapeHtml(item.unit) + '</span>';
-    if (item.taxRate) extraInfo += '<span style="color:#64748b;margin-left:8px">退税率:' + escapeHtml(item.taxRate) + '</span>';
 
-    html += '<div style="padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .15s;' + expiredStyle + '" onclick="' + copyFn + '(\'' + escapeHtml(item.code) + '\')" onmouseenter="this.style.background=\'#f0f7ff\'" onmouseleave="this.style.background=\'#fff\'" title="点击复制编码">' +
-      '<div style="font-weight:700;color:#1d4ed8;font-size:14px;font-family:Courier New,monospace">' + escapeHtml(item.code) + expiredBadge + '</div>' +
-      '<div style="font-size:12px;color:#475569;margin-top:2px">' + escapeHtml(item.name) + '</div>' +
-      (extraInfo ? '<div style="font-size:11px;color:#94a3b8;margin-top:2px">' + extraInfo + '</div>' : '') +
+    /* Build extra info badges */
+    var extraInfo = '';
+    if (item.unit) extraInfo += '<span style="display:inline-block;background:#f1f5f9;color:#475569;padding:2px 6px;border-radius:4px;font-size:11px;margin:2px 4px 2px 0">📐 单位: ' + escapeHtml(item.unit) + '</span>';
+    if (item.taxRate) extraInfo += '<span style="display:inline-block;background:#dcfce7;color:#16a34a;padding:2px 6px;border-radius:4px;font-size:11px;margin:2px 4px 2px 0">📉 退税率: ' + escapeHtml(item.taxRate) + '</span>';
+    if (item.supervision) extraInfo += '<span style="display:inline-block;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:4px;font-size:11px;margin:2px 4px 2px 0">📋 监管: ' + escapeHtml(item.supervision) + '</span>';
+    if (item.inspection) extraInfo += '<span style="display:inline-block;background:#fce7f3;color:#be185d;padding:2px 6px;border-radius:4px;font-size:11px;margin:2px 4px 2px 0">🔬 检验检疫: ' + escapeHtml(item.inspection) + '</span>';
+
+    /* Detail link — inline expandable */
+    var detailLink = '';
+    if (item.link) {
+      detailLink = '<button onclick="event.stopPropagation();loadHSDetail(\'' + escapeHtml(item.code) + '\',\'' + escapeHtml(item.link) + '\',this)" style="display:inline-block;color:#3b82f6;font-size:11px;padding:3px 8px;border:1px solid #bfdbfe;border-radius:4px;margin-top:4px;background:#fff;cursor:pointer" onmouseenter="this.style.background=\'#eff6ff\'" onmouseleave="this.style.background=\'#fff\'">展开详情 ▼</button>';
+    }
+
+    html += '<div style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:background .15s;' + expiredStyle + '" onclick="' + copyFn + '(\'' + escapeHtml(item.code) + '\')" onmouseenter="this.style.background=\'#f0f7ff\'" onmouseleave="this.style.background=\'#fff\'" title="点击复制编码">' +
+      '<div style="font-weight:700;color:#1d4ed8;font-size:15px;font-family:Courier New,monospace">' + escapeHtml(item.code) + expiredBadge + '</div>' +
+      '<div style="font-size:12px;color:#475569;margin-top:3px;line-height:1.4">' + escapeHtml(item.name) + '</div>' +
+      (extraInfo ? '<div style="margin-top:4px">' + extraInfo + '</div>' : '') +
+      (detailLink ? '<div style="margin-top:4px">' + detailLink + '</div>' : '') +
       '</div>';
   });
 
@@ -10207,7 +10272,7 @@ function renderHSResults(results, container, query, isModal) {
     html += '<div style="text-align:center;padding:8px"><a href="https://www.hsbianma.com/search?keywords=' + encodeURIComponent(query) + '" target="_blank" style="color:#3b82f6;font-size:11px">共 ' + results.length + ' 条结果，查看全部 →</a></div>';
   }
 
-  // Add link to full search on hsbianma.com
+  /* Add link to full search on hsbianma.com */
   html += '<div style="text-align:center;padding:4px"><a href="https://www.hsbianma.com/search?keywords=' + encodeURIComponent(query) + '" target="_blank" style="color:#94a3b8;font-size:10px">数据来源：www.hsbianma.com ↗</a></div>';
 
   container.innerHTML = html;
@@ -10232,6 +10297,147 @@ function fallbackCopy(text) {
   try { document.execCommand('copy'); showToast('HS编码 ' + text + ' 已复制'); }
   catch(e) { showToast('复制失败，请手动复制: ' + text); }
   document.body.removeChild(input);
+}
+
+/* ====== HS Code Detail Page Fetcher ====== */
+/* Fetches the detail page from hsbianma.com and extracts all tax rates */
+var hsDetailCache = {};
+
+function loadHSDetail(code, link, btnEl) {
+  if (!link) return;
+  var detailContainerId = 'hs-detail-' + code.replace(/[^a-zA-Z0-9]/g, '');
+  var detailContainer = document.getElementById(detailContainerId);
+
+  /* Toggle: if already loaded, toggle visibility */
+  if (detailContainer) {
+    if (detailContainer.style.display === 'none') {
+      detailContainer.style.display = 'block';
+      btnEl.textContent = '收起详情 ▲';
+    } else {
+      detailContainer.style.display = 'none';
+      btnEl.textContent = '展开详情 ▼';
+    }
+    return;
+  }
+
+  /* Check cache */
+  if (hsDetailCache[code]) {
+    renderHSDetail(code, hsDetailCache[code], btnEl);
+    return;
+  }
+
+  /* Show loading */
+  btnEl.textContent = '加载中...';
+  btnEl.style.pointerEvents = 'none';
+
+  var proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(link);
+
+  fetch(proxyUrl, { method: 'GET', signal: AbortSignal.timeout ? AbortSignal.timeout(12000) : undefined })
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      var detail = parseHSDetailHTML(html);
+      if (detail) {
+        hsDetailCache[code] = detail;
+        renderHSDetail(code, detail, btnEl);
+      } else {
+        btnEl.textContent = '查看详情 →';
+        btnEl.style.pointerEvents = 'auto';
+        /* Fallback: open link in new tab */
+        window.open(link, '_blank');
+      }
+    })
+    .catch(function(err) {
+      btnEl.textContent = '查看详情 →';
+      btnEl.style.pointerEvents = 'auto';
+      /* Fallback: open link in new tab */
+      window.open(link, '_blank');
+    });
+}
+
+function parseHSDetailHTML(html) {
+  var parser = new DOMParser();
+  var doc = parser.parseFromString(html, 'text/html');
+
+  /* Find the basic info table and tax rate table */
+  var tables = doc.querySelectorAll('table.cbox-table, .cbox table, table');
+  var detail = {};
+
+  /* Look for td-label / td-txt pairs */
+  var labels = doc.querySelectorAll('.td-label');
+  var txts = doc.querySelectorAll('.td-txt');
+  if (labels.length > 0 && txts.length > 0 && labels.length === txts.length) {
+    for (var i = 0; i < labels.length; i++) {
+      var label = labels[i].textContent.trim();
+      var value = txts[i].textContent.trim();
+      if (label && value) {
+        detail[label] = value;
+      }
+    }
+  }
+
+  /* Also try to extract申报要素 (declaration elements) */
+  var declElements = [];
+  var declRows = doc.querySelectorAll('.cbox table tr');
+  declRows.forEach(function(row) {
+    var tds = row.querySelectorAll('td');
+    if (tds.length >= 2) {
+      var num = tds[0].textContent.trim();
+      var desc = tds[1].textContent.trim();
+      if (num && desc && /^\d+$/.test(num)) {
+        declElements.push({ num: num, desc: desc });
+      }
+    }
+  });
+
+  if (declElements.length > 0) {
+    detail['申报要素'] = declElements;
+  }
+
+  /* Return only if we found some data */
+  if (Object.keys(detail).length > 0) {
+    return detail;
+  }
+  return null;
+}
+
+function renderHSDetail(code, detail, btnEl) {
+  /* Find the parent card and append detail container */
+  var card = btnEl.closest('div[style*="border:1px solid #e2e8f0"]');
+  if (!card) return;
+
+  var detailContainerId = 'hs-detail-' + code.replace(/[^a-zA-Z0-9]/g, '');
+  var detailContainer = document.createElement('div');
+  detailContainer.id = detailContainerId;
+  detailContainer.style.cssText = 'margin-top:8px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;font-size:11px';
+
+  var html = '<div style="font-weight:600;color:#1e293b;margin-bottom:6px;font-size:12px">📊 完整税率信息</div>';
+
+  /* Display all key-value pairs */
+  var fields = ['商品编码', '商品名称', '商品描述', '编码状态', '更新时间', '计量单位', '出口税率', '出口退税税率', '出口暂定税率', '增值税率', '最惠国税率', '进口暂定税率', '进口普通税率', '消费税率'];
+  fields.forEach(function(field) {
+    if (detail[field]) {
+      var color = '#475569';
+      if (field.indexOf('税率') >= 0 || field.indexOf('退税') >= 0) color = '#1d4ed8';
+      if (field === '编码状态') color = detail[field] === '正常' ? '#16a34a' : '#dc2626';
+      html += '<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dashed #e2e8f0">' +
+        '<span style="color:#64748b;flex-shrink:0">' + escapeHtml(field) + '</span>' +
+        '<span style="color:' + color + ';font-weight:500;text-align:right;margin-left:8px">' + escapeHtml(detail[field]) + '</span>' +
+        '</div>';
+    }
+  });
+
+  /* Display declaration elements if present */
+  if (detail['申报要素'] && detail['申报要素'].length > 0) {
+    html += '<div style="font-weight:600;color:#1e293b;margin:8px 0 4px;font-size:12px">📝 申报要素</div>';
+    detail['申报要素'].forEach(function(elem) {
+      html += '<div style="padding:2px 0;color:#475569"><span style="color:#94a3b8;margin-right:4px">' + escapeHtml(elem.num) + '.</span>' + escapeHtml(elem.desc) + '</div>';
+    });
+  }
+
+  detailContainer.innerHTML = html;
+  card.appendChild(detailContainer);
+  btnEl.textContent = '收起详情 ▲';
+  btnEl.style.pointerEvents = 'auto';
 }
 
 // Init HS results display
