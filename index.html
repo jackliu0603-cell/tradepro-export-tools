@@ -1610,6 +1610,8 @@ input:focus + .history-toggle,
   overflow: hidden;
   display: none;
   flex-direction: column;
+  /* Zoom support */
+  transform-origin: bottom right;
 }
 .calc-panel.open { display: flex; }
 .calc-panel-header {
@@ -1634,6 +1636,58 @@ input:focus + .history-toggle,
   cursor: pointer;
   padding: 0 4px;
   line-height: 1;
+}
+.calc-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  margin-right: 8px;
+}
+.calc-zoom-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.15s;
+}
+.calc-zoom-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+.calc-zoom-reset {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  font-size: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-left: 4px;
+  transition: background 0.15s;
+}
+.calc-zoom-reset:hover {
+  background: rgba(255,255,255,0.25);
+}
+.calc-zoom-level {
+  font-size: 11px;
+  color: rgba(255,255,255,0.8);
+  min-width: 32px;
+  text-align: center;
+  user-select: none;
 }
 .calc-tabs {
   display: flex;
@@ -2244,7 +2298,11 @@ input:focus + .history-toggle,
   }
   .calc-body { max-height: calc(88vh - 120px) !important; padding: 10px; }
   .calc-tab { padding: 8px 4px; font-size: 12px; }
-  .calc-panel-header { padding: 10px 12px; }
+  .calc-panel-header { padding: 10px 12px; flex-wrap: wrap; }
+  .calc-zoom-controls { gap: 3px; }
+  .calc-zoom-btn { width: 22px; height: 22px; font-size: 13px; }
+  .calc-zoom-reset { width: 22px; height: 22px; font-size: 11px; }
+  .calc-zoom-level { font-size: 10px; min-width: 28px; }
   .calc-panel-title { font-size: 13px; }
 
   /* — HS modal: full width — */
@@ -2364,15 +2422,19 @@ input:focus + .history-toggle,
 </script>
 
 <style>
-/* Combobox style for input[list] — looks like select but allows custom input */
-input[list] {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+/* Combobox style for input[data-list] — looks like select but allows custom input */
+input[data-list] {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
-  padding-right: 30px !important;
+  padding-right: 28px;
+  cursor: text;
+}
+input[data-list]:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233b82f6' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
 }
 /* Hide the native calendar picker arrow (Chrome/Safari) */
-input[list]::-webkit-calendar-picker-indicator {
+input[data-list]::-webkit-calendar-picker-indicator {
   display: none !important;
 }
 /* === Custom Combobox Dropdown (replaces native datalist rendering) === */
@@ -2418,7 +2480,7 @@ input[list]::-webkit-calendar-picker-indicator {
 .card-body { overflow: visible !important; }
 .content-area { overflow-y: auto; overflow-x: visible; }
 .td-input { overflow: visible; }
-input[list]:focus { position: relative; z-index: 10; }
+input[data-list]:focus { position: relative; z-index: 10; }
 </style>
 
 <script>
@@ -2432,7 +2494,7 @@ input[list]:focus { position: relative; z-index: 10; }
   var activeIndex = -1;
 
   function getDatalistOptions(input) {
-    var listId = input.getAttribute('list');
+    var listId = input.getAttribute('data-list');
     if (!listId) return [];
     var dl = document.getElementById(listId);
     if (!dl) return [];
@@ -2598,7 +2660,7 @@ input[list]:focus { position: relative; z-index: 10; }
     /* On focus: show ALL options (like native datalist) */
     document.addEventListener('focus', function(e) {
       var input = e.target;
-      if (input.tagName === 'INPUT' && input.hasAttribute('list') && input.getAttribute('type') !== 'date' && input.getAttribute('type') !== 'number') {
+      if (input.tagName === 'INPUT' && input.hasAttribute('data-list') && input.getAttribute('type') !== 'date' && input.getAttribute('type') !== 'number') {
         /* Delay slightly to ensure value is settled */
         setTimeout(function() {
           createDropdown(input, true);
@@ -2609,7 +2671,7 @@ input[list]:focus { position: relative; z-index: 10; }
     /* On input: filter options */
     document.addEventListener('input', function(e) {
       var input = e.target;
-      if (input.tagName === 'INPUT' && input.hasAttribute('list') && input.getAttribute('type') !== 'date' && input.getAttribute('type') !== 'number') {
+      if (input.tagName === 'INPUT' && input.hasAttribute('data-list') && input.getAttribute('type') !== 'date' && input.getAttribute('type') !== 'number') {
         createDropdown(input, false);
       }
     }, true);
@@ -2632,7 +2694,7 @@ input[list]:focus { position: relative; z-index: 10; }
     /* Close on blur (delayed to allow mousedown on items) */
     document.addEventListener('blur', function(e) {
       var input = e.target;
-      if (input.tagName === 'INPUT' && input.hasAttribute('list')) {
+      if (input.tagName === 'INPUT' && input.hasAttribute('data-list')) {
         setTimeout(function() {
           if (currentInput === input) closeDropdown();
         }, 200);
@@ -2792,7 +2854,7 @@ input[list]:focus { position: relative; z-index: 10; }
           <div class="form-group"><label class="form-label">发票日期</label><input type="date" class="form-input" id="pi-date"></div>
           <div class="form-group"><label class="form-label">有效期至</label><input type="date" class="form-input" id="pi-valid"></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <input class="form-input" list="dl-pi-terms" id="pi-terms">
+            <input class="form-input" data-list="dl-pi-terms" id="pi-terms">
             <datalist id="dl-pi-terms">
       <option value="FOB">FOB</option>
       <option value="CFR">CFR</option>
@@ -2806,7 +2868,7 @@ input[list]:focus { position: relative; z-index: 10; }
           <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="pi-from" placeholder="Shanghai"></div>
           <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="pi-to" placeholder="Hamburg"></div>
           <div class="form-group"><label class="form-label">付款方式</label>
-            <input class="form-input" list="dl-pi-payment" id="pi-payment">
+            <input class="form-input" data-list="dl-pi-payment" id="pi-payment">
             <datalist id="dl-pi-payment">
       <option value="T/T 30% deposit, 70% before shipment">T/T 30% deposit, 70% before shipment</option>
       <option value="T/T 100% in advance">T/T 100% in advance</option>
@@ -2818,7 +2880,7 @@ input[list]:focus { position: relative; z-index: 10; }
           </div>
           <div class="form-group"><label class="form-label">交货期</label><input class="form-input" id="pi-delivery" placeholder="Within 30 days after deposit"></div>
           <div class="form-group"><label class="form-label">货币</label>
-            <input class="form-input" list="dl-pi-currency" id="pi-currency">
+            <input class="form-input" data-list="dl-pi-currency" id="pi-currency">
             <datalist id="dl-pi-currency">
       <option value="USD">USD</option>
       <option value="EUR">EUR</option>
@@ -2927,7 +2989,7 @@ input[list]:focus { position: relative; z-index: 10; }
           <div class="form-group"><label class="form-label">签订日期</label><input type="date" class="form-input" id="sc-date"></div>
           <div class="form-group"><label class="form-label">签订地点</label><input class="form-input" id="sc-place" placeholder="Shanghai, China"></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <input class="form-input" list="dl-sc-terms" id="sc-terms">
+            <input class="form-input" data-list="dl-sc-terms" id="sc-terms">
             <datalist id="dl-sc-terms">
       <option value="FOB">FOB</option>
       <option value="CFR">CFR</option>
@@ -2941,7 +3003,7 @@ input[list]:focus { position: relative; z-index: 10; }
           <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="sc-from" placeholder="Shanghai"></div>
           <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="sc-to" placeholder="Hamburg"></div>
           <div class="form-group"><label class="form-label">付款方式</label>
-            <input class="form-input" list="dl-sc-payment" id="sc-payment">
+            <input class="form-input" data-list="dl-sc-payment" id="sc-payment">
             <datalist id="dl-sc-payment">
       <option value="T/T 30% deposit, 70% before shipment">T/T 30% deposit, 70% before shipment</option>
       <option value="T/T 100% in advance">T/T 100% in advance</option>
@@ -2953,7 +3015,7 @@ input[list]:focus { position: relative; z-index: 10; }
           </div>
           <div class="form-group"><label class="form-label">交货期</label><input class="form-input" id="sc-delivery" placeholder="Within 30 days after deposit"></div>
           <div class="form-group"><label class="form-label">货币</label>
-            <input class="form-input" list="dl-sc-currency" id="sc-currency">
+            <input class="form-input" data-list="dl-sc-currency" id="sc-currency">
             <datalist id="dl-sc-currency">
       <option value="USD">USD</option>
       <option value="EUR">EUR</option>
@@ -3088,7 +3150,7 @@ input[list]:focus { position: relative; z-index: 10; }
           <div class="form-group"><label class="form-label">合同号</label><input class="form-input mono" id="ci-contract" placeholder="SC-2026-001"></div>
           <div class="form-group"><label class="form-label">信用证号</label><input class="form-input mono" id="ci-lc" placeholder="L/C No."></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <input class="form-input" list="dl-ci-terms" id="ci-terms">
+            <input class="form-input" data-list="dl-ci-terms" id="ci-terms">
             <datalist id="dl-ci-terms">
       <option value="FOB">FOB</option>
       <option value="CFR">CFR</option>
@@ -3102,7 +3164,7 @@ input[list]:focus { position: relative; z-index: 10; }
           <div class="form-group"><label class="form-label">起运港</label><input class="form-input" id="ci-from"></div>
           <div class="form-group"><label class="form-label">目的港</label><input class="form-input" id="ci-to"></div>
           <div class="form-group"><label class="form-label">货币</label>
-            <input class="form-input" list="dl-ci-currency" id="ci-currency">
+            <input class="form-input" data-list="dl-ci-currency" id="ci-currency">
             <datalist id="dl-ci-currency">
       <option value="USD">USD</option>
       <option value="EUR">EUR</option>
@@ -3114,7 +3176,7 @@ input[list]:focus { position: relative; z-index: 10; }
           </div>
           <div class="form-group"><label class="form-label">原产国</label><input class="form-input" id="ci-origin" placeholder="China"></div>
           <div class="form-group"><label class="form-label">运输方式</label>
-            <input class="form-input" list="dl-ci-transport" id="ci-transport">
+            <input class="form-input" data-list="dl-ci-transport" id="ci-transport">
             <datalist id="dl-ci-transport">
       <option value="By Sea">By Sea</option>
       <option value="By Air">By Air</option>
@@ -3228,7 +3290,7 @@ input[list]:focus { position: relative; z-index: 10; }
           <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="pl-date"></div>
           <div class="form-group"><label class="form-label">发票号</label><input class="form-input mono" id="pl-inv-no" placeholder="Reference Invoice No."></div>
           <div class="form-group"><label class="form-label">贸易条款</label>
-            <input class="form-input" list="dl-pl-terms" id="pl-terms">
+            <input class="form-input" data-list="dl-pl-terms" id="pl-terms">
             <datalist id="dl-pl-terms">
       <option value="FOB">FOB</option>
       <option value="CFR">CFR</option>
@@ -4086,7 +4148,7 @@ input[list]:focus { position: relative; z-index: 10; }
             </div>
             <div class="form-group">
               <label class="form-label">币种</label>
-              <input class="form-input" list="dl-ic-currency" id="ic-currency">
+              <input class="form-input" data-list="dl-ic-currency" id="ic-currency">
             <datalist id="dl-ic-currency">
       <option value="USD">USD</option>
       <option value="EUR">EUR</option>
@@ -4976,7 +5038,7 @@ function addRow(docType, data) {
       }
     } else if (f.type === 'select') {
       const opts = f.options.map(o => `<option value="${o}">`).join('');
-      tr.innerHTML += `<td class="td-input"><input type="text" list="dl-row-unit" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}"></td>`;
+      tr.innerHTML += `<td class="td-input"><input type="text" data-list="dl-row-unit" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}"></td>`;
     } else {
       tr.innerHTML += `<td class="td-input"><input type="text" placeholder="${f.placeholder}" style="${f.style||''}" ${f.cls?'class="'+f.cls+'"':''} value="${data?(data[f.name]||''):''}"></td>`;
     }
@@ -7462,7 +7524,7 @@ function addLibProduct(data) {
     ${imgCellHtml}
     <td class="td-input"><input type="text" placeholder="Product name" value="${data?escapeHtml(data.name):''}"></td>
     <td class="td-input"><input type="text" placeholder="Spec" value="${data?escapeHtml(data.spec):''}"></td>
-    <td class="td-input"><input type="text" list="dl-row-unit" placeholder="-" value="${data?(data.unit||''):''}"></td>
+    <td class="td-input"><input type="text" data-list="dl-row-unit" placeholder="-" value="${data?(data.unit||''):''}"></td>
     <td class="td-input"><input type="text" placeholder="0.00" class="mono" style="text-align:right" value="${data?escapeHtml(data.price):''}"></td>
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?escapeHtml(data.nw):''}"></td>
     <td class="td-input"><input type="number" placeholder="0" class="mono" style="text-align:right" value="${data?escapeHtml(data.gw):''}"></td>
@@ -8697,6 +8759,12 @@ function animateSummaryValues(container) {
 <div class="calc-panel no-print" id="calcPanel">
   <div class="calc-panel-header" id="calcDragHandle">
     <span class="calc-panel-title">🧮 计算器</span>
+    <div class="calc-zoom-controls">
+      <button class="calc-zoom-btn" onclick="adjustCalcZoom(-0.1)" title="缩小">−</button>
+      <span class="calc-zoom-level" id="calcZoomLevel">100%</span>
+      <button class="calc-zoom-btn" onclick="adjustCalcZoom(0.1)" title="放大">+</button>
+      <button class="calc-zoom-reset" onclick="resetCalcZoom()" title="重置">↺</button>
+    </div>
     <button class="calc-panel-close" onclick="toggleCalcPanel()">✕</button>
   </div>
   <div class="calc-tabs">
@@ -8806,6 +8874,33 @@ var calcState = { display: '0', prev: null, op: null, waiting: false, memory: 0,
 function toggleCalcPanel() {
   var panel = document.getElementById('calcPanel');
   panel.classList.toggle('open');
+}
+
+/* Calculator zoom controls */
+var calcZoomLevel = 1.0;
+function adjustCalcZoom(delta) {
+  calcZoomLevel = Math.max(0.5, Math.min(1.5, calcZoomLevel + delta));
+  applyCalcZoom();
+}
+function resetCalcZoom() {
+  calcZoomLevel = 1.0;
+  applyCalcZoom();
+}
+function applyCalcZoom() {
+  var panel = document.getElementById('calcPanel');
+  if (!panel) return;
+  panel.style.transform = 'scale(' + calcZoomLevel + ')';
+  var label = document.getElementById('calcZoomLevel');
+  if (label) {
+    label.textContent = Math.round(calcZoomLevel * 100) + '%';
+  }
+  /* Adjust width to compensate for scale, keeping the panel within viewport */
+  if (calcZoomLevel > 1) {
+    var baseWidth = window.innerWidth <= 600 ? (window.innerWidth - 24) : 360;
+    panel.style.width = Math.round(baseWidth / calcZoomLevel) + 'px';
+  } else {
+    panel.style.width = '';
+  }
 }
 
 function switchCalcTab(tab, el) {
@@ -10491,6 +10586,20 @@ searchHS();
     panel.style.top = newTop + 'px';
   });
   document.addEventListener('touchend', function() { isDragging = false; });
+})();
+
+// Mouse wheel zoom for calculator panel (Ctrl+Wheel over panel header)
+(function() {
+  var panel = document.getElementById('calcPanel');
+  var header = document.getElementById('calcDragHandle');
+  if (!panel || !header) return;
+  header.addEventListener('wheel', function(e) {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      var delta = e.deltaY > 0 ? -0.05 : 0.05;
+      adjustCalcZoom(delta);
+    }
+  }, { passive: false });
 })();
 
 // Keyboard support for calculator
