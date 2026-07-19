@@ -2589,6 +2589,158 @@ input:focus + .history-toggle,
   * { -webkit-tap-highlight-color: rgba(201,162,39,0.15); }
   input, select, textarea { -webkit-tap-highlight-color: transparent; }
 }
+
+/* ========== History Page ========== */
+.history-list-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+}
+.history-list-item:last-child { border-bottom: none; }
+.history-list-item:hover { background-color: #f8fafc; }
+.history-item-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.history-item-info {
+  flex: 1;
+  min-width: 0;
+}
+.history-item-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.history-item-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.history-item-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ========== Shimmer Loading ========== */
+.shimmer {
+  background: linear-gradient(90deg, #f0f2f7 25%, #e2e5ec 50%, #f0f2f7 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ========== Split view transitions ========== */
+.split-view {
+  transition: all 0.3s ease;
+}
+.split-edit-pane, .split-preview-pane {
+  transition: flex 0.3s ease, opacity 0.3s ease;
+}
+
+/* ========== Toast animation ========== */
+.toast {
+  animation: toastSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes toastSlideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ========== Page content transitions ========== */
+.page-content {
+  animation: pageEnter 0.3s ease-out;
+}
+
+/* ========== Button micro-interactions ========== */
+.btn {
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(59,130,246,0.25);
+}
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ========== Card hover effects ========== */
+.card {
+  transition: all 0.25s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.card:active {
+  transform: translateY(0);
+}
+
+/* ========== Input focus glow ========== */
+.form-input,
+.form-select,
+.form-textarea {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* ========== Table row hover ========== */
+.data-table tr {
+  transition: background-color 0.15s ease;
+}
+.data-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+/* ========== Sidebar nav item enhanced hover ========== */
+.nav-item {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-blue);
+  transform: scaleY(0);
+  transition: transform 0.2s;
+}
+.nav-item:hover::before {
+  transform: scaleY(1);
+}
+.nav-item:hover {
+  background: rgba(45,74,138,0.06);
+  padding-left: 18px;
+}
+
+/* ========== Card stagger animation ========== */
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.2s; }
+.card:nth-child(5) { animation-delay: 0.25s; }
+.card:nth-child(6) { animation-delay: 0.3s; }
+
 </style>
 <script>
 // Async multi-CDN loader for Three.js (China-friendly first)
@@ -2960,6 +3112,11 @@ input[data-list]:focus { position: relative; z-index: 10; }
     <div class="nav-item" data-page="spec">
       <span class="nav-icon">📐</span>
       <span>产品规格书</span>
+    </div>
+    <div class="nav-section-label">历史记录</div>
+    <div class="nav-item" data-page="history">
+      <span class="nav-icon">📥</span>
+      <span>预览下载记录</span>
     </div>
     <div class="nav-section-label">计算工具</div>
     <div class="nav-item" data-page="weight">
@@ -4309,6 +4466,30 @@ input[data-list]:focus { position: relative; z-index: 10; }
   </div>
 </div>
 
+<!-- ===================== PAGE: HISTORY ===================== -->
+<div class="page" id="page-history">
+  <div class="page-header">
+    <div>
+      <div class="page-title">单据历史记录</div>
+      <div class="page-subtitle">查看和管理您生成过的所有单据记录</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px">
+      <button class="btn btn-danger btn-sm" onclick="clearDocHistory()">🗑️ 清空全部</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title"><span class="dot"></span>历史记录列表</div></div>
+    <div class="card-body" id="history-list-container">
+      <div id="history-empty" class="empty-state">
+        <div class="icon">📥</div>
+        <div>暂无历史记录，请先预览并下载单据</div>
+      </div>
+      <div id="history-list" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== PAGE: INCOTERMS CALCULATOR ===================== -->
 <div class="page" id="page-incoterm">
   <div class="page-header">
@@ -4600,7 +4781,8 @@ const PAGE_TITLES = {
   pallet:     ['托盘计算', 'Pallet Calculator'],
   incoterm:   ['术语计价', 'Incoterms Price Calculator'],
   library:    ['产品库', 'Product Library'],
-  settings:   ['公司信息', 'Company Settings']
+  settings:   ['公司信息', 'Company Settings'],
+  history:    ['单据历史记录', 'Document History']
 };
 
 // ==================== MOBILE SIDEBAR ====================
@@ -6219,10 +6401,109 @@ function addSpecRow(data) {
   tbody.appendChild(tr);
 }
 
+// ==================== DOCUMENT HISTORY ====================
+var DOC_HISTORY_KEY = 'tradepro_history_docs';
+var DOC_TYPE_NAMES = {
+  proforma: ['📋', '形式发票'],
+  salescontract: ['📝', '销售合同'],
+  commercial: ['📄', '商业发票'],
+  packing: ['📦', '装箱单'],
+  marks: ['🏷️', '唛头'],
+  spec: ['📐', '产品规格书']
+};
+
+function addDocHistory(docType, fileName) {
+  var data = loadDocHistory();
+  var now = new Date();
+  var dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  var timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  var record = {
+    docType: docType,
+    docName: (DOC_TYPE_NAMES[docType] || ['📄', '单据'])[1],
+    docIcon: (DOC_TYPE_NAMES[docType] || ['📄', '单据'])[0],
+    date: dateStr + ' ' + timeStr,
+    fileName: fileName || docType + '_' + dateStr + '.pdf'
+  };
+  data.unshift(record);
+  if (data.length > 50) data = data.slice(0, 50);
+  localStorage.setItem(DOC_HISTORY_KEY, JSON.stringify(data));
+  if (App.currentPage === 'history') renderDocHistory();
+}
+
+function loadDocHistory() {
+  try {
+    var raw = localStorage.getItem(DOC_HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function renderDocHistory() {
+  var container = document.getElementById('history-list');
+  var emptyEl = document.getElementById('history-empty');
+  var data = loadDocHistory();
+  if (data.length === 0) {
+    if (container) container.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = '';
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (!container) return;
+  var html = '';
+  data.forEach(function(item, index) {
+    html += '<div class="history-list-item">' +
+      '<div class="history-item-icon">' + item.docIcon + '</div>' +
+      '<div class="history-item-info">' +
+        '<div class="history-item-name">' + escapeHtml(item.docName) + '</div>' +
+        '<div class="history-item-meta">' +
+          '<span>' + escapeHtml(item.date) + '</span>' +
+          '<span>' + escapeHtml(item.fileName) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="history-item-actions">' +
+        '<button class="btn btn-outline btn-sm" onclick="downloadDocHistory(' + index + ')">📥 下载</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteDocHistory(' + index + ')">删除</button>' +
+      '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+  container.style.display = '';
+}
+
+function deleteDocHistory(index) {
+  var data = loadDocHistory();
+  if (index >= 0 && index < data.length) {
+    data.splice(index, 1);
+    localStorage.setItem(DOC_HISTORY_KEY, JSON.stringify(data));
+    renderDocHistory();
+    showToast('已删除该记录');
+  }
+}
+
+function clearDocHistory() {
+  if (confirm('确定要清空所有历史记录吗？此操作不可恢复。')) {
+    localStorage.removeItem(DOC_HISTORY_KEY);
+    renderDocHistory();
+    showToast('历史记录已清空');
+  }
+}
+
+function downloadDocHistory(index) {
+  var data = loadDocHistory();
+  if (index >= 0 && index < data.length) {
+    var item = data[index];
+    showToast('准备下载 ' + item.docName + ' ...');
+    setTimeout(function() {
+      window.print();
+    }, 100);
+  }
+}
+
 // ==================== PREVIEW TOGGLE ====================
 
 // Print the current document, then clear the form data
 function printAndClear() {
+  var page = App.currentPage;
+  addDocHistory(page, page + '_' + new Date().toISOString().split('T')[0] + '.pdf');
   window.print();
 }
 
@@ -6331,8 +6612,18 @@ function togglePreview(docType) {
 
     // Start live preview listener
     startLivePreview(docType);
+
+    // Record in history after preview is opened and data collected
+    var _histFn = docType + '_' + new Date().toISOString().split('T')[0] + '.pdf';
+    addDocHistory(docType, _histFn);
   } else {
-    // Exit split-view mode — just hide preview, keep edit
+    // Exit split-view mode — remove wrapper and restore original DOM structure
+    var wrapper = document.getElementById(docType + '-split-wrap');
+    if (wrapper) {
+      var originalParent = wrapper.parentNode;
+      originalParent.insertBefore(editEl, wrapper);
+      wrapper.remove();
+    }
     editEl.classList.remove('split-edit-pane');
     prevEl.classList.remove('split-preview-pane');
     prevEl.style.display = 'none';
