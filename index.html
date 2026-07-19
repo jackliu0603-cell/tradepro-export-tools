@@ -6622,6 +6622,7 @@ function togglePreview(docType) {
     if (wrapper) {
       var originalParent = wrapper.parentNode;
       originalParent.insertBefore(editEl, wrapper);
+      originalParent.insertBefore(prevEl, wrapper);
       wrapper.remove();
     }
     editEl.classList.remove('split-edit-pane');
