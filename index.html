@@ -2820,7 +2820,7 @@ input[data-list]::-webkit-calendar-picker-indicator {
 }
 /* Keep form-group / card-body overflow visible for safety */
 .form-group { position: relative; z-index: auto; }
-.form-grid { position: relative; z-index: 0; }
+.form-grid { position: relative; z-index: auto; }
 .card-body { overflow: visible !important; }
 .content-area { overflow-y: auto; overflow-x: visible; }
 .td-input { overflow: visible; }
@@ -4846,6 +4846,11 @@ function switchPage(page) {
     var activePage = document.querySelector('.page.active');
     if (activePage) animateSummaryValues(activePage);
   }, 300);
+
+  // Render history records when switching to history page
+  if (page === 'history') {
+    renderDocHistory();
+  }
 }
 
 // ==================== DATA PERSISTENCE ====================
@@ -5472,7 +5477,7 @@ function recalcProforma() {
   rows.forEach(r => {
     const inputs = r.querySelectorAll('input');
     const qty = parseFloat(inputs[2]?.value) || 0;
-    const price = parseFloat(inputs[3]?.value) || 0;
+    const price = parseFloat(inputs[4]?.value) || 0;
     const amt = qty * price;
     total += amt;
     const amtCell = r.querySelector('.amt-cell');
@@ -5488,7 +5493,7 @@ function recalcSalesContract() {
   rows.forEach(r => {
     const inputs = r.querySelectorAll('input');
     const qty = parseFloat(inputs[2]?.value) || 0;
-    const price = parseFloat(inputs[3]?.value) || 0;
+    const price = parseFloat(inputs[4]?.value) || 0;
     const amt = qty * price;
     total += amt;
     const amtCell = r.querySelector('.amt-cell');
@@ -5504,7 +5509,7 @@ function recalcCommercial() {
   rows.forEach(r => {
     const inputs = r.querySelectorAll('input');
     const qty = parseFloat(inputs[2]?.value) || 0;
-    const price = parseFloat(inputs[3]?.value) || 0;
+    const price = parseFloat(inputs[4]?.value) || 0;
     const amt = qty * price;
     total += amt;
     const amtCell = r.querySelector('.amt-cell');
@@ -7204,8 +7209,10 @@ function renderProformaPreviewV2(companyBlock, companyName) {
     const price = parseFloat(item.price) || 0;
     const amt = qty * price;
     total += amt;
+    const imgHtml = item.img ? `<img src="${escapeHtml(item.img)}" style="width:50px;height:50px;object-fit:cover;border:1px solid #ddd;border-radius:3px">` : '';
     itemsHtml += `<tr>
       <td class="center">${i+1}</td>
+      ${imgHtml ? `<td class="center" style="width:60px">${imgHtml}</td>` : ''}
       <td>${escapeHtml(item.desc)}${item.spec ? '<br><span style="font-size:9px;color:#333">SPEC: ' + escapeHtml(item.spec) + '</span>' : ''}</td>
       <td class="center">${escapeHtml(item.spec)}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
@@ -7216,6 +7223,10 @@ function renderProformaPreviewV2(companyBlock, companyName) {
   });
   const currency = pi.currency || 'USD';
   const totalWords = numberToWords(total);
+  const hasImg = (pi.items || []).some(it => it.img);
+  const imgColHead = hasImg ? `<th style="width:60px">IMAGE</th>` : '';
+  const imgColSpan = hasImg ? 8 : 7;
+  const tfootColspan = hasImg ? 7 : 6;
 
   document.getElementById('proforma-preview-area').innerHTML = `
     <div class="doc-paper-v2">
@@ -7240,6 +7251,7 @@ function renderProformaPreviewV2(companyBlock, companyName) {
       <table class="doc-v2-table">
         <thead><tr>
           <th style="width:30px">SR.<br>NO.</th>
+          ${imgColHead}
           <th>DESCRIPTION OF GOODS AND PACKAGE</th>
           <th style="width:80px">SIZE</th>
           <th style="width:60px">QTY<br>(CTNS)</th>
@@ -7247,9 +7259,9 @@ function renderProformaPreviewV2(companyBlock, companyName) {
           <th style="width:90px">UNIT PRICE<br>(${escapeHtml(currency)})</th>
           <th style="width:100px">AMOUNT<br>(${escapeHtml(currency)})</th>
         </tr></thead>
-        <tbody>${itemsHtml || '<tr><td colspan="7" style="text-align:center;color:#999">No items</td></tr>'}</tbody>
+        <tbody>${itemsHtml || `<tr><td colspan="${imgColSpan}" style="text-align:center;color:#999">No items</td></tr>`}</tbody>
         <tfoot><tr>
-          <td colspan="6" style="text-align:right">TOTAL:</td>
+          <td colspan="${tfootColspan}" style="text-align:right">TOTAL:</td>
           <td class="num">${fmtNum(total)}</td>
         </tr></tfoot>
       </table>
@@ -7289,8 +7301,10 @@ function renderSalesContractPreviewV2(companyBlock, companyName) {
     const price = parseFloat(item.price) || 0;
     const amt = qty * price;
     total += amt;
+    const imgHtml = item.img ? `<img src="${escapeHtml(item.img)}" style="width:50px;height:50px;object-fit:cover;border:1px solid #ddd;border-radius:3px">` : '';
     itemsHtml += `<tr>
       <td class="center">${i+1}</td>
+      ${imgHtml ? `<td class="center" style="width:60px">${imgHtml}</td>` : ''}
       <td>${escapeHtml(item.desc)}${item.spec ? '<br><span style="font-size:9px;color:#333">SPEC: ' + escapeHtml(item.spec) + '</span>' : ''}</td>
       <td class="center">${escapeHtml(item.spec)}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
@@ -7302,6 +7316,10 @@ function renderSalesContractPreviewV2(companyBlock, companyName) {
   const currency = sc.currency || 'USD';
   const totalWords = numberToWords(total);
   const sellerName = sc.sellerName || companyName;
+  const hasImg = (sc.items || []).some(it => it.img);
+  const imgColHead = hasImg ? `<th style="width:60px">IMAGE</th>` : '';
+  const imgColSpan = hasImg ? 8 : 7;
+  const tfootColspan = hasImg ? 7 : 6;
 
   document.getElementById('salescontract-preview-area').innerHTML = `
     <div class="doc-paper-v2">
@@ -7327,6 +7345,7 @@ function renderSalesContractPreviewV2(companyBlock, companyName) {
       <table class="doc-v2-table">
         <thead><tr>
           <th style="width:30px">SR.<br>NO.</th>
+          ${imgColHead}
           <th>DESCRIPTION OF GOODS AND PACKAGE</th>
           <th style="width:80px">SIZE</th>
           <th style="width:60px">QTY<br>(CTNS)</th>
@@ -7334,9 +7353,9 @@ function renderSalesContractPreviewV2(companyBlock, companyName) {
           <th style="width:90px">UNIT PRICE<br>(${escapeHtml(currency)})</th>
           <th style="width:100px">AMOUNT<br>(${escapeHtml(currency)})</th>
         </tr></thead>
-        <tbody>${itemsHtml || '<tr><td colspan="7" style="text-align:center;color:#999">No items</td></tr>'}</tbody>
+        <tbody>${itemsHtml || `<tr><td colspan="${imgColSpan}" style="text-align:center;color:#999">No items</td></tr>`}</tbody>
         <tfoot><tr>
-          <td colspan="6" style="text-align:right">TOTAL:</td>
+          <td colspan="${tfootColspan}" style="text-align:right">TOTAL:</td>
           <td class="num">${fmtNum(total)}</td>
         </tr></tfoot>
       </table>
@@ -7385,8 +7404,10 @@ function renderCommercialPreviewV2(companyBlock, companyName) {
     totalQty += qty;
     const weight = parseFloat(item.weight) || parseFloat(item.nw) || 0;
     totalWeight += weight * qty;
+    const imgHtml = item.img ? `<img src="${escapeHtml(item.img)}" style="width:50px;height:50px;object-fit:cover;border:1px solid #ddd;border-radius:3px">` : '';
     itemsHtml += `<tr>
       <td class="center">${i+1}</td>
+      ${imgHtml ? `<td class="center" style="width:60px">${imgHtml}</td>` : ''}
       <td>${escapeHtml(item.desc)}${item.spec ? '<br><span style="font-size:9px;color:#333">SPEC: ' + escapeHtml(item.spec) + '</span>' : ''}</td>
       <td class="center">${escapeHtml(item.spec)}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
@@ -7397,6 +7418,10 @@ function renderCommercialPreviewV2(companyBlock, companyName) {
   });
   const currency = ci.currency || 'USD';
   const totalWords = numberToWords(total);
+  const hasImg = (ci.items || []).some(it => it.img);
+  const imgColHead = hasImg ? `<th style="width:60px">IMAGE</th>` : '';
+  const imgColSpan = hasImg ? 8 : 7;
+  const tfootColspan = hasImg ? 4 : 3;
 
   document.getElementById('commercial-preview-area').innerHTML = `
     <div class="doc-paper-v2">
@@ -7429,6 +7454,7 @@ function renderCommercialPreviewV2(companyBlock, companyName) {
       <table class="doc-v2-table">
         <thead><tr>
           <th style="width:30px">SR.<br>NO.</th>
+          ${imgColHead}
           <th>DESCRIPTION OF GOODS<br>AND PACKAGE</th>
           <th style="width:70px">SIZE</th>
           <th style="width:55px">QTY<br>(CTNS)</th>
@@ -7436,9 +7462,9 @@ function renderCommercialPreviewV2(companyBlock, companyName) {
           <th style="width:90px">UNIT PRICE<br>(${escapeHtml(currency)}/KG)</th>
           <th style="width:100px">AMOUNT<br>(${escapeHtml(currency)})</th>
         </tr></thead>
-        <tbody>${itemsHtml || '<tr><td colspan="7" style="text-align:center;color:#999">No items</td></tr>'}</tbody>
+        <tbody>${itemsHtml || `<tr><td colspan="${imgColSpan}" style="text-align:center;color:#999">No items</td></tr>`}</tbody>
         <tfoot><tr>
-          <td colspan="3" style="text-align:right">TOTAL:</td>
+          <td colspan="${tfootColspan}" style="text-align:right">TOTAL:</td>
           <td class="num">${fmtNum(totalQty, 0)}</td>
           <td class="num">${fmtNum(totalWeight, 2)}</td>
           <td></td>
@@ -7480,9 +7506,11 @@ function renderPackingPreviewV2(companyBlock, companyName) {
     const h = parseFloat(item.h) || 0;
     const cbm = (l * w * h) / 1000000;
     totalQty += qty; totalNw += nw; totalGw += gw; totalCbm += cbm;
+    const imgHtml = item.img ? `<img src="${escapeHtml(item.img)}" style="width:50px;height:50px;object-fit:cover;border:1px solid #ddd;border-radius:3px">` : '';
     itemsHtml += `<tr>
       <td class="center">${i+1}</td>
       <td class="center">${escapeHtml(item.cartonNo)}</td>
+      ${imgHtml ? `<td class="center" style="width:60px">${imgHtml}</td>` : ''}
       <td>${escapeHtml(item.desc)}</td>
       <td class="num">${fmtNum(qty, 0)}</td>
       <td class="center">${escapeHtml(item.unit)}</td>
@@ -7492,6 +7520,10 @@ function renderPackingPreviewV2(companyBlock, companyName) {
       <td class="num">${fmtNum(cbm, 3)}</td>
     </tr>`;
   });
+  const hasImg = (pl.items || []).some(it => it.img);
+  const imgColHead = hasImg ? `<th style="width:60px">IMAGE</th>` : '';
+  const imgColSpan = hasImg ? 10 : 9;
+  const tfootColspan = hasImg ? 4 : 3;
 
   document.getElementById('packing-preview-area').innerHTML = `
     <div class="doc-paper-v2">
@@ -7518,6 +7550,7 @@ function renderPackingPreviewV2(companyBlock, companyName) {
         <thead><tr>
           <th style="width:30px">NO.</th>
           <th style="width:60px">CTN NO.</th>
+          ${imgColHead}
           <th>DESCRIPTION</th>
           <th style="width:55px">QTY</th>
           <th style="width:45px">UNIT</th>
@@ -7526,9 +7559,9 @@ function renderPackingPreviewV2(companyBlock, companyName) {
           <th style="width:80px">MEAS<br>(CM)</th>
           <th style="width:70px">CBM</th>
         </tr></thead>
-        <tbody>${itemsHtml || '<tr><td colspan="9" style="text-align:center;color:#999">No items</td></tr>'}</tbody>
+        <tbody>${itemsHtml || `<tr><td colspan="${imgColSpan}" style="text-align:center;color:#999">No items</td></tr>`}</tbody>
         <tfoot><tr>
-          <td colspan="3" style="text-align:right">TOTAL:</td>
+          <td colspan="${tfootColspan}" style="text-align:right">TOTAL:</td>
           <td class="num">${fmtNum(totalQty, 0)}</td>
           <td></td>
           <td class="num">${fmtNum(totalNw, 2)}</td>
@@ -7610,11 +7643,14 @@ function renderSpecPreviewV2(companyBlock, companyName) {
         <div class="doc-v2-company-info">${escapeHtml(company.address || '')}${company.tel ? '<br>TEL: ' + escapeHtml(company.tel) : ''}${company.fax ? '&nbsp;&nbsp;FAX: ' + escapeHtml(company.fax) : ''}</div>
       </div>
       <div class="doc-v2-title">PRODUCT SPECIFICATION</div>
-      <div style="text-align:center;margin:16px 0">
-        <div style="font-size:20px;font-weight:700;color:#000">${escapeHtml(sp.name) || 'Product Name'}</div>
-        ${sp.model ? '<div style="font-size:11px;margin-top:4px"><strong>MODEL:</strong> ' + escapeHtml(sp.model) + '</div>' : ''}
-        ${sp.brand ? '<div style="font-size:11px;margin-top:2px"><strong>BRAND:</strong> ' + escapeHtml(sp.brand) + '</div>' : ''}
-        ${sp.origin ? '<div style="font-size:11px;margin-top:2px"><strong>COUNTRY OF ORIGIN:</strong> ' + escapeHtml(sp.origin) + '</div>' : ''}
+      <div style="display:flex;gap:16px;align-items:flex-start;margin:16px 0">
+        ${sp.img ? `<div style="flex-shrink:0"><img src="${escapeHtml(sp.img)}" style="width:120px;height:120px;object-fit:cover;border:2px solid #000;border-radius:4px"></div>` : ''}
+        <div style="text-align:left;flex:1">
+          <div style="font-size:20px;font-weight:700;color:#000">${escapeHtml(sp.name) || 'Product Name'}</div>
+          ${sp.model ? '<div style="font-size:11px;margin-top:4px"><strong>MODEL:</strong> ' + escapeHtml(sp.model) + '</div>' : ''}
+          ${sp.brand ? '<div style="font-size:11px;margin-top:2px"><strong>BRAND:</strong> ' + escapeHtml(sp.brand) + '</div>' : ''}
+          ${sp.origin ? '<div style="font-size:11px;margin-top:2px"><strong>COUNTRY OF ORIGIN:</strong> ' + escapeHtml(sp.origin) + '</div>' : ''}
+        </div>
       </div>
       ${sp.desc ? `<div style="font-size:11px;line-height:1.8;color:#000;margin-bottom:16px;padding:12px;border:2px solid #000">${escapeHtmlBR(sp.desc)}</div>` : ''}
       <table class="doc-v2-table">
