@@ -4049,7 +4049,7 @@ input[data-list]:focus { position: relative; z-index: 10; }
                 <option value="40rf">40'RF (冷藏大柜)</option>
               </select>
             </div>
-            <div class="form-group"><label class="form-label">内部尺寸 L×W×H (mm)</label><input class="form-input mono" id="ct-dims" readonly></div>
+            <div class="form-group"><label class="form-label">内部尺寸 L×W×H (cm)</label><input class="form-input mono" id="ct-dims" readonly></div>
             <div class="form-group"><label class="form-label">最大载重 (kg)</label><input class="form-input mono" id="ct-payload" readonly></div>
             <div class="form-group"><label class="form-label">容积 (CBM)</label><input class="form-input mono" id="ct-volume" readonly></div>
           </div>
@@ -4068,9 +4068,9 @@ input[data-list]:focus { position: relative; z-index: 10; }
                 <tr>
                   <th style="width:30px">#</th>
                   <th>品名</th>
-                  <th style="width:80px">长(mm)</th>
-                  <th style="width:80px">宽(mm)</th>
-                  <th style="width:80px">高(mm)</th>
+                  <th style="width:80px">长(cm)</th>
+                  <th style="width:80px">宽(cm)</th>
+                  <th style="width:80px">高(cm)</th>
                   <th style="width:80px">数量</th>
                   <th style="width:80px">单件重(kg)</th>
                   <th style="width:40px" class="no-print"></th>
@@ -4196,29 +4196,29 @@ input[data-list]:focus { position: relative; z-index: 10; }
             <div class="form-group">
               <label class="form-label">托盘类型</label>
               <select class="form-select" id="pt-type" onchange="updatePalletInfo()">
-                <option value="1200x1000">1200×1000mm (欧洲标准)</option>
-                <option value="1200x800">1200×800mm (欧洲标准)</option>
-                <option value="1140x1140">1140×1140mm (澳洲标准)</option>
-                <option value="1100x1100">1100×1100mm (亚洲标准)</option>
-                <option value="1219x1016">1219×1016mm (美国标准)</option>
+                <option value="1200x1000">120×100cm (欧洲标准)</option>
+                <option value="1200x800">120×80cm (欧洲标准)</option>
+                <option value="1140x1140">114×114cm (澳洲标准)</option>
+                <option value="1100x1100">110×110cm (亚洲标准)</option>
+                <option value="1219x1016">121.9×101.6cm (美国标准)</option>
                 <option value="custom">自定义尺寸</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">托盘长 (mm)</label>
-              <input class="form-input mono" id="pt-pl" type="number" value="1200" onchange="recalcPallet()">
+              <label class="form-label">托盘长 (cm)</label>
+              <input class="form-input mono" id="pt-pl" type="number" value="120" onchange="recalcPallet()">
             </div>
             <div class="form-group">
-              <label class="form-label">托盘宽 (mm)</label>
-              <input class="form-input mono" id="pt-pw" type="number" value="1000" onchange="recalcPallet()">
+              <label class="form-label">托盘宽 (cm)</label>
+              <input class="form-input mono" id="pt-pw" type="number" value="100" onchange="recalcPallet()">
             </div>
             <div class="form-group">
               <label class="form-label">最大堆叠层数</label>
               <input class="form-input mono" id="pt-max-layers" type="number" placeholder="不限" onchange="recalcPallet()">
             </div>
             <div class="form-group">
-              <label class="form-label">最大高度限制 (mm)</label>
-              <input class="form-input mono" id="pt-max-height" type="number" value="1800" onchange="recalcPallet()">
+              <label class="form-label">最大高度限制 (cm)</label>
+              <input class="form-input mono" id="pt-max-height" type="number" value="180" onchange="recalcPallet()">
             </div>
             <div class="form-group" style="display:flex;align-items:flex-end">
               <div class="toggle-row" style="white-space:nowrap">
@@ -4241,9 +4241,9 @@ input[data-list]:focus { position: relative; z-index: 10; }
                 <tr>
                   <th style="width:30px">#</th>
                   <th>品名 / Description</th>
-                  <th style="width:70px">长(mm)</th>
-                  <th style="width:70px">宽(mm)</th>
-                  <th style="width:70px">高(mm)</th>
+                  <th style="width:70px">长(cm)</th>
+                  <th style="width:70px">宽(cm)</th>
+                  <th style="width:70px">高(cm)</th>
                   <th style="width:70px">数量</th>
                   <th style="width:80px">单件重(kg)</th>
                   <th style="width:40px" class="no-print"></th>
@@ -4293,7 +4293,7 @@ input[data-list]:focus { position: relative; z-index: 10; }
               </div>
               <div class="summary-box">
                 <div class="summary-label">托盘总高度</div>
-                <div class="summary-value" id="pt-total-height">0<span class="summary-unit">mm</span></div>
+                <div class="summary-value" id="pt-total-height">0<span class="summary-unit">cm</span></div>
               </div>
               <div class="summary-box">
                 <div class="summary-label">单托总重量</div>
@@ -4708,12 +4708,12 @@ const App = {
 
 // Container specs (internal dimensions in mm)
 const CONTAINERS = {
-  '20gp':  { name: "20'GP",  L: 5898, W: 2352, H: 2393, payload: 28000, volume: 33.2 },
-  '40gp':  { name: "40'GP",  L: 12032, W: 2352, H: 2393, payload: 28000, volume: 67.7 },
-  '40hq':  { name: "40'HQ",  L: 12032, W: 2352, H: 2698, payload: 28000, volume: 76.4 },
-  '45hq':  { name: "45'HQ",  L: 13556, W: 2352, H: 2698, payload: 27500, volume: 85.7 },
-  '20rf':  { name: "20'RF",  L: 5444, W: 2284, H: 2240, payload: 27500, volume: 27.8 },
-  '40rf':  { name: "40'RF",  L: 11583, W: 2284, H: 2240, payload: 27500, volume: 59.2 }
+  '20gp':  { name: "20'GP",  L: 589.8, W: 235.2, H: 239.3, payload: 28000, volume: 33.2 },
+  '40gp':  { name: "40'GP",  L: 1203.2, W: 235.2, H: 239.3, payload: 28000, volume: 67.7 },
+  '40hq':  { name: "40'HQ",  L: 1203.2, W: 235.2, H: 269.8, payload: 28000, volume: 76.4 },
+  '45hq':  { name: "45'HQ",  L: 1355.6, W: 235.2, H: 269.8, payload: 27500, volume: 85.7 },
+  '20rf':  { name: "20'RF",  L: 544.4, W: 228.4, H: 224.0, payload: 27500, volume: 27.8 },
+  '40rf':  { name: "40'RF",  L: 1158.3, W: 228.4, H: 224.0, payload: 27500, volume: 59.2 }
 };
 
 // ==================== INIT ====================
@@ -6103,7 +6103,7 @@ function renderContainer3D(container, details) {
       labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz0), cL_e, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cL_s, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cL_e, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
-      var sCL = regSprite(makeTextSprite('L: ' + container.L + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
+      var sCL = regSprite(makeTextSprite('L: ' + (container.L).toFixed(1) + 'cm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
       sCL.position.set((cx0 + cx1) / 2, 0, cz0 - EXT_C - 0.3);
       labelGroup.add(sCL);
 
@@ -6115,7 +6115,7 @@ function renderContainer3D(container, details) {
       labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz1), cW_e, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cW_s, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cW_e, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
-      var sCW = regSprite(makeTextSprite('W: ' + container.W + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
+      var sCW = regSprite(makeTextSprite('W: ' + (container.W).toFixed(1) + 'cm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
       sCW.position.set(cx0 - EXT_C - 0.3, 0, (cz0 + cz1) / 2);
       labelGroup.add(sCW);
 
@@ -6131,7 +6131,7 @@ function renderContainer3D(container, details) {
       labelGroup.add(makeExtLine(new THREE.Vector3(cx0 - EXT_C, cH, cz0), cH_e, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cH_s, new THREE.Vector3(1, 0, 0), 0.08, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(cH_e, new THREE.Vector3(1, 0, 0), 0.08, CLR_CONTAINER.hex));
-      var sCH = regSprite(makeTextSprite('H: ' + container.H + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
+      var sCH = regSprite(makeTextSprite('H: ' + (container.H).toFixed(1) + 'cm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
       sCH.position.set(cx0 - EXT_C - 0.3, cH / 2, cz0 - EXT_C);
       labelGroup.add(sCH);
 
@@ -6151,7 +6151,7 @@ function renderContainer3D(container, details) {
         labelGroup.add(makeExtLine(new THREE.Vector3(fbx1, fby0, fbz0), pL_e, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pL_s, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pL_e, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
-        var sPL = regSprite(makeTextSprite(fb.origL + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+        var sPL = regSprite(makeTextSprite(fb.origL + 'cm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
         sPL.position.set(fb.x, fby0 - 0.15, fbz0 - pEXT - 0.2);
         labelGroup.add(sPL);
 
@@ -6163,7 +6163,7 @@ function renderContainer3D(container, details) {
         labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby0, fbz1), pW_e, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pW_s, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pW_e, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
-        var sPW = regSprite(makeTextSprite(fb.origW + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+        var sPW = regSprite(makeTextSprite(fb.origW + 'cm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
         sPW.position.set(fbx0 - pEXT - 0.2, fby0 - 0.15, fb.z);
         labelGroup.add(sPW);
 
@@ -6178,7 +6178,7 @@ function renderContainer3D(container, details) {
         labelGroup.add(makeExtLine(new THREE.Vector3(fbx0 - pEXT, fby1, fbz0), pH_e, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pH_s, new THREE.Vector3(1, 0, 0), 0.05, CLR_PACKAGE.hex));
         labelGroup.add(makeEndpointTick(pH_e, new THREE.Vector3(1, 0, 0), 0.05, CLR_PACKAGE.hex));
-        var sPH = regSprite(makeTextSprite(fb.origH + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+        var sPH = regSprite(makeTextSprite(fb.origH + 'cm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
         sPH.position.set(fbx0 - pEXT - 0.2, fb.y, fbz0 - pEXT - 0.15);
         labelGroup.add(sPH);
       }
@@ -6208,7 +6208,7 @@ function renderContainer3D(container, details) {
           gapGroup.add(makeExtLine(new THREE.Vector3(cx1, cH, cz0), xg_e, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(xg_s, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(xg_e, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
-          var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+          var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'cm', { fontColor: CLR_GAP.css, fontSize: 58 }));
           sXG.position.set((cargoRightX + cx1) / 2, cH, cz0 - gEXT - 0.3);
           gapGroup.add(sXG);
         }
@@ -6223,7 +6223,7 @@ function renderContainer3D(container, details) {
           gapGroup.add(makeExtLine(new THREE.Vector3(cx0, cH, cz1), zg_e, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(zg_s, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(zg_e, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
-          var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+          var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'cm', { fontColor: CLR_GAP.css, fontSize: 58 }));
           sZG.position.set(cx0 - gEXT - 0.3, cH, (cargoBackZ + cz1) / 2);
           gapGroup.add(sZG);
         }
@@ -6245,7 +6245,7 @@ function renderContainer3D(container, details) {
           gapGroup.add(makeExtLine(new THREE.Vector3(cx0 - gEXT, cH, cz0), yg_e, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(yg_s, new THREE.Vector3(1, 0, 0), 0.07, CLR_GAP.hex));
           gapGroup.add(makeEndpointTick(yg_e, new THREE.Vector3(1, 0, 0), 0.07, CLR_GAP.hex));
-          var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+          var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'cm', { fontColor: CLR_GAP.css, fontSize: 58 }));
           sYG.position.set(cx0 - gEXT - 0.3, (cargoTopY + cH) / 2, cz0 - gEXT);
           gapGroup.add(sYG);
         }
@@ -6253,7 +6253,7 @@ function renderContainer3D(container, details) {
 
       // ====== Info Text ======
       var totalBoxes = details.reduce(function(s, d) { return s + (d.count || 0); }, 0);
-      infoEl.textContent = container.name + '  ' + container.L + '×' + container.W + '×' + container.H + 'mm  |  货物: ' + totalBoxes + '件';
+      infoEl.textContent = container.name + '  ' + container.L + '×' + container.W + '×' + container.H + 'cm  |  货物: ' + totalBoxes + '件';
       hintEl.textContent = '拖拽旋转 · 滚轮缩放 · 右键平移';
 
       // ====== Toggle Controls ======
@@ -7689,11 +7689,11 @@ function renderSpecPreviewV2(companyBlock, companyName) {
 
 // ==================== PALLET CALCULATOR ====================
 var PALLET_TYPES = {
-  '1200x1000': { L: 1200, W: 1000 },
-  '1200x800':  { L: 1200, W: 800 },
-  '1140x1140': { L: 1140, W: 1140 },
-  '1100x1100': { L: 1100, W: 1100 },
-  '1219x1016': { L: 1219, W: 1016 }
+  '1200x1000': { L: 120, W: 100 },
+  '1200x800':  { L: 120, W: 80 },
+  '1140x1140': { L: 114, W: 114 },
+  '1100x1100': { L: 110, W: 110 },
+  '1219x1016': { L: 121.9, W: 101.6 }
 };
 
 function updatePalletInfo() {
@@ -7766,8 +7766,8 @@ function clearPalletCalc() {
 
 // Core: compute best-fit box layout on a single pallet layer
 function computeBoxLayout(boxL, boxW, palletL, palletW, allowOverhang) {
-  var oL = allowOverhang ? palletL + 50 : palletL;
-  var oW = allowOverhang ? palletW + 50 : palletW;
+  var oL = allowOverhang ? palletL + 5 : palletL;
+  var oW = allowOverhang ? palletW + 5 : palletW;
 
   // Try both orientations, pick the one with more boxes
   var layouts = [];
@@ -7922,7 +7922,7 @@ function calculatePallet() {
   document.getElementById('pt-per-layer').innerHTML = firstPerLayer + '<span class="summary-unit">箱</span>';
   document.getElementById('pt-layers').innerHTML = firstLayers + '<span class="summary-unit">层</span>';
   document.getElementById('pt-total-boxes').innerHTML = firstTotalBoxes + '<span class="summary-unit">箱</span>';
-  document.getElementById('pt-total-height').innerHTML = firstHeight + '<span class="summary-unit">mm</span>';
+  document.getElementById('pt-total-height').innerHTML = firstHeight + '<span class="summary-unit">cm</span>';
   document.getElementById('pt-total-weight').innerHTML = fmtNum(firstWeight, 2) + '<span class="summary-unit">KG</span>';
   document.getElementById('pt-pallet-count').innerHTML = totalPallets + '<span class="summary-unit">托</span>';
 
@@ -8146,7 +8146,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       labelGroup.add(makeExtLine(new THREE.Vector3(cx1, pBottomY, cz0), pl_e, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(pl_s, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(pl_e, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
-      var sPL = regSprite(makeTextSprite('托盘 L: ' + palletL + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
+      var sPL = regSprite(makeTextSprite('托盘 L: ' + palletL + 'cm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
       sPL.position.set((cx0 + cx1) / 2, pBottomY, cz0 - EXT_C - 0.3);
       labelGroup.add(sPL);
 
@@ -8158,7 +8158,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       labelGroup.add(makeExtLine(new THREE.Vector3(cx0, pBottomY, cz1), pw_e, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(pw_s, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
       labelGroup.add(makeEndpointTick(pw_e, new THREE.Vector3(0, 1, 0), 0.08, CLR_CONTAINER.hex));
-      var sPW = regSprite(makeTextSprite('托盘 W: ' + palletW + 'mm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
+      var sPW = regSprite(makeTextSprite('托盘 W: ' + palletW + 'cm', { fontColor: CLR_CONTAINER.css, fontSize: 64 }));
       sPW.position.set(cx0 - EXT_C - 0.3, pBottomY, (cz0 + cz1) / 2);
       labelGroup.add(sPW);
 
@@ -8190,7 +8190,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       labelGroup.add(makeExtLine(new THREE.Vector3(fbx1, fby0, fbz0), bxL_e, CLR_PACKAGE.hex));
       labelGroup.add(makeEndpointTick(bxL_s, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
       labelGroup.add(makeEndpointTick(bxL_e, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
-      var sBL = regSprite(makeTextSprite('箱 L: ' + result.boxL_orig + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+      var sBL = regSprite(makeTextSprite('箱 L: ' + result.boxL_orig + 'cm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
       sBL.position.set(firstBoxX, fby0 - 0.15, fbz0 - pEXT - 0.2);
       labelGroup.add(sBL);
 
@@ -8202,7 +8202,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       labelGroup.add(makeExtLine(new THREE.Vector3(fbx0, fby0, fbz1), bxW_e, CLR_PACKAGE.hex));
       labelGroup.add(makeEndpointTick(bxW_s, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
       labelGroup.add(makeEndpointTick(bxW_e, new THREE.Vector3(0, 1, 0), 0.05, CLR_PACKAGE.hex));
-      var sBW = regSprite(makeTextSprite('箱 W: ' + result.boxW_orig + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+      var sBW = regSprite(makeTextSprite('箱 W: ' + result.boxW_orig + 'cm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
       sBW.position.set(fbx0 - pEXT - 0.2, fby0 - 0.15, firstBoxZ);
       labelGroup.add(sBW);
 
@@ -8215,7 +8215,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       labelGroup.add(makeExtLine(new THREE.Vector3(fbx0 - pEXT, fby1, fbz0), bxH_e, CLR_PACKAGE.hex));
       labelGroup.add(makeEndpointTick(bxH_s, new THREE.Vector3(1, 0, 0), 0.05, CLR_PACKAGE.hex));
       labelGroup.add(makeEndpointTick(bxH_e, new THREE.Vector3(1, 0, 0), 0.05, CLR_PACKAGE.hex));
-      var sBH = regSprite(makeTextSprite('箱 H: ' + result.boxH + 'mm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
+      var sBH = regSprite(makeTextSprite('箱 H: ' + result.boxH + 'cm', { fontColor: CLR_PACKAGE.css, fontSize: 52 }));
       sBH.position.set(fbx0 - pEXT - 0.2, firstBoxY, fbz0 - pEXT - 0.15);
       labelGroup.add(sBH);
 
@@ -8235,7 +8235,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       labelGroup.add(makeExtLine(new THREE.Vector3(cx1, pTopY + gEXT, cz0), tL_e, CLR_GAP.hex));
       labelGroup.add(makeEndpointTick(tL_s, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
       labelGroup.add(makeEndpointTick(tL_e, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
-      var sTL = regSprite(makeTextSprite('总 L: ' + palletL + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+      var sTL = regSprite(makeTextSprite('总 L: ' + palletL + 'cm', { fontColor: CLR_GAP.css, fontSize: 58 }));
       sTL.position.set((cx0 + cx1) / 2, pTopY + gEXT, cz0 - gEXT - 0.3);
       labelGroup.add(sTL);
 
@@ -8249,7 +8249,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       labelGroup.add(makeExtLine(new THREE.Vector3(cx0, pTopY + gEXT, cz1), tW_e, CLR_GAP.hex));
       labelGroup.add(makeEndpointTick(tW_s, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
       labelGroup.add(makeEndpointTick(tW_e, new THREE.Vector3(0, 1, 0), 0.07, CLR_GAP.hex));
-      var sTW = regSprite(makeTextSprite('总 W: ' + palletW + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+      var sTW = regSprite(makeTextSprite('总 W: ' + palletW + 'cm', { fontColor: CLR_GAP.css, fontSize: 58 }));
       sTW.position.set(cx0 - gEXT - 0.3, pTopY + gEXT, (cz0 + cz1) / 2);
       labelGroup.add(sTW);
 
@@ -8263,7 +8263,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
       labelGroup.add(makeEndpointTick(tH_s, new THREE.Vector3(1, 0, 0), 0.07, CLR_GAP.hex));
       labelGroup.add(makeEndpointTick(tH_e, new THREE.Vector3(1, 0, 0), 0.07, CLR_GAP.hex));
       var totalHmm = Math.round(PALLET_THICKNESS / SCALE) + Math.round(totalH);
-      var sTH = regSprite(makeTextSprite('总 H: ' + totalHmm + 'mm', { fontColor: CLR_GAP.css, fontSize: 58 }));
+      var sTH = regSprite(makeTextSprite('总 H: ' + totalHmm + 'cm', { fontColor: CLR_GAP.css, fontSize: 58 }));
       sTH.position.set(cx0 - gEXT - 0.3, pTopY / 2, cz0 - gEXT);
       labelGroup.add(sTH);
 
@@ -8281,7 +8281,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
         labelGroup.add(makeExtLine(new THREE.Vector3(cx1, 0, cz0), xg_e, CLR_CLEAR.hex));
         labelGroup.add(makeEndpointTick(xg_s, new THREE.Vector3(0, 1, 0), 0.06, CLR_CLEAR.hex));
         labelGroup.add(makeEndpointTick(xg_e, new THREE.Vector3(0, 1, 0), 0.06, CLR_CLEAR.hex));
-        var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'mm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
+        var sXG = regSprite(makeTextSprite('ΔX: ' + xGapMm + 'cm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
         sXG.position.set((cargoRightX + cx1) / 2, 0, cz0 - gapEXT - 0.25);
         labelGroup.add(sXG);
       }
@@ -8296,7 +8296,7 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
         labelGroup.add(makeExtLine(new THREE.Vector3(cx0, 0, cz1), zg_e, CLR_CLEAR.hex));
         labelGroup.add(makeEndpointTick(zg_s, new THREE.Vector3(0, 1, 0), 0.06, CLR_CLEAR.hex));
         labelGroup.add(makeEndpointTick(zg_e, new THREE.Vector3(0, 1, 0), 0.06, CLR_CLEAR.hex));
-        var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'mm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
+        var sZG = regSprite(makeTextSprite('ΔZ: ' + zGapMm + 'cm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
         sZG.position.set(cx0 - gapEXT - 0.25, 0, (cargoBackZ + cz1) / 2);
         labelGroup.add(sZG);
       }
@@ -8314,13 +8314,13 @@ function renderPallet3D(result, palletL, palletW, ptL, ptW) {
         labelGroup.add(makeExtLine(yg_e, new THREE.Vector3(cx1 + gapEXT, yLimitY, cz0 - gapEXT), CLR_CLEAR.hex));
         labelGroup.add(makeEndpointTick(yg_s, new THREE.Vector3(1, 0, 0), 0.06, CLR_CLEAR.hex));
         labelGroup.add(makeEndpointTick(yg_e, new THREE.Vector3(1, 0, 0), 0.06, CLR_CLEAR.hex));
-        var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'mm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
+        var sYG = regSprite(makeTextSprite('ΔY: ' + yGapMm + 'cm', { fontColor: CLR_CLEAR.css, fontSize: 54 }));
         sYG.position.set(cx1 + gapEXT + 0.25, (cargoTopY + yLimitY) / 2, cz0);
         labelGroup.add(sYG);
       }
 
       // ====== Info Text ======
-      infoEl.textContent = '托盘 ' + palletL + '×' + palletW + 'mm  |  每层 ' + result.perLayer + '箱 × ' + layers + '层 = ' + result.perPalletBoxes + '箱  |  总高 ' + totalHmm + 'mm\n间隙 X:' + xGapMm + 'mm  Z:' + zGapMm + 'mm' + (typeof yGapMm !== 'undefined' ? '  Y:' + yGapMm + 'mm' : '');
+      infoEl.textContent = '托盘 ' + palletL + '×' + palletW + 'cm  |  每层 ' + result.perLayer + '箱 × ' + layers + '层 = ' + result.perPalletBoxes + '箱  |  总高 ' + totalHmm + 'mm\n间隙 X:' + xGapMm + 'mm  Z:' + zGapMm + 'cm' + (typeof yGapMm !== 'undefined' ? '  Y:' + yGapMm + 'cm' : '');
       hintEl.textContent = '拖拽旋转 · 滚轮缩放 · 右键平移';
 
       // ====== Toggle Controls ======
